@@ -19,7 +19,7 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         return [
-            'article' => fake()->unique()->randomNumber(),
+            'sku' => fake()->unique()->randomNumber(),
             'brand_id' => Brand::factory()->create(),
             'category_id' => Category::factory()->create(),
             'title' => fake()->title,

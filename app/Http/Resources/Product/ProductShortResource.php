@@ -16,7 +16,7 @@ class ProductShortResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'article' => $this->article,
+            'sku' => $this->sku,
             'title' => $this->title,
             'price' => $this->price,
             'quantity' => $this->quantity,

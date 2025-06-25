@@ -11,20 +11,20 @@ class ProductControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testShowProductByArticleIsCorrect()
+    public function testShowProductBySkuIsCorrect()
     {
-        $product = Product::factory()->create(['article' => 1345]);
-        $response = $this->getJson(route('v1.client.products.show', ['article' => 1345]));
+        $product = Product::factory()->create(['sku' => 1345]);
+        $response = $this->getJson(route('v1.client.products.show', ['sku' => 1345]));
         $response->assertStatus(200);
         $response->assertJson([
-            'article' => 1345
+            'sku' => 1345
         ]);
     }
 
-    public function testShowProductReturns404ForInvalidArticle()
+    public function testShowProductReturns404ForInvalidSku()
     {
-        $product = Product::factory()->create(['article' => 1345]);
-        $response = $this->getJson(route('v1.client.products.show', ['article' => 1234]));
+        $product = Product::factory()->create(['sku' => 1345]);
+        $response = $this->getJson(route('v1.client.products.show', ['sku' => 1234]));
         $response->assertStatus(404);
     }
 }

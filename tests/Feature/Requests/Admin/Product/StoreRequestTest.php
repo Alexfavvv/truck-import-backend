@@ -23,12 +23,12 @@ class StoreRequestTest extends TestCase
         $this->assertTrue($validator->fails());
     }
 
-    public function testArticleIsRequired()
+    public function testSkuIsRequired()
     {
         $request = new StoreRequest();
         $validator = validator(
-            ['product.article' => null,],
-            ['product.article' => $request->rules()['product.article']]
+            ['product.sku' => null,],
+            ['product.sku' => $request->rules()['product.sku']]
         );
 
         $this->assertTrue($validator->fails());
@@ -77,17 +77,17 @@ class StoreRequestTest extends TestCase
         $this->assertTrue($validator->fails());
     }
 
-    public function testArticleMustBeUnique()
+    public function testSkuMustBeUnique()
     {
         $request = new StoreRequest();
-        Product::factory()->create(['article' => 'test']);
+        Product::factory()->create(['sku' => 'test']);
 
-        $request->merge(['product.article' => 'test']);
-        $validator = validator($request->all(), ['product.article' => $request->rules()['product.article']]);
+        $request->merge(['product.sku' => 'test']);
+        $validator = validator($request->all(), ['product.sku' => $request->rules()['product.sku']]);
         $this->assertTrue($validator->fails());
 
-        $request->merge(['product.article' => 'test2']);
-        $validator = validator($request->all(), ['product.article' => $request->rules()['product.article']]);
+        $request->merge(['product.sku' => 'test2']);
+        $validator = validator($request->all(), ['product.sku' => $request->rules()['product.sku']]);
         $this->assertFalse($validator->fails());
     }
 }

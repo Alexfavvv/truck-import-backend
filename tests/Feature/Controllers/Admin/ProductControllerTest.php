@@ -44,7 +44,7 @@ class ProductControllerTest extends TestCase
         $brand = Brand::factory()->create();
         $response = $this->actingAs($admin)->post(route('admin.products.store'), [
             'product' => [
-                'article' => 'ABC123',
+                'sku' => 'ABC123',
                 'brand_id' => $brand->id,
                 'category_id' => $category->id,
                 'title' => 'Тестовый продукт',
@@ -80,14 +80,14 @@ class ProductControllerTest extends TestCase
         $brand = Brand::factory()->create();
         $product = Product::factory()->create([
             'title' => 'Старый продукт',
-            'article' => 'ABC123',
+            'sku' => 'ABC123',
             'brand_id' => $brand->id,
             'category_id' => $category->id,
         ]);
 
         $response = $this->actingAs($admin)->put(route('admin.products.update', $product), [
             'product' => [
-                'article' => 'ABC123',
+                'sku' => 'ABC123',
                 'brand_id' => $brand->id,
                 'category_id' => $category->id,
                 'title' => 'Обновленный продукт',

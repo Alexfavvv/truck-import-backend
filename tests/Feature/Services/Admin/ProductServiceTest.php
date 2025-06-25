@@ -22,7 +22,7 @@ class ProductServiceTest extends TestCase
 
         $data = [
             'product' => [
-                'article' => 'ABC123',
+                'sku' => 'ABC123',
                 'brand_id' => $brand->id,
                 'category_id' => $category->id,
                 'title' => 'Тестовый продукт',

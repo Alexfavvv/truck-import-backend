@@ -21,7 +21,7 @@
             <tbody>
             @foreach ($products as $product)
                 <tr>
-                    <td class="font-monospace">{{ $product->article }}</td>
+                    <td class="font-monospace">{{ $product->sku }}</td>
                     <td>{{ $product->title }}</td>
                     <td>{{ $product->category->title ?? '—' }}</td>
                     <td>{{ $product->category->parent->title ?? '—' }}</td>

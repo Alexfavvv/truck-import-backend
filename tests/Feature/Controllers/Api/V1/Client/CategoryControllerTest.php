@@ -49,14 +49,14 @@ class CategoryControllerTest extends TestCase
     {
         $parent = Category::factory()->create(['type' => 'manufacturer', 'slug' => 'bmw']);
         $part = Category::factory()->create(['type' => 'part', 'parent_id' => $parent->id, 'slug' => 'tormaza']);
-        $product = Product::factory()->create(['category_id' => $part->id, 'article' => 1345]);
+        $product = Product::factory()->create(['category_id' => $part->id, 'sku' => 1345]);
 
         $response = $this->getJson(route('v1.client.categories.part.show', ['brandSlug' => 'bmw',  'partSlug' => 'tormaza']));
         $response->assertStatus(200);
         $response->assertJson([
             'slug' => 'tormaza',
             'products' => [
-                ['article' => 1345]
+                ['sku' => 1345]
             ]
         ]);
     }

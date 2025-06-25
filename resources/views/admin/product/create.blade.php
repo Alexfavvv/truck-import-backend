@@ -77,11 +77,11 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="product-article">Артикул <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('product.article') is-invalid @enderror"
-                                       id="product-article" name="product[article]"
-                                       value="{{ old('product.article') }}" required>
-                                @error('product.article')
+                                <label for="product-sku">Артикул <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('product.sku') is-invalid @enderror"
+                                       id="product-sku" name="product[sku]"
+                                       value="{{ old('product.sku') }}" required>
+                                @error('product.sku')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>

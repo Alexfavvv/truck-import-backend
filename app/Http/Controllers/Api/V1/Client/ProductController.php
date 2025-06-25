@@ -8,9 +8,9 @@ use App\Models\Product;
 
 class ProductController extends Controller
 {
-    public function show($article): array
+    public function show($sku): array
     {
-        $product = Product::where('article', $article)->firstOrFail();
+        $product = Product::where('sku', $sku)->firstOrFail();
         return ProductResource::make($product)->resolve();
     }
 }
