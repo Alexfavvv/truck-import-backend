@@ -172,6 +172,12 @@
                             </p>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/horizon" target="_blank">
+                            <i class="fas fa-tasks"></i>
+                            <span>Мониторинг Очередей<br>(Horizon)</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
             <!-- /.sidebar-menu -->
