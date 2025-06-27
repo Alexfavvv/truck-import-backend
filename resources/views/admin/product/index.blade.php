@@ -5,6 +5,9 @@
         <a href="{{ route('admin.products.create') }}" class="btn btn-primary mb-3">
             <i class="fas fa-plus"></i> Добавить товар
         </a>
+        <a href="{{ route('admin.products.import.form') }}" class="btn btn-success mb-3">
+            <i class="fas fa-plus"></i> Массовый импорт товаров
+        </a>
 
         <table class="table table-bordered">
             <thead style="background-color: #007bff; color: #fff;">

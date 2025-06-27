@@ -13,9 +13,14 @@ use Illuminate\Support\Facades\Route;
 Route::middleware([CustomAuthenticateMiddleware::class, IsAdminMiddleware::class])->group(function () {
     Route::get('/admin', function () {return view('admin.main.index');})->name('admin.index');
 
+    //CRUD
     Route::resource('/admin/brands', BrandController::class)->names('admin.brands')->except('show');
     Route::resource('/admin/categories', CategoryController::class)->names('admin.categories')->except('show');
     Route::resource('/admin/products', ProductController::class)->names('admin.products')->except('show');
+
+    // import products
+    Route::get('admin/products/import', [ProductController::class, 'showImportForm'])->name('admin.products.import.form');
+    Route::post('admin/products/import', [ProductController::class, 'import'])->name('admin.products.import');
 });
 
 // Вход и выход (без ограничений)
