@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminAuthController;
 use App\Http\Middleware\CustomAuthenticateMiddleware;
 use App\Http\Middleware\IsAdminMiddleware;
 use App\Http\Middleware\RedirectIfAuthenticatedMiddleware;
+use App\Services\ImportService;
 use Illuminate\Support\Facades\Route;
 
 // Доступ в админку — только для авторизованного админа
@@ -21,6 +22,7 @@ Route::middleware([CustomAuthenticateMiddleware::class, IsAdminMiddleware::class
     // import products
     Route::get('admin/products/import', [ProductController::class, 'showImportForm'])->name('admin.products.import.form');
     Route::post('admin/products/import', [ProductController::class, 'import'])->name('admin.products.import');
+    Route::get('admin/products/import-status', [ProductController::class, 'getImportStatus'])->name('admin.products.import.status');
 });
 
 // Вход и выход (без ограничений)

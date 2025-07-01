@@ -1,16 +1,6 @@
 @extends('admin.layouts.main')
 
 @section('content')
-    {{-- Блок для вывода общих сообщений об успехе --}}
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Закрыть">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    @endif
-
     {{-- Основной контейнер страницы --}}
     <div class="container mt-4">
         <div class="card shadow-sm">
@@ -18,43 +8,14 @@
                 <h2 class="mb-0"><i class="fas fa-upload"></i> Импорт товаров из Excel</h2>
             </div>
 
-            {{-- Блок для вывода ошибок валидации формы (например, если файл не выбран или неверный тип) --}}
-            @if($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show mx-3 mt-3">
-                    <ul class="mb-0">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Закрыть">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            @endif
-
-            {{-- Блок для вывода ошибок импорта, собранных из ProductsImport (пропущенные строки) --}}
-            @if (session('import_failures'))
-                <div class="alert alert-warning alert-dismissible fade show mx-3 mt-3">
-                    <h5 class="mb-2"><i class="fas fa-exclamation-triangle"></i> Обнаружены ошибки в некоторых строках файла:</h5>
-                    <ul class="mb-0">
-                        @foreach (session('import_failures') as $failure)
-                            <li>Строка **{{ $failure['row'] }}**: Поле '{{ $failure['attribute'] }}' - {{ implode(', ', $failure['errors']) }} (Значение: **{{ $failure['values'][$failure['attribute']] ?? 'N/A' }}**)</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Закрыть">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            @endif
-
             <div class="card-body">
-                <form action="{{ route('admin.products.import') }}" method="POST" enctype="multipart/form-data">
+                {{-- Форма импорта: добавлен id="importForm" --}}
+                <form id="importForm" action="{{ route('admin.products.import') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     <div class="form-group">
                         <label for="file">Выберите Excel файл (.xlsx, .xls, .csv): <span class="text-danger">*</span></label>
                         <div class="custom-file">
-                            {{-- Input для загрузки файла --}}
                             <input type="file" class="custom-file-input @error('file') is-invalid @enderror"
                                    id="file" name="file" required>
                             <label class="custom-file-label" for="file" data-browse="Обзор">Выберите файл</label>
@@ -73,21 +34,50 @@
                 </form>
             </div>
         </div>
+
+        {{-- Блок для отображения статуса и прогресса импорта через JavaScript --}}
+        <div id="statusArea" class="mt-4 card shadow-sm" style="display:none;"> {{-- Изначально скрыт --}}
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Статус импорта</h5>
+            </div>
+            <div class="card-body">
+                <p id="statusMessage" class="fw-bold mb-3"></p>
+
+                {{-- Контейнер прогресс-бара --}}
+                <div id="progressBarContainer" class="progress mb-3" style="display:none;">
+                    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                </div>
+
+                {{-- Детали импорта (обработано/всего) --}}
+                <div id="importDetails" class="mt-2" style="display:none;">
+                    <p class="mb-1">Обработано строк: <span id="processedRows" class="fw-bold">0</span></p>
+                    <p class="mb-0">Всего строк: <span id="totalRows" class="fw-bold">0</span></p>
+                </div>
+
+                {{-- Контейнер для ошибок импорта (из ProductsImport) --}}
+                <div id="errorList" class="alert alert-warning mt-3 mb-0" style="display:none;">
+                    <h5 class="alert-heading mb-2"><i class="fas fa-exclamation-triangle"></i> Обнаружены ошибки:</h5>
+                    <ul id="failuresList" class="mb-0"></ul>
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- Небольшой скрипт для обновления текста "Выберите файл" в custom-file-input --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const fileInput = document.getElementById('file');
-            if (fileInput) {
-                fileInput.addEventListener('change', function() {
-                    const fileName = this.files[0] ? this.files[0].name : 'Выберите файл';
-                    const label = this.nextElementSibling;
-                    if (label && label.classList.contains('custom-file-label')) {
-                        label.textContent = fileName;
-                    }
-                });
-            }
-        });
-    </script>
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const fileInput = document.getElementById('file');
+                if (fileInput) {
+                    fileInput.addEventListener('change', function() {
+                        const fileName = this.files[0] ? this.files[0].name : 'Выберите файл';
+                        const label = this.nextElementSibling;
+                        if (label && label.classList.contains('custom-file-label')) {
+                            label.textContent = fileName;
+                        }
+                    });
+                }
+            });
+        </script>
+    @endpush
 @endsection

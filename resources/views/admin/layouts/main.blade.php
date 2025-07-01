@@ -16,6 +16,8 @@
     <link rel="stylesheet" href=" {{ asset('AdminLTE/plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
     <!-- Select2 -->
     <link rel="stylesheet" href="{{ asset('AdminLTE/plugins/select2/css/select2.min.css') }}">
+
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
 <div class="wrapper">
@@ -229,5 +231,6 @@
         // $('.categories_multiple').select2()
     });
 </script>
+@stack('scripts')
 </body>
 </html>

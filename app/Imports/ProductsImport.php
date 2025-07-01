@@ -5,6 +5,8 @@ namespace App\Imports;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\OnEachRow;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
@@ -21,6 +23,7 @@ class ProductsImport implements OnEachRow, WithHeadingRow, WithValidation, Skips
     {
         $rowIndex = $row->getIndex();
         $row      = $row->toArray();
+
 //      Находим или создаем новый продукт
         $product = Product::query()->firstOrNew(['sku' => $row['artikul']]);
         $product->title = $row['nazvanie_tovara'];
@@ -31,13 +34,22 @@ class ProductsImport implements OnEachRow, WithHeadingRow, WithValidation, Skips
 
         // Присвоение brendа
         $brandTitle = $row['brend'];
-        $brand = Brand::query()->firstOrCreate(['title' => $brandTitle]);
+        $brand = Brand::query()->firstOrCreate(['title' => $brandTitle], ['title' => $brandTitle]);
         $product->brand_id = $brand->id;
 
         // Присвоение категории
         $categories = explode('>', $row['kategoriia']);
         $categories = array_map('trim', $categories);
-        if (count($categories) !== 2) return;
+        if (count($categories) !== 2) {
+            $this->failures[] = new Failure(
+                $rowIndex,
+                'kategoriia',
+                ['Неверный формат категории. Ожидается "Главная > Подкатегория".'],
+                $row
+            );
+
+            return;
+        }
 
         $manufacturer = Category::query()->firstOrCreate(
             ['title' => $categories[0], 'parent_id' => null],
@@ -57,7 +69,7 @@ class ProductsImport implements OnEachRow, WithHeadingRow, WithValidation, Skips
 
         if ($characteristics) {
             $product->characteristics()->delete();
-            $characteristics = explode(',', $characteristics);
+            $characteristics = explode(';', $characteristics);
             foreach ($characteristics as $characteristic) {
                 $characteristic = trim($characteristic);
                 if (empty($characteristic)) continue;
@@ -72,8 +84,6 @@ class ProductsImport implements OnEachRow, WithHeadingRow, WithValidation, Skips
                 ]);
             }
         }
-
-        return $product;
     }
 
     public function rules(): array
@@ -110,4 +120,5 @@ class ProductsImport implements OnEachRow, WithHeadingRow, WithValidation, Skips
     {
         return $this->failures;
     }
+
 }
