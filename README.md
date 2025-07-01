@@ -33,22 +33,9 @@
     REDIS_PASSWORD=null # Или ваш пароль Redis
     REDIS_PORT=6379
     ```
-
--   **Настройки Laravel Reverb (WebSockets):**
-    ```dotenv
-    BROADCAST_DRIVER=reverb
-    REVERB_APP_ID=your_production_app_id
-    REVERB_APP_KEY=your_production_app_key
-    REVERB_APP_SECRET=your_production_app_secret
-    REVERB_HOST=0.0.0.0 # Reverb должен слушать все интерфейсы
-    REVERB_PORT=8080
-    REVERB_SCHEME=https # Для продакшена, если используется SSL/TLS
-    ```
-    *`VITE_` переменные для фронтенда также должны быть указаны.*
-
 ---
 
-### Деплой на продакшен
+## Деплой на продакшен
 
 Этот раздел описывает шаги, необходимые для развертывания приложения в продакшн-окружении. Предполагается наличие установленного PHP (версии 8.2+), Composer, Node.js, npm, PostgreSQL, Redis, Nginx (или Apache) и Supervisor.
 
@@ -60,6 +47,7 @@
 
 2.  **Настройка `.env`:**
     Скопируйте `.env.example` в `.env` и настройте переменные согласно продакшн-окружению (см. раздел "Настройка `.env`" выше).
+
 
 3.  **Установка зависимостей:**
     ```bash
@@ -106,19 +94,6 @@
         stopwaitsecs=3600 # Дать время заданиям завершиться
         ```
 
-    * **Laravel Reverb:**
-      Создайте конфигурационный файл для Reverb (например, `/etc/supervisor/conf.d/reverb.conf`):
-        ```ini
-        [program:reverb]
-        process_name=%(program_name)s
-        command=php /path/to/your/app/artisan reverb:start
-        autostart=true
-        autorestart=true
-        user=www-data # Или пользователь, от которого работает ваше приложение
-        numprocs=1
-        redirect_stderr=true
-        stdout_logfile=/path/to/your/app/storage/logs/reverb.log
-        ```
     После создания файлов обновите Supervisor:
     ```bash
     sudo supervisorctl reread
@@ -162,6 +137,9 @@
     *При использовании Reverb с `BROADCAST_DRIVER=reverb`, он по умолчанию использует endpoint `/app` для WebSocket-соединений.*
 
 
+
+## Локальная разработка (Можно через Sail)
+
 ###  Клонирование репозитория
 ```bash
 git clone https://github.com/pkmStudio/truck-impo.git
@@ -193,7 +171,7 @@ php artisan serve
 ```
 
 
-### Создание администратора вручную
+## Создание администратора вручную
 ```bash
 php artisan tinker
 ```
