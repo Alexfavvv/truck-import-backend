@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Brand\StoreRequest;
 use App\Http\Requests\Admin\Brand\UpdateRequest;
 use App\Models\Brand;
+use App\Services\Admin\BrandService;
+use App\Services\Admin\CategoryService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,8 +16,17 @@ class BrandController extends Controller
 {
     public function index(Request $request)
     {
-        $brands = Brand::all();
-        return view('admin.brand.index', ['brands' => $brands]);
+        $query = Brand::query();
+
+        if ($request->has('search') && $request->search != null) {
+            $search = $request->search;
+            $query->where('title', 'like', "%{$search}%")
+                ->orWhere('slug', 'like', "%{$search}%");
+        }
+
+        $brands = $query->paginate(10);
+
+        return view('admin.brand.index', compact('brands'));
     }
 
     public function create(): View
@@ -25,9 +36,8 @@ class BrandController extends Controller
 
     public function store(StoreRequest $request): RedirectResponse
     {
-        $data = $request->validated();
-        Brand::create($data);
-        session()->put('success', 'Бренд успешно добавлен!');
+        $data = $request->except('brand.image');
+        BrandService::store($data);
         return redirect()->route('admin.brands.create');
     }
 
@@ -38,13 +48,15 @@ class BrandController extends Controller
 
     public function update(Brand $brand, UpdateRequest $request): RedirectResponse
     {
-        $data = $request->validated();
-        $brand->update($data);
+        $data = $request->except('brand.image');
+        BrandService::update($data, $brand);
         return redirect()->route('admin.brands.index');
     }
 
     public function destroy(Brand $brand): RedirectResponse
     {
+        // TODO Сделать удаление изображения
+        $brand->metatags()->delete();
         $brand->delete();
         return redirect()->route('admin.brands.index');
     }

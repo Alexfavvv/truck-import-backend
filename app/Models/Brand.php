@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Brand extends Model
 {
@@ -25,4 +26,8 @@ class Brand extends Model
         return $this->belongsToMany(PartType::class, 'brand_part_type', 'brand_id', 'part_type_id');
     }
 
+    public function metatags(): MorphOne
+    {
+        return $this->morphOne(Metatag::class, 'metatagable');
+    }
 }

@@ -159,10 +159,26 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ route('admin.categories.index') }}" class="nav-link">
+                        <a href="{{ route('admin.truck-manufacturers.index') }}" class="nav-link">
+                            <i class="nav-icon fab fa-sourcetree"></i>
+                            <p>
+                                Производители Траков
+                            </p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.truck-models.index') }}" class="nav-link">
                             <i class="nav-icon fas fa-truck"></i>
                             <p>
-                                Категории
+                                Модели Траков
+                            </p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.part-types.index') }}" class="nav-link">
+                            <i class="nav-icon fas fa-wrench"></i>
+                            <p>
+                                Типы запчастей
                             </p>
                         </a>
                     </li>
