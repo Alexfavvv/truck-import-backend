@@ -3,7 +3,7 @@
 @section('content')
     <div class="container mt-4">
         <div class="card shadow-sm">
-            <div class="card-header bg-warning text-white">
+            <div class="card-header bg-primary text-white">
                 <h2 class="mb-0"><i class="fas fa-edit"></i> Редактирование бренда "{{ $brand->title }}"</h2>
             </div>
 
@@ -143,7 +143,7 @@
                             <i class="fas fa-arrow-left"></i> Отмена
                         </a>
                         <div>
-                            <button type="submit" class="btn btn-warning text-white">
+                            <button type="submit" class="btn btn-primary text-white">
                                 <i class="fas fa-save"></i> Сохранить изменения
                             </button>
                         </div>
