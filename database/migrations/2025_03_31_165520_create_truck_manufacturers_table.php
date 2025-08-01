@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->renameColumn('article', 'sku');
+        Schema::create('truck_manufacturers', function (Blueprint $table) {
+            $table->id();
+            $table->string('title')->unique();
+            $table->string('slug')->unique();
+            $table->timestamps();
         });
     }
 
@@ -21,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->renameColumn('sku', 'article');
-        });
+        Schema::dropIfExists('truck_manufacturers');
     }
 };

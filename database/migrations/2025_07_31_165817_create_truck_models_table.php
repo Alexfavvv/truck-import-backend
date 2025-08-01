@@ -11,19 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
+        Schema::create('truck_models', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('parent_id')->nullable()->index()->constrained('categories')->onDelete('cascade');
-            $table->string('title');
+            $table->foreignId('brand_id')->constrained('brands')->onDelete('cascade');
+            $table->string('title')->unique();
+            $table->string('slug')->unique();
             $table->text('description')->nullable();
             $table->json('content')->nullable();
             $table->string('image_path')->nullable();
-            $table->string('slug')->index();
-            $table->enum('type', ['manufacturer', 'model', 'part'])->index();
             $table->timestamps();
-
-            // Уникальность slug в рамках parent_id
-            $table->unique(['parent_id', 'slug']);
         });
     }
 
@@ -32,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('truck_models');
     }
 };
