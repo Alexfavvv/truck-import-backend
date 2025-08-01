@@ -13,7 +13,6 @@ class BrandService
             DB::beginTransaction();
             $brand = Brand::create($data['brand']);
             $brand->metatags()->create($data['meta']);
-            session()->flash('success', 'Бренд успешно добавлен!');
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();

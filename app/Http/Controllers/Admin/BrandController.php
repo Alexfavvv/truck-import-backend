@@ -38,6 +38,7 @@ class BrandController extends Controller
     {
         $data = $request->except('brand.image');
         BrandService::store($data);
+        session()->flash('success', 'Бренд успешно добавлен!');
         return redirect()->route('admin.brands.create');
     }
 
@@ -50,6 +51,7 @@ class BrandController extends Controller
     {
         $data = $request->except('brand.image');
         BrandService::update($data, $brand);
+        session()->flash('success', 'Бренд успешно обновлен!');
         return redirect()->route('admin.brands.index');
     }
 
@@ -58,6 +60,7 @@ class BrandController extends Controller
         // TODO Сделать удаление изображения
         $brand->metatags()->delete();
         $brand->delete();
+        session()->flash('success', 'Бренд успешно удален!');
         return redirect()->route('admin.brands.index');
     }
 }
