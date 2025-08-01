@@ -30,8 +30,8 @@
         <div class="card shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <div class="flex-grow-1 mr-3">
-                    <form action="{{ route('admin.brands.index') }}" method="GET" class="form-inline">
-                        <div class="input-group">
+                    <form action="{{ route('admin.brands.index') }}" method="GET" class="form-inline w-50">
+                        <div class="input-group w-100">
                             <input type="text" name="search" class="form-control" placeholder="Поиск по названию или slug..." value="{{ request('search') }}">
                             <div class="input-group-append">
                                 <button class="btn btn-outline-secondary" type="submit">
