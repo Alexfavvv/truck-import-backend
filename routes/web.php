@@ -1,13 +1,14 @@
 <?php
 
 use App\Http\Controllers\Admin\BrandController;
-use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\PartTypeController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\TruckManufacturerController;
+use App\Http\Controllers\Admin\TruckModelController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Middleware\CustomAuthenticateMiddleware;
 use App\Http\Middleware\IsAdminMiddleware;
 use App\Http\Middleware\RedirectIfAuthenticatedMiddleware;
-use App\Services\ImportService;
 use Illuminate\Support\Facades\Route;
 
 // Доступ в админку — только для авторизованного админа
@@ -16,7 +17,9 @@ Route::middleware([CustomAuthenticateMiddleware::class, IsAdminMiddleware::class
 
     //CRUD
     Route::resource('/admin/brands', BrandController::class)->names('admin.brands')->except('show');
-    Route::resource('/admin/categories', CategoryController::class)->names('admin.categories')->except('show');
+    Route::resource('/admin/truck-models', TruckModelController::class )->names('admin.truck-models')->except('show');
+    Route::resource('/admin/truck-manufacturers', TruckManufacturerController::class )->names('admin.truck-manufacturers')->except('show');
+    Route::resource('/admin/part-types', PartTypeController::class)->names('admin.part-types')->except('show');
     Route::resource('/admin/products', ProductController::class)->names('admin.products')->except('show');
 
     // import products

@@ -3,7 +3,7 @@
 @section('content')
     <div class="container mt-4">
         <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header bg-success text-white">
                 <h2 class="mb-0"><i class="fas fa-plus-circle"></i> Создание нового бренда</h2>
             </div>
             <div class="card-body">
