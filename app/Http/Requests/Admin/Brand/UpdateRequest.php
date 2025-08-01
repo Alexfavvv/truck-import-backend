@@ -16,9 +16,10 @@ class UpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $brandId = $this->route('brand')->id;
         return [
-            'brand.title' => 'required|string|min:3|max:255|unique:brands,title,' . $this->route('brand')->id . ',id',
-            'brand.slug' => 'required|string|min:3|max:255|unique:brands,slug,' . $this->route('brand')->id . ',id',
+            'brand.title' => 'required|string|min:3|max:255|unique:brands,title,' . $brandId,
+            'brand.slug' => 'required|string|min:3|max:255|unique:brands,slug,' . $brandId,
             'brand.description' => 'nullable|string',
             'brand.content' => 'nullable|string',
             'brand.image' => 'nullable|image|mimes:jpg,jpeg,png,gif,svg,webp',
