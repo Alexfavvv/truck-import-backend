@@ -24,7 +24,7 @@ class ProcessProductImport implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(string $filePath, int $userId) // <-- Удалили jobId из конструктора
+    public function __construct(string $filePath, int $userId)
     {
         $this->filePath = $filePath;
         $this->userId = $userId;
