@@ -4,6 +4,7 @@ namespace App\Http\Resources\Product;
 
 use App\Http\Resources\Characteristic\CharacteristicResource;
 use App\Http\Resources\Metatag\MetatagResource;
+use App\Http\Resources\TruckManufacturer\TruckManufacturerResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,6 +20,7 @@ class ProductResource extends JsonResource
         return [
             'id' => $this->id,
             'brand_id' => $this->brand_id,
+            'part_type_id' => $this->part_type_id,
             'sku' => $this->sku,
             'title' => $this->title,
             'description' => $this->description,
@@ -26,8 +28,9 @@ class ProductResource extends JsonResource
             'delivery' => $this->delivery,
             'quantity' => $this->quantity,
             'image_url' => $this->image_url,
-            'metatags' => MetatagResource::make($this->metatags),
-            'characteristics' => CharacteristicResource::collection($this->characteristics),
+            'truck_manufacturers' => TruckManufacturerResource::collection($this->whenLoaded('truck_manufacturers')),
+            'metatags' => MetatagResource::make($this->whenLoaded('metatags')),
+            'characteristics' => CharacteristicResource::collection($this->whenLoaded('characteristics')),
         ];
     }
 }

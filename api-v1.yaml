@@ -2,28 +2,52 @@ openapi: 3.0.0
 info:
   title: Truck Import API
   version: 1.0.0
-  description: API для работы с категориями, моделями и деталями
+  description: API для работы с брендами, моделями грузовиков, типами запчастей и продуктами.
 
 servers:
   - url: http://127.0.0.1:8000/api/v1/client
     description: Local development server
-  - url: https://truck-import.laravel.cloud//api/v1/client
+  - url: http://localhost/api/v1/client
+    description: Local sail development server
+  - url: https://truck-import.laravel.cloud/api/v1/client
     description: Test development server
 
 paths:
-  /categories/{brandSlug}:
+  /brands:
     get:
       tags:
-        - Categories
-      summary: Получить информацию о бренде и его моделях
+        - Brands
+      summary: Получить список всех брендов
+      operationId: listBrands
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BrandResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /brands/{brand}:
+    get:
+      tags:
+        - Brands
+      summary: Получить информацию о конкретном бренде
       operationId: showBrand
       parameters:
-        - name: brandSlug
+        - name: brand
           in: path
           required: true
           schema:
             type: string
-          description: Уникальный идентификатор бренда
+          description: Slug уникальный идентификатор бренда
       responses:
         '200':
           description: Успешный запрос
@@ -38,85 +62,68 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /categories/{brandSlug}/models/{modelSlug}:
+  /trucks/{truckModel}:
     get:
       tags:
-        - Categories
-      summary: Получить информацию о модели и ее деталях
-      operationId: showModel
+        - Truck Models
+      summary: Получить информацию о конкретной модели грузовика
+      operationId: showTruckModel
       parameters:
-        - name: brandSlug
+        - name: truckModel
           in: path
           required: true
           schema:
             type: string
-          description: Уникальный идентификатор бренда
-        - name: modelSlug
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Уникальный идентификатор модели
+          description: Slug уникальный идентификатор модели грузовика
       responses:
         '200':
           description: Успешный запрос
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ModelResponse'
+                $ref: '#/components/schemas/TruckModelResponse'
         '404':
-          description: Модель не найдена
+          description: Модель грузовика не найдена
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /categories/{brandSlug}/parts/{partSlug}:
-    get:
-      tags:
-        - Categories
-      summary: Получить информацию о детали и ее продуктах
-      operationId: showPart
-      parameters:
-        - name: brandSlug
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Уникальный идентификатор бренда
-        - name: partSlug
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Уникальный идентификатор детали
-      responses:
-        '200':
-          description: Успешный запрос
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartResponse'
-        '404':
-          description: Деталь не найдена
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /products/{sku}:
+  /products:
     get:
       tags:
         - Products
-      summary: Получить информацию о продукте
-      operationId: show
+      summary: Получить список всех продуктов
+      operationId: listProducts
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductShort' # Updated to ProductShort
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /products/{product}:
+    get:
+      tags:
+        - Products
+      summary: Получить информацию о конкретном продукте по SKU
+      operationId: showProduct
       parameters:
-        - name: sku
+        - name: product
           in: path
           required: true
           schema:
             type: string
-          description: Уникальный идентификатор продукта
+          description: SKU уникальный идентификатор продукта
       responses:
         '200':
           description: Успешный запрос
@@ -125,7 +132,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProductResponse'
         '404':
-          description: Деталь не найдена
+          description: Продукт не найден
           content:
             application/json:
               schema:
@@ -140,85 +147,62 @@ components:
         id:
           type: integer
           example: 1
+        slug:
+          type: string
+          example: "brand-slug"
         title:
           type: string
-          example: "sit"
+          example: "Example Brand"
         description:
           type: string
-          example: "Quia et aut autem in quidem iusto..."
+          nullable: true
+          example: "Description of the example brand."
         content:
           type: string
-          example: "<html>...</html>"
+          nullable: true
+          example: "<html><p>Detailed content about the brand.</p></html>"
         image_url:
           type: string
           format: uri
-          example: "https://via.placeholder.com/640x480.png/003333?text=consequatur"
-        slug:
-          type: string
-          example: "accusamus-dolorum-animi-est-dolores-cum-consequatur-architecto-unde"
-        metatags:
-          $ref: '#/components/schemas/Metatags'
-        children:
+          nullable: true
+          example: "https://via.placeholder.com/640x480.png/003333?text=brand_image"
+        part_types:
           type: array
           items:
-            $ref: '#/components/schemas/CategoryShort'
+            $ref: '#/components/schemas/PartType'
+        metatags:
+          $ref: '#/components/schemas/Metatags'
 
-    ModelResponse:
+    TruckModelResponse:
       type: object
       properties:
         id:
           type: integer
           example: 24
-        title:
-          type: string
-          example: "pariatur"
-        description:
-          type: string
-          example: "Itaque aut expedita illo id..."
-        content:
-          type: string
-          example: "<html>...</html>"
-        image_url:
-          type: string
-          format: uri
-          example: "https://via.placeholder.com/640x480.png/000099?text=eum"
-        slug:
-          type: string
-          example: "inventore-explicabo-rerum-excepturi-est-dolorum"
-        metatags:
-          $ref: '#/components/schemas/Metatags'
-        children:
-          type: array
-          items: {}
-
-    PartResponse:
-      type: object
-      properties:
-        id:
+        brand_id:
           type: integer
-          example: 26
+          example: 1
+        slug:
+          type: string
+          example: "model-slug"
         title:
           type: string
-          example: "sint"
+          example: "Example Truck Model"
         description:
           type: string
-          example: "Est saepe necessitatibus dolor ab..."
+          nullable: true
+          example: "Description of the truck model."
         content:
           type: string
-          example: "<html>...</html>"
+          nullable: true
+          example: "<html><p>Detailed content about the truck model.</p></html>"
         image_url:
           type: string
           format: uri
-          example: "https://via.placeholder.com/640x480.png/00cc99?text=earum"
-        slug:
-          type: string
-          example: "aut"
+          nullable: true
+          example: "https://via.placeholder.com/640x480.png/000099?text=model_image"
         metatags:
           $ref: '#/components/schemas/Metatags'
-        products:
-          type: array
-          items:
-            $ref: '#/components/schemas/ProductShort'
 
     ProductResponse:
       type: object
@@ -229,77 +213,94 @@ components:
         brand_id:
           type: integer
           example: 3
+        part_type_id:
+          type: integer
+          example: 26
         sku:
           type: string
-          example: "235364578565435"
+          example: "PROD-SKU-12345"
         title:
           type: string
-          example: "Тормоза без тормозов"
+          example: "Product Title Example"
         description:
           type: string
           nullable: true
-          example: null
+          example: "Detailed description of the product."
         price:
-          type: string
-          example: "123 копейки"
+          type: number # Changed from string to number (float)
+          format: float
+          example: 123.45
         delivery:
           type: string
           nullable: true
-          example: null
+          example: "3-5 business days"
         quantity:
           type: integer
-          example: 4
+          example: 10
         image_url:
           type: string
           format: uri
-          example: "http://127.0.0.1:8000/storage/images/HSuKebOvGLORjSLZvVUMJQetx0lheeKQk5mgdzs7.png"
-        category_id:
-          type: integer
-          example: 26
+          nullable: true
+          example: "http://127.0.0.1:8000/storage/images/product_image.png"
+        truck_manufacturers:
+          type: array
+          items:
+            $ref: '#/components/schemas/TruckManufacturer'
         metatags:
-          $ref: "#/components/schemas/Metatags" # Ссылка на уже определённый объект
+          $ref: "#/components/schemas/Metatags"
         characteristics:
           type: array
           items:
-            type: object
-            properties:
-              title:
-                type: string
-                example: "1"
-              description:
-                type: string
-                example: "1"
-
+            $ref: '#/components/schemas/Characteristic'
 
     # Вспомогательные схемы
-    CategoryShort:
+    PartType: # Renamed from CategoryShort
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        slug:
+          type: string
+          example: "part-type-slug"
+
+    Characteristic:
       type: object
       properties:
         title:
           type: string
-          example: "pariatur"
-        image_url:
+          example: "Color"
+        description:
           type: string
-          format: uri
-          example: "https://via.placeholder.com/640x480.png/000099?text=eum"
-        slug:
-          type: string
-          example: "inventore-explicabo-rerum-excepturi-est-dolorum"
+          example: "Red"
 
     Metatags:
       type: object
       properties:
         meta_h1:
           type: string
-          example: "Заголовок"
+          nullable: true
+          example: "Product Page H1"
         meta_title:
           type: string
-          example: "Покупайте только у нас!"
+          nullable: true
+          example: "Product Meta Title"
         meta_description:
           type: string
-          example: "Много покупок и 0 скидок!"
+          nullable: true
+          example: "Product meta description for SEO."
 
-    ProductShort:
+    TruckManufacturer:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        slug:
+          type: string
+          example: "manufacturer-slug"
+
+    ProductShort: # Moved from ProductShortResource
       type: object
       properties:
         sku:
@@ -309,15 +310,17 @@ components:
           type: string
           example: "Miss"
         price:
-          type: string
-          example: "Never."
+          type: number
+          format: float
+          example: 10.50
         quantity:
           type: integer
           example: 380
         image_url:
           type: string
           format: uri
-          example: "https://via.placeholder.com/640x480.png/002244?text=dignissimos"
+          nullable: true
+          example: "https://via.placeholder.com/640x480.png/002244?text=product_short_image"
 
     ErrorResponse:
       type: object

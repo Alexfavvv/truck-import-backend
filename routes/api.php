@@ -1,7 +1,8 @@
 <?php
 
 
-use App\Http\Controllers\Api\V1\Client\CategoryController;
+use App\Http\Controllers\Api\V1\Client\TruckModelController;
+use App\Http\Controllers\Api\V1\Client\BrandController;
 use App\Http\Controllers\Api\V1\Client\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -10,8 +11,9 @@ use Illuminate\Support\Facades\Route;
 //})->middleware('auth:sanctum');
 
 Route::prefix('v1/client')->group(function () {
-    Route::get('/categories/{brandSlug}', [CategoryController::class, 'showBrand'])->name('v1.client.categories.brand.show');
-    Route::get('/categories/{brandSlug}/models/{modelSlug}', [CategoryController::class, 'showModel'])->name('v1.client.categories.model.show');
-    Route::get('/categories/{brandSlug}/parts/{partSlug}', [CategoryController::class, 'showPart'])->name('v1.client.categories.part.show');
-    Route::get('/products/{sku}', [ProductController::class, 'show'])->name('v1.client.products.show');
+    Route::get('/brands', [BrandController::class, 'index']);
+    Route::get('/brands/{brand}', [BrandController::class, 'show']);
+    Route::get('/trucks/{truckModel}', [TruckModelController::class, 'show']);
+    Route::get('/products', [ProductController::class, 'index']);
+    Route::get('/products/{product}', [ProductController::class, 'show']);
 });
