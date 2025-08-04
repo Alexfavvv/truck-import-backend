@@ -16,6 +16,7 @@ class TruckModelService
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error($e->getMessage());
             abort(500, $e->getMessage());
         }
 
@@ -27,10 +28,11 @@ class TruckModelService
         try {
             DB::beginTransaction();
             $truckModel->update($data['truckModel']);
-            $truckModel->metatags()->updateOrCreate($data['meta']);
+            $truckModel->metatags()->update($data['meta']);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error($e->getMessage());
             abort(500, $e->getMessage());
         }
 

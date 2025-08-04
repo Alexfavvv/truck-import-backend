@@ -32,13 +32,16 @@ class StoreRequest extends FormRequest
 
     public function passedValidation(): void
     {
+        $validatedData = $this->validated();
+
         $this->merge([
             'brand' => [
-                ...$this->validated()['brand'],
+                ...$validatedData['brand'],
                 'image_path' => $this->hasFile('brand.image') ?
                     Storage::disk('public')->put('/images', $this->file('brand.image')) :
                     null,
             ],
+            'meta' => $validatedData['meta'] ?? [],
 
         ]);
     }

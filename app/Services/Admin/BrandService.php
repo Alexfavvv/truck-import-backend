@@ -16,6 +16,7 @@ class BrandService
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error($e->getMessage());
             abort(500, $e->getMessage());
         }
 
@@ -27,10 +28,11 @@ class BrandService
         try {
             DB::beginTransaction();
             $brand->update($data['brand']);
-            $brand->metatags()->updateOrCreate($data['meta']);
+            $brand->metatags()->update($data['meta']);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error($e->getMessage());
             abort(500, $e->getMessage());
         }
 

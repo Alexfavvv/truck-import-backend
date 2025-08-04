@@ -32,6 +32,8 @@ class UpdateRequest extends FormRequest
 
     protected function passedValidation(): void
     {
+        $validatedData = $this->validated();
+
         // Получаем старый путь к изображению, если он есть
         $oldImagePath = $this->route('brand')->image_path ?? null;
 
@@ -47,9 +49,10 @@ class UpdateRequest extends FormRequest
 
         $this->merge([
             'brand' => [
-                ...$this->validated()['brand'],
+                ...$validatedData['brand'],
                 'image_path' => $newImagePath ?? $oldImagePath,
-            ]
+            ],
+            'meta' => $validatedData['meta'] ?? [],
         ]);
     }
 }
