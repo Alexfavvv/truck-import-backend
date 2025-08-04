@@ -13,7 +13,7 @@ class TruckManufacturer extends Model
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'truck_manufacturer_product', 'truck_manufacturer_id', 'product_id');
+        return $this->belongsToMany(Product::class, 'product_truck_manufacturer', 'truck_manufacturer_id', 'product_id');
     }
 
     public function metatags(): MorphOne
