@@ -27,7 +27,7 @@ class ProductTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что продукт принадлежит бренду.
      */
     public function testProductBelongsToBrand()
@@ -40,7 +40,7 @@ class ProductTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что продукт принадлежит типу запчасти.
      */
     public function testProductBelongsToPartType()
@@ -53,7 +53,7 @@ class ProductTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что продукт может иметь много совместимых производителей грузовиков.
      */
     public function testProductBelongsToManyTruckManufacturers()
@@ -71,7 +71,7 @@ class ProductTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что продукт может иметь много характеристик.
      */
     public function testProductHasManyCharacteristics()
@@ -84,7 +84,7 @@ class ProductTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что продукт может иметь один метатег.
      */
     public function testProductHasOneMetatag()
@@ -100,7 +100,7 @@ class ProductTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что продукт удаляет связанные характеристики при удалении.
      */
     public function testProductDeletesAssociatedCharacteristicsOnDeletion()
@@ -116,7 +116,7 @@ class ProductTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что продукт удаляет связанный метатег при удалении.
      */
     public function testProductDeletesAssociatedMetatagOnDeletion()
@@ -135,7 +135,7 @@ class ProductTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что продукт удаляет изображение при удалении.
      */
     public function testProductDeletesImageOnDeletion()
@@ -155,7 +155,7 @@ class ProductTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что аксессор getImageUrlAttribute возвращает правильный URL.
      */
     public function testGetImageUrlAttributeReturnsCorrectUrl()

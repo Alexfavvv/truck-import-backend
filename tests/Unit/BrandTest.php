@@ -25,7 +25,7 @@ class BrandTest extends TestCase
         Storage::fake('public'); // Используем фейковый диск для тестов
     }
 
-    /** @test */
+    /** #[test] */
     public function testBrandHasManyProducts()
     {
         $brand = Brand::factory()->create();
@@ -35,7 +35,7 @@ class BrandTest extends TestCase
         $this->assertInstanceOf(Product::class, $brand->products->first());
     }
 
-    /** @test */
+    /** #[test] */
     public function testBrandHasManyTruckModels()
     {
         $brand = Brand::factory()->create();
@@ -45,7 +45,7 @@ class BrandTest extends TestCase
         $this->assertInstanceOf(TruckModel::class, $brand->truckModels->first());
     }
 
-    /** @test */
+    /** #[test] */
     public function testBrandBelongsToManyPartTypes()
     {
         $brand = Brand::factory()->create();
@@ -60,7 +60,7 @@ class BrandTest extends TestCase
         $this->assertTrue($brand->partTypes->contains($partType2));
     }
 
-    /** @test */
+    /** #[test] */
     public function testBrandHasOneMetatag()
     {
         $brand = Brand::factory()->create();
@@ -73,7 +73,7 @@ class BrandTest extends TestCase
         $this->assertEquals($metatag->id, $brand->metatags->id);
     }
 
-    /** @test */
+    /** #[test] */
     public function testBrandDeletesAssociatedMetatagOnDeletion()
     {
         $brand = Brand::factory()->create();
@@ -89,7 +89,7 @@ class BrandTest extends TestCase
         $this->assertDatabaseMissing('metatags', ['metatagable_id' => $brand->id, 'metatagable_type' => Brand::class]);
     }
 
-    /** @test */
+    /** #[test] */
     public function testBrandDeletesImageOnDeletion()
     {
         // Создаем фейковый файл изображения
@@ -109,7 +109,7 @@ class BrandTest extends TestCase
         Storage::disk('public')->assertMissing('images/brands/' . $imageName);
     }
 
-    /** @test */
+    /** #[test] */
     public function testGetImageUrlAttributeReturnsCorrectUrl()
     {
         $brand = Brand::factory()->create(['image_path' => 'test/path/image.jpg']);

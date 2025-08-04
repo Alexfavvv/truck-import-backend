@@ -13,7 +13,7 @@ class TruckManufacturerTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что TruckManufacturer может иметь много продуктов.
      */
     public function testTruckManufacturerBelongsToManyProducts()
@@ -31,7 +31,7 @@ class TruckManufacturerTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что TruckManufacturer может иметь один метатег.
      */
     public function testTruckManufacturerHasOneMetatag()

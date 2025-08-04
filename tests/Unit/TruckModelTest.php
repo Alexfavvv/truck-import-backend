@@ -24,7 +24,7 @@ class TruckModelTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что TruckModel принадлежит бренду.
      */
     public function testTruckModelBelongsToBrand()
@@ -37,7 +37,7 @@ class TruckModelTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что TruckModel может иметь один метатег.
      */
     public function testTruckModelHasOneMetatag()
@@ -53,7 +53,7 @@ class TruckModelTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что TruckModel удаляет связанный метатег при удалении.
      */
     public function testTruckModelDeletesAssociatedMetatagOnDeletion()
@@ -72,7 +72,7 @@ class TruckModelTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что TruckModel удаляет изображение при удалении.
      */
     public function testTruckModelDeletesImageOnDeletion()
@@ -92,7 +92,7 @@ class TruckModelTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что аксессор getImageUrlAttribute возвращает правильный URL.
      */
     public function testGetImageUrlAttributeReturnsCorrectUrl()

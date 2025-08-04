@@ -14,7 +14,7 @@ class PartTypeTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что PartType может иметь много брендов.
      */
     public function testPartTypeBelongsToManyBrands()
@@ -32,7 +32,7 @@ class PartTypeTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что PartType может иметь много продуктов.
      */
     public function testPartTypeHasManyProducts()
@@ -45,7 +45,7 @@ class PartTypeTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что PartType может иметь один метатег.
      */
     public function testPartTypeHasOneMetatag()

@@ -16,7 +16,7 @@ class MetatagTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что Metatag может принадлежать Brand.
      */
     public function testMetatagMorphsToBrand()
@@ -33,7 +33,7 @@ class MetatagTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что Metatag может принадлежать Product.
      */
     public function testMetatagMorphsToProduct()
@@ -50,7 +50,7 @@ class MetatagTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что Metatag может принадлежать PartType.
      */
     public function testMetatagMorphsToPartType()
@@ -67,7 +67,7 @@ class MetatagTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что Metatag может принадлежать TruckManufacturer.
      */
     public function testMetatagMorphsToTruckManufacturer()
@@ -84,7 +84,7 @@ class MetatagTest extends TestCase
     }
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что Metatag может принадлежать TruckModel.
      */
     public function testMetatagMorphsToTruckModel()

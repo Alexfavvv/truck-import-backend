@@ -12,7 +12,7 @@ class CharacteristicTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * @test
+     * #[test]
      * Проверяет, что характеристика принадлежит продукту.
      */
     public function testCharacteristicBelongsToProduct()
