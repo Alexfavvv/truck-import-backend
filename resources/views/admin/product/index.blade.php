@@ -2,66 +2,115 @@
 
 @section('content')
     <div class="container mt-4">
-        <a href="{{ route('admin.products.create') }}" class="btn btn-primary mb-3">
-            <i class="fas fa-plus"></i> Добавить товар
-        </a>
-        <a href="{{ route('admin.products.import.form') }}" class="btn btn-success mb-3">
-            <i class="fas fa-plus"></i> Массовый импорт товаров
-        </a>
-
-        <table class="table table-bordered">
-            <thead style="background-color: #007bff; color: #fff;">
-            <tr>
-                <th>Артикул</th>
-                <th>Название</th>
-                <th>Категория</th>
-                <th>Марка</th>
-                <th>Производитель</th>
-                <th>Цена</th>
-                <th>Действия</th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach ($products as $product)
-                <tr>
-                    <td class="font-monospace">{{ $product->sku }}</td>
-                    <td>{{ $product->title }}</td>
-                    <td>{{ $product->category->title ?? '—' }}</td>
-                    <td>{{ $product->category->parent->title ?? '—' }}</td>
-                    <td>{{ $product->brand->title ?? '—' }}</td>
-                    <td>{{ $product->price ?? '—'}}</td>
-                    <td>
-                        <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-warning btn-sm">
-                            <i class="fas fa-edit"></i>
-                        </a>
-
-                        <button class="btn btn-danger btn-sm" data-toggle="modal"
-                                data-target="#deleteModal"
-                                data-action="{{ route('admin.products.destroy', $product->id) }}"
-                                onclick="setDeleteAction(this)">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            @endforeach
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Пагинация -->
-    <div class="card-footer d-flex justify-content-between align-items-center">
-        <div class="text-muted">
-            Показано с {{ $products->firstItem() }} по {{ $products->lastItem() }} из {{ $products->total() }} товаров
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Список товаров</h2>
+            <div>
+                <a href="{{ route('admin.products.create') }}" class="btn btn-success">
+                    <i class="fas fa-plus-circle"></i> Добавить новый товар
+                </a>
+                <a href="#" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Массовый импорт
+                </a>
+            </div>
         </div>
-        <nav aria-label="Page navigation">
-            <ul class="pagination pagination-sm mb-0">
-                {{ $products->onEachSide(1)->links('pagination::bootstrap-4') }}
-            </ul>
-        </nav>
+
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ session('success') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Закрыть">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Закрыть">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
+
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="flex-grow-1 mr-3">
+                    <form action="{{ route('admin.products.index') }}" method="GET" class="form-inline w-50">
+                        <div class="input-group w-100">
+                            <input type="text" name="search" class="form-control" placeholder="Поиск по артикулу, названию..." value="{{ request('search') }}">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                @if(request('search'))
+                                    <a href="{{ route('admin.products.index') }}" class="btn btn-outline-secondary" title="Сбросить поиск">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <small class="text-muted">Всего записей: {{ $products->total() }}</small>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Артикул</th>
+                            <th scope="col">Изображение</th>
+                            <th scope="col">Название</th>
+                            <th scope="col">Бренд</th>
+                            <th scope="col">Тип запчасти</th>
+                            <th scope="col">Цена</th>
+                            <th scope="col">Действия</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @forelse($products as $product)
+                            <tr>
+                                <td>{{ $product->id }}</td>
+                                <td>{{ $product->sku }}</td>
+                                <td>
+                                    @if($product->image_path)
+                                        <img src="{{ Storage::url($product->image_path) }}" alt="{{ $product->title }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
+                                    @else
+                                        <i class="far fa-image text-muted" style="font-size: 2em;"></i>
+                                    @endif
+                                </td>
+                                <td>{{ $product->title }}</td>
+                                <td>{{ $product->brand->title ?? '—' }}</td>
+                                <td>{{ $product->partType->title ?? '—' }}</td>
+                                <td>{{ number_format($product->price, 2, ',', ' ') }} ₽</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ route('admin.products.edit', $product) }}" class="btn btn-sm btn-warning" title="Редактировать">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-danger ml-1" data-toggle="modal" data-target="#deleteModal" data-action="{{ route('admin.products.destroy', $product->id) }}" onclick="setDeleteAction(this)">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="9" class="text-center text-muted">Записей не найдено.</td>
+                            </tr>
+                        @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-center">
+                {{ $products->links() }}
+            </div>
+        </div>
     </div>
 
-
-    <!-- Модальное окно удаления (остаётся без изменений) -->
+    {{-- Модальное окно для подтверждения удаления --}}
     <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <form id="deleteForm" method="POST">
@@ -86,10 +135,12 @@
             </form>
         </div>
     </div>
+@endsection
 
+@push('scripts')
     <script>
         function setDeleteAction(button) {
             document.getElementById('deleteForm').action = button.getAttribute('data-action');
         }
     </script>
-@endsection
+@endpush

@@ -8,7 +8,9 @@ use App\Http\Requests\Admin\Product\UpdateRequest;
 use App\Http\Requests\ImportRequest;
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\PartType;
 use App\Models\Product;
+use App\Models\TruckManufacturer;
 use App\Services\Admin\ProductService;
 use App\Services\ImportService;
 use Illuminate\Contracts\View\View;
@@ -21,7 +23,6 @@ class ProductController extends Controller
     public function index(Request $request): View
     {
         $products = Product::with([
-            'category.parent',
             'brand'
         ])->orderBy('id')->paginate(15);
 
@@ -30,41 +31,43 @@ class ProductController extends Controller
 
     public function create(): View
     {
-        $brands = Brand::all();
-        $categories = Category::whereNotNull('parent_id')
-            ->where('type', 'part')
-            ->with('parent')
-            ->orderBy('title')
-            ->get()
-            ->sortBy([fn($a, $b) => strcmp($a->parent->title, $b->parent->title)]);
-
-        return view('admin.product.create', ['categories' => $categories, 'brands' => $brands]);
+        $brands = Brand::orderBy('title')->get();
+        $partTypes = PartType::orderBy('title')->get();
+        $truckManufacturers = TruckManufacturer::orderBy('title')->get();
+        return view('admin.product.create', compact('brands', 'partTypes', 'truckManufacturers'));
     }
 
     public function store(StoreRequest $request): RedirectResponse
     {
         $data = $request->except('product.image');
         ProductService::store($data);
+        session()->flash('success', 'Товар успешно добавлен!');
         return redirect()->route('admin.products.create');
     }
 
     public function edit(Product $product): View
     {
-        $brands = Brand::all();
-        $categories = Category::whereNotNull('parent_id')
-            ->where('type', 'part')
-            ->with('parent')
-            ->orderBy('title')
-            ->get()
-            ->sortBy([fn($a, $b) => strcmp($a->parent->title, $b->parent->title)]);
+        // Используем eager loading, чтобы избежать N+1 запросов
+        $product->load('truckManufacturers', 'metatags', 'characteristics');
 
-        return view('admin.product.edit', compact('product', 'brands', 'categories'));
+        // Получаем все необходимые данные для выпадающих списков
+        $brands = Brand::orderBy('title')->get();
+        $partTypes = PartType::orderBy('title')->get();
+        $truckManufacturers = TruckManufacturer::orderBy('title')->get();
+
+        return view('admin.product.edit', compact(
+            'product',
+            'brands',
+            'partTypes',
+            'truckManufacturers',
+        ));
     }
 
     public function update(Product $product, UpdateRequest $request): RedirectResponse
     {
         $data = $request->except('product.image');
         ProductService::update($data, $product);
+        session()->flash('success', 'Товар успешно обновлен!');
         return redirect()->route('admin.products.index');
     }
 

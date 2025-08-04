@@ -1,19 +1,9 @@
 @extends('admin.layouts.main')
 
 @section('content')
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Закрыть">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        @php session()->forget('success'); @endphp
-    @endif
-
     <div class="container mt-4">
         <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header bg-success text-white">
                 <h2 class="mb-0"><i class="fas fa-plus-circle"></i> Создание нового товара</h2>
             </div>
 
@@ -30,11 +20,21 @@
                 </div>
             @endif
 
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Закрыть">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            @endif
+
             <div class="card-body">
                 <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     <div class="row">
+                        {{-- Поле "Бренд" --}}
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="product-brand_id">Бренд <span class="text-danger">*</span></label>
@@ -54,20 +54,21 @@
                             </div>
                         </div>
 
+                        {{-- Поле "Тип запчасти" --}}
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="product-category_id">Категория <span class="text-danger">*</span></label>
-                                <select class="form-control @error('product.category_id') is-invalid @enderror"
-                                        id="product-category_id" name="product[category_id]" required>
-                                    <option value="">Выберите категорию</option>
-                                    @foreach($categories as $category)
+                                <label for="product-part_type_id">Тип запчасти <span class="text-danger">*</span></label>
+                                <select class="form-control @error('product.part_type_id') is-invalid @enderror"
+                                        id="product-part_type_id" name="product[part_type_id]" required>
+                                    <option value="">Выберите тип запчасти</option>
+                                    @foreach($partTypes as $partType)
                                         <option
-                                            value="{{ $category->id }}" {{ old('product.category_id') == $category->id ? 'selected' : '' }}>
-                                            {{ $category->parent->title }} - {{ $category->title }}
+                                            value="{{ $partType->id }}" {{ old('product.part_type_id') == $partType->id ? 'selected' : '' }}>
+                                            {{ $partType->title }}
                                         </option>
                                     @endforeach
                                 </select>
-                                @error('product.category_id')
+                                @error('product.part_type_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -75,6 +76,7 @@
                     </div>
 
                     <div class="row">
+                        {{-- Поле "Артикул" --}}
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="product-sku">Артикул <span class="text-danger">*</span></label>
@@ -87,6 +89,7 @@
                             </div>
                         </div>
 
+                        {{-- Поле "Название товара" --}}
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="product-title">Название товара <span class="text-danger">*</span></label>
@@ -100,6 +103,23 @@
                         </div>
                     </div>
 
+                    {{-- Поле "Совместимые производители" --}}
+                    <div class="form-group">
+                        <label for="product-truck_manufacturers">Совместимые производители</label>
+                        <select class="form-control select2 @error('truckManufacturers') is-invalid @enderror"
+                                id="product-truck_manufacturers" name="truckManufacturers[]" multiple="multiple">
+                            @foreach($truckManufacturers as $manufacturer)
+                                <option value="{{ $manufacturer->id }}" {{ in_array($manufacturer->id, old('truckManufacturers', [])) ? 'selected' : '' }}>
+                                    {{ $manufacturer->title }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('truckManufacturers')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    {{-- Поле "Описание" --}}
                     <div class="form-group">
                         <label for="product-description">Описание</label>
                         <textarea class="form-control @error('product.description') is-invalid @enderror"
@@ -111,6 +131,7 @@
                     </div>
 
                     <div class="row">
+                        {{-- Поле "Цена" --}}
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="product-price">Цена <span class="text-danger">*</span></label>
@@ -123,6 +144,7 @@
                             </div>
                         </div>
 
+                        {{-- Поле "Количество" --}}
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="product-quantity">Количество <span class="text-danger">*</span></label>
@@ -136,6 +158,7 @@
                             </div>
                         </div>
 
+                        {{-- Поле "Срок доставки" --}}
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label for="product-delivery">Срок доставки</label>
@@ -149,6 +172,7 @@
                         </div>
                     </div>
 
+                    {{-- Поле "Изображение товара" --}}
                     <div class="form-group">
                         <label for="product-image">Изображение товара</label>
                         <div class="custom-file">
@@ -236,8 +260,26 @@
             </div>
         </div>
     </div>
+@endsection
+
+@push('scripts')
     <script>
-        // Добавляет и Удаляет поля Характеристик
+        $(document).ready(function() {
+            // Инициализация Select2 для поля "Совместимые производители"
+            $('#product-truck_manufacturers').select2({
+                placeholder: "Выберите производителей",
+            });
+        });
+
+
+        // Скрипт для отображения имени файла в поле загрузки
+        document.getElementById('product-image').addEventListener('change', function(event) {
+            var fileName = event.target.files[0].name;
+            var label = event.target.nextElementSibling;
+            label.innerText = fileName;
+        });
+
+        // Скрипт для добавления/удаления полей характеристик
         document.addEventListener('DOMContentLoaded', function () {
             let repeater = document.getElementById('characteristics-repeater');
             let addBtn = document.getElementById('add-characteristic');
@@ -246,7 +288,7 @@
                 document.querySelectorAll('.characteristic-item').forEach((item, index) => {
                     item.querySelectorAll('input').forEach(input => {
                         let name = input.getAttribute('name');
-                        name = name.replace(/\d+/, index); // Обновляем индекс в имени
+                        name = name.replace(/characteristics\[\d+\]/, `characteristics[${index}]`);
                         input.setAttribute('name', name);
                     });
                 });
@@ -259,8 +301,8 @@
                 newField.dataset.index = index;
 
                 newField.innerHTML = `
-                    <input type="text" name="characteristics[${index}][title]" placeholder="Название" class="form-control">
-                    <input type="text" name="characteristics[${index}][description]" placeholder="Описание" class="form-control ml-2">
+                    <input type="text" name="characteristics[${index}][title]" placeholder="Название" class="form-control @error('characteristics.${index}.title') is-invalid @enderror">
+                    <input type="text" name="characteristics[${index}][description]" placeholder="Описание" class="form-control ml-2 @error('characteristics.${index}.description') is-invalid @enderror">
                     <button type="button" class="btn btn-danger ml-2 remove-characteristic">×</button>
                 `;
                 repeater.appendChild(newField);
@@ -277,7 +319,4 @@
             repeater.addEventListener('click', removeCharacteristic);
         });
     </script>
-
-@endsection
-
-
+@endpush

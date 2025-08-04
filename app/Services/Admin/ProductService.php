@@ -17,17 +17,12 @@ class ProductService
             DB::beginTransaction();
             $product = Product::create($data['product']);
             $product->metatags()->create($data['meta']);
-
-            if (isset($data['characteristics'])) {
-                foreach ($data['characteristics'] as $characteristic) {
-                    $product->characteristics()->create($characteristic);
-                }
-            }
-
-            session()->put('success', 'Товар успешно добавлен!');
+            $product->truckManufacturers()->sync($data['truckManufacturers']);
+            $product->characteristics()->createMany($data['characteristics']);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error($e->getMessage());
             abort(500, $e->getMessage());
         }
 
@@ -39,17 +34,14 @@ class ProductService
         try {
             DB::beginTransaction();
             $product->update($data['product']);
-            $product->metatags()->updateOrCreate($data['meta']);
-
-            if (isset($data['characteristics'])) {
-                foreach ($data['characteristics'] as $characteristic) {
-                    $product->characteristics()->updateOrCreate($characteristic);
-                }
-            }
-
+            $product->metatags()->update($data['meta']);
+            $product->truckManufacturers()->sync($data['truckManufacturers']);
+            $product->characteristics()->delete();
+            $product->characteristics()->createMany($data['characteristics']);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error($e->getMessage());
             abort(500, $e->getMessage());
         }
 
