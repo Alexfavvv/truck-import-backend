@@ -4,7 +4,7 @@
     {{-- Основной контейнер страницы --}}
     <div class="container mt-4">
         <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header bg-success text-white">
                 <h2 class="mb-0"><i class="fas fa-upload"></i> Импорт товаров из Excel</h2>
             </div>
 

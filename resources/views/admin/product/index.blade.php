@@ -27,7 +27,7 @@
                 <a href="{{ route('admin.products.create') }}" class="btn btn-success">
                     <i class="fas fa-plus-circle"></i> Добавить новый товар
                 </a>
-                <a href="#" class="btn btn-primary">
+                <a href="{{ route('admin.products.import') }}" class="btn btn-primary">
                     <i class="fas fa-plus"></i> Массовый импорт
                 </a>
             </div>

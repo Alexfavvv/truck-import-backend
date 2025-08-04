@@ -4,9 +4,9 @@ namespace App\Imports;
 
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\PartType;
 use App\Models\Product;
-use App\Models\User;
-use Illuminate\Support\Facades\Cache;
+use App\Models\TruckManufacturer;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\OnEachRow;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
@@ -32,43 +32,51 @@ class ProductsImport implements OnEachRow, WithHeadingRow, WithValidation, Skips
         $product->description = $row['opisanie'] ?? null;
         $product->delivery = $row['vremia_dostavki'] ?? null;
 
-        // Присвоение brendа
+        // Присвоение бренда
         $brandTitle = $row['brend'];
-        $brand = Brand::query()->firstOrCreate(['title' => $brandTitle], ['title' => $brandTitle]);
+        $brand = Brand::query()->firstOrCreate(
+            ['title' => $brandTitle],
+            ['title' => $brandTitle, 'slug' => Str::slug($brandTitle)]
+        );
         $product->brand_id = $brand->id;
 
-        // Присвоение категории
-        $categories = explode('>', $row['kategoriia']);
-        $categories = array_map('trim', $categories);
-        if (count($categories) !== 2) {
-            $this->failures[] = new Failure(
-                $rowIndex,
-                'kategoriia',
-                ['Неверный формат категории. Ожидается "Главная > Подкатегория".'],
-                $row
-            );
-
-            return;
-        }
-
-        $manufacturer = Category::query()->firstOrCreate(
-            ['title' => $categories[0], 'parent_id' => null],
-            ['title' => $categories[0], 'slug' => Str::slug($categories[0]), 'type' => 'manufacturer']
+        // Присвоение типа детали
+        $partTypeTitle = $row['tip_detali'];
+        $partType = PartType::query()->firstOrCreate(
+            ['title' => $partTypeTitle],
+            ['title' => $partTypeTitle, 'slug' => Str::slug($partTypeTitle)]
         );
-        $part = Category::query()->firstOrCreate(
-            ['title' => $categories[1], 'parent_id' => $manufacturer->id],
-            ['title' => $categories[1], 'slug' => Str::slug($categories[1]), 'type' => 'part']
-        );
-        $product->category_id = $part->id;
+        $product->part_type_id = $partType->id;
 
+        // Сохраняем продукт, чтобы у него был ID для связей
         $product->save();
 
+        // Присвоение совместимых брендов
+        $truckManufacturers = $row['sovmestimost'] ?? null;
+        $truckManufacturerIds = [];
+
+        if (!empty($truckManufacturers)) {
+            $manufacturerTitles = explode(';', $truckManufacturers);
+            $manufacturerTitles = array_map('trim', $manufacturerTitles);
+            $manufacturerTitles = array_filter($manufacturerTitles); // Удаляем пустые строки после trim
+
+            foreach ($manufacturerTitles as $manufacturerTitle) {
+                $manufacturer = TruckManufacturer::query()->firstOrCreate(
+                    ['title' => $manufacturerTitle],
+                    ['title' => $manufacturerTitle, 'slug' => Str::slug($manufacturerTitle)]
+                );
+                $truckManufacturerIds[] = $manufacturer->id;
+            }
+        }
+
+        // Синхронизируем совместимых производителей.
+        $product->truckManufacturers()->sync($truckManufacturerIds);
 
         // Присвоение характеристик
         $characteristics = $row['xarakteristiki_tovara'] ?? null;
+        $product->characteristics()->delete();
 
         if ($characteristics) {
-            $product->characteristics()->delete();
             $characteristics = explode(';', $characteristics);
             foreach ($characteristics as $characteristic) {
                 $characteristic = trim($characteristic);
@@ -94,7 +102,8 @@ class ProductsImport implements OnEachRow, WithHeadingRow, WithValidation, Skips
             'cena' => 'required|numeric|min:0',
             'kolicestvo' => 'required|integer|min:0',
             'brend' => 'required|string',
-            'kategoriia' => 'required|string',
+            'tip_detali' => 'required|string',
+            'sovmestimost' => 'nullable|string',
             'opisanie' => 'nullable|string',
             'vremia_dostavki' => 'nullable|string',
             'xarakteristiki_tovara' => 'nullable|string',
