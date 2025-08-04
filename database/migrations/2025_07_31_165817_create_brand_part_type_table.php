@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('brand_part_type', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('brand_id')->constrained('brands');
-            $table->foreignId('part_type_id')->constrained('part_types');
+            $table->foreignId('brand_id')->constrained('brands')->onDelete('cascade');
+            $table->foreignId('part_type_id')->constrained('part_types')->onDelete('cascade');
             $table->timestamps();
         });
     }

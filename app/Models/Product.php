@@ -7,13 +7,27 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
 {
     use HasFactory;
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($product) {
+            // Удаляем связанные метатеги (полиморфная связь)
+            $product->metatags()->delete();
+
+            // Удаляем изображение продукта с диска
+            if ($product->image_path) {
+                Storage::disk('public')->delete($product->image_path);
+            }
+        });
+    }
 
     public function brand(): BelongsTo
     {
