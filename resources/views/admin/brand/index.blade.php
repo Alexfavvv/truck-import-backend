@@ -2,13 +2,6 @@
 
 @section('content')
     <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Список брендов</h2>
-            <a href="{{ route('admin.brands.create') }}" class="btn btn-success">
-                <i class="fas fa-plus-circle"></i> Добавить новый бренд
-            </a>
-        </div>
-
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
@@ -26,6 +19,13 @@
                 </button>
             </div>
         @endif
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Список брендов</h2>
+            <a href="{{ route('admin.brands.create') }}" class="btn btn-success">
+                <i class="fas fa-plus-circle"></i> Добавить новый бренд
+            </a>
+        </div>
 
         <div class="card shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -68,7 +68,7 @@
                                 <td>{{ $brand->id }}</td>
                                 <td>
                                     @if($brand->image_path)
-                                        <img src="{{ Storage::url($brand->image_path) }}" alt="{{ $brand->title }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
+                                        <img src="{{ $brand->image_url }}" alt="{{ $brand->title }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
                                     @else
                                         <i class="far fa-image text-muted" style="font-size: 2em;"></i>
                                     @endif

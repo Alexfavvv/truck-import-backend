@@ -2,17 +2,6 @@
 
 @section('content')
     <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Список товаров</h2>
-            <div>
-                <a href="{{ route('admin.products.create') }}" class="btn btn-success">
-                    <i class="fas fa-plus-circle"></i> Добавить новый товар
-                </a>
-                <a href="#" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Массовый импорт
-                </a>
-            </div>
-        </div>
 
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -31,6 +20,18 @@
                 </button>
             </div>
         @endif
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Список товаров</h2>
+            <div>
+                <a href="{{ route('admin.products.create') }}" class="btn btn-success">
+                    <i class="fas fa-plus-circle"></i> Добавить новый товар
+                </a>
+                <a href="#" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Массовый импорт
+                </a>
+            </div>
+        </div>
 
         <div class="card shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -75,7 +76,7 @@
                                 <td>{{ $product->sku }}</td>
                                 <td>
                                     @if($product->image_path)
-                                        <img src="{{ Storage::url($product->image_path) }}" alt="{{ $product->title }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
+                                        <img src="{{ $product->image_url }}" alt="{{ $product->title }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
                                     @else
                                         <i class="far fa-image text-muted" style="font-size: 2em;"></i>
                                     @endif

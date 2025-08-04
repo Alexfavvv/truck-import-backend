@@ -2,34 +2,36 @@
 
 @section('content')
     <div class="container mt-4">
+
+        {{-- Блок для вывода общих ошибок формы --}}
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
+
+        {{-- Блок успешного сохранения --}}
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show mx-3 mt-3">
+                {{ session('success') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
+
         <div class="card shadow-sm">
             <div class="card-header bg-success text-white">
                 <h2 class="mb-0"><i class="fas fa-plus-circle"></i> Создание нового бренда</h2>
             </div>
             <div class="card-body">
-                {{-- Блок для вывода общих ошибок формы --}}
-                @if ($errors->any())
-                    <div class="alert alert-danger alert-dismissible fade show">
-                        <ul class="mb-0">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                @endif
-
-                <!-- Блок успешного сохранения -->
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show mx-3 mt-3">
-                        {{ session('success') }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                @endif
 
                 <form action="{{ route('admin.brands.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf

@@ -2,23 +2,24 @@
 
 @section('content')
     <div class="container mt-4">
+
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show m-3">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
+
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white">
                 <h2 class="mb-0"><i class="fas fa-edit"></i> Редактирование модели "{{ $truckModel->title }}"</h2>
             </div>
-
-            @if ($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show m-3">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            @endif
 
             <div class="card-body">
                 <form action="{{ route('admin.truck-models.update', $truckModel) }}" method="POST" enctype="multipart/form-data">
@@ -29,7 +30,7 @@
                         <div class="col-md-4">
                             <div class="text-center mb-3">
                                 @if($truckModel->image_path)
-                                    <img src="{{ Storage::url($truckModel->image_path) }}"
+                                    <img src="{{ $truckModel->image_url }}"
                                          class="img-thumbnail mb-3"
                                          alt="Изображение модели"
                                          style="max-height: 200px; cursor: pointer;"
@@ -180,7 +181,7 @@
                         </button>
                     </div>
                     <div class="modal-body text-center">
-                        <img src="{{ Storage::url($truckModel->image_path) }}" class="img-fluid" alt="Изображение модели">
+                        <img src="{{ $truckModel->image_url }}" class="img-fluid" alt="Изображение модели">
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>

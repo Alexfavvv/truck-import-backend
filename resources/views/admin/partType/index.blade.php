@@ -2,12 +2,6 @@
 
 @section('content')
     <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Список типов запчастей</h2>
-            <a href="{{ route('admin.part-types.create') }}" class="btn btn-success">
-                <i class="fas fa-plus-circle"></i> Добавить новый тип
-            </a>
-        </div>
 
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -26,6 +20,13 @@
                 </button>
             </div>
         @endif
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Список типов запчастей</h2>
+            <a href="{{ route('admin.part-types.create') }}" class="btn btn-success">
+                <i class="fas fa-plus-circle"></i> Добавить новый тип
+            </a>
+        </div>
 
         <div class="card shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">

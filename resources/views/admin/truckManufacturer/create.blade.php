@@ -2,34 +2,35 @@
 
 @section('content')
     <div class="container mt-4">
+
+        <!-- Общий блок ошибок -->
+        @if($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show mx-3 mt-3">
+                <ul class="mb-0">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
+
+        <!-- Блок успешного сохранения -->
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show mx-3 mt-3">
+                {{ session('success') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
+
         <div class="card shadow-sm">
             <div class="card-header bg-success text-white">
                 <h2 class="mb-0"><i class="fas fa-plus-circle"></i> Создание нового производителя грузовиков</h2>
             </div>
-
-            <!-- Общий блок ошибок -->
-            @if($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show mx-3 mt-3">
-                    <ul class="mb-0">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            @endif
-
-            <!-- Блок успешного сохранения -->
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show mx-3 mt-3">
-                    {{ session('success') }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            @endif
 
             <div class="card-body">
                 <form action="{{ route('admin.truck-manufacturers.store') }}" method="POST">

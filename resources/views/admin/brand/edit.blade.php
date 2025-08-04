@@ -2,23 +2,25 @@
 
 @section('content')
     <div class="container mt-4">
+
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show m-3">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        @endif
+
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white">
                 <h2 class="mb-0"><i class="fas fa-edit"></i> Редактирование бренда "{{ $brand->title }}"</h2>
             </div>
 
-            @if ($errors->any())
-                <div class="alert alert-danger alert-dismissible fade show m-3">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            @endif
 
             <div class="card-body">
                 <form action="{{ route('admin.brands.update', $brand->id) }}" method="POST" enctype="multipart/form-data">
@@ -29,7 +31,7 @@
                         <div class="col-md-4">
                             <div class="text-center mb-3">
                                 @if($brand->image_path)
-                                    <img src="{{ Storage::url($brand->image_path) }}"
+                                    <img src="{{ $brand->image_url }}"
                                          class="img-thumbnail mb-3"
                                          alt="Изображение бренда"
                                          style="max-height: 200px; cursor: pointer;"
@@ -164,7 +166,7 @@
                         </button>
                     </div>
                     <div class="modal-body text-center">
-                        <img src="{{ Storage::url($brand->image_path) }}" class="img-fluid" alt="Изображение бренда">
+                        <img src="{{ $brand->image_url }}" class="img-fluid" alt="Изображение бренда">
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
