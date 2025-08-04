@@ -8,7 +8,6 @@ use App\Http\Requests\Admin\Brand\UpdateRequest;
 use App\Models\Brand;
 use App\Models\PartType;
 use App\Services\Admin\BrandService;
-use App\Services\Admin\CategoryService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,8 +20,8 @@ class BrandController extends Controller
 
         if ($request->has('search') && $request->search != null) {
             $search = $request->search;
-            $query->where('title', 'like', "%{$search}%")
-                ->orWhere('slug', 'like', "%{$search}%");
+            $query->where('title', 'like', "%$search%")
+                ->orWhere('slug', 'like', "%$search%");
         }
 
         $brands = $query->paginate(10);
