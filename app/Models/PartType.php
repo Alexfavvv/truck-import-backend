@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class PartType extends Model
 {
+    use HasFactory;
+
     public function brands(): BelongsToMany
     {
         return $this->belongsToMany(Brand::class, 'brand_part_type', 'part_type_id', 'brand_id');

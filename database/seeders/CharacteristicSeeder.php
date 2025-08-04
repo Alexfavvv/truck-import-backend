@@ -6,8 +6,6 @@ use App\Models\Characteristic;
 use App\Models\Product;
 use Illuminate\Database\Seeder;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-
 class CharacteristicSeeder extends Seeder
 {
     /**

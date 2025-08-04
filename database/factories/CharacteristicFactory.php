@@ -2,25 +2,23 @@
 
 namespace Database\Factories;
 
+use App\Models\Characteristic;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Characteristic>
+ * @extends Factory<Characteristic>
  */
 class CharacteristicFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = Characteristic::class;
+
     public function definition(): array
     {
         return [
-            'title' => fake()->title,
-            'description' => fake()->text,
-            'product_id' => Product::factory()->create(),
+            'product_id' => Product::factory(), // Автоматически создаст продукт, если не указан
+            'title' => $this->faker->word(),
+            'description' => $this->faker->optional(0.8)->sentence(),
         ];
     }
 }

@@ -4,24 +4,21 @@ namespace Database\Factories;
 
 use App\Models\TruckManufacturer;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends Factory<TruckManufacturer>
  */
 class TruckManufacturerFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     protected $model = TruckManufacturer::class;
+
     public function definition(): array
     {
+        $title = $this->faker->unique()->company() . ' Trucks';
         return [
-            'title' => fake()->unique()->word(),
-            'slug' => fake()->slug(),
+            'title' => $title,
+            'slug' => Str::slug($title),
         ];
     }
-
 }
