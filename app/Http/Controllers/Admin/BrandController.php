@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Brand\StoreRequest;
 use App\Http\Requests\Admin\Brand\UpdateRequest;
 use App\Models\Brand;
+use App\Models\PartType;
 use App\Services\Admin\BrandService;
 use App\Services\Admin\CategoryService;
 use Illuminate\Contracts\View\View;
@@ -31,7 +32,8 @@ class BrandController extends Controller
 
     public function create(): View
     {
-        return view('admin.brand.create');
+        $partTypes = PartType::orderBy('title')->get();
+        return view('admin.brand.create', compact('partTypes'));
     }
 
     public function store(StoreRequest $request): RedirectResponse
@@ -44,7 +46,9 @@ class BrandController extends Controller
 
     public function edit(Brand $brand): View
     {
-        return view('admin.brand.edit', ['brand' => $brand]);
+        $brand->load('partTypes');
+        $partTypes = PartType::orderBy('title')->get();
+        return view('admin.brand.edit', compact('brand', 'partTypes'));
     }
 
     public function update(Brand $brand, UpdateRequest $request): RedirectResponse

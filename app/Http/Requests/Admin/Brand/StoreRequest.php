@@ -27,6 +27,9 @@ class StoreRequest extends FormRequest
             'meta.meta_h1' => 'nullable|string|max:255',
             'meta.meta_title' => 'nullable|string|max:255',
             'meta.meta_description' => 'nullable|string|max:500',
+
+            'partTypes' => 'nullable|array',
+            'partTypes.*' => 'integer|exists:part_types,id',
         ];
     }
 
@@ -42,6 +45,7 @@ class StoreRequest extends FormRequest
                     null,
             ],
             'meta' => $validatedData['meta'] ?? [],
+            'partTypes' => $validatedData['partTypes'] ?? [],
 
         ]);
     }

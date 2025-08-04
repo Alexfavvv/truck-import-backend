@@ -13,6 +13,7 @@ class BrandService
             DB::beginTransaction();
             $brand = Brand::create($data['brand']);
             $brand->metatags()->create($data['meta']);
+            $brand->partTypes()->sync($data['partTypes']);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -29,6 +30,7 @@ class BrandService
             DB::beginTransaction();
             $brand->update($data['brand']);
             $brand->metatags()->update($data['meta']);
+            $brand->partTypes()->sync($data['partTypes']);
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();

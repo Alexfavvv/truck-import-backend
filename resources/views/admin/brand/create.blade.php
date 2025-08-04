@@ -58,6 +58,22 @@
                         @enderror
                     </div>
 
+                    {{-- Поле "Какие типы деталей производит?" --}}
+                    <div class="form-group">
+                        <label for="brand-part_types">Производимые типы деталей</label>
+                        <select class="form-control select2 @error('partTypes') is-invalid @enderror"
+                                id="brand-part_types" name="partTypes[]" multiple="multiple">
+                            @foreach($partTypes as $partType)
+                                <option value="{{ $partType->id }}" {{ in_array($partType->id, old('partTypes', [])) ? 'selected' : '' }}>
+                                    {{ $partType->title }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('partTypes')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     {{-- Поле "Изображение" --}}
                     <div class="form-group">
                         <label for="brand-image">Изображение</label>
@@ -153,6 +169,13 @@
 @push('scripts')
     {{-- Скрипт для отображения имени файла в поле загрузки --}}
     <script>
+        $(document).ready(function() {
+            // Инициализация Select2
+            $('#brand-part_types').select2({
+                placeholder: "Выберите производимые типы деталей",
+            });
+        });
+
         document.getElementById('brand-image').addEventListener('change', function(event) {
             var fileName = event.target.files[0].name;
             var label = event.target.nextElementSibling;
