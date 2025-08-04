@@ -14,6 +14,11 @@ class Product extends Model
 {
     use HasFactory;
 
+    public function getRouteKeyName()
+    {
+        return 'sku';
+    }
+
     protected static function boot()
     {
         parent::boot();
