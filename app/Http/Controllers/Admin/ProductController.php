@@ -7,7 +7,6 @@ use App\Http\Requests\Admin\Product\StoreRequest;
 use App\Http\Requests\Admin\Product\UpdateRequest;
 use App\Http\Requests\ImportRequest;
 use App\Models\Brand;
-use App\Models\Category;
 use App\Models\PartType;
 use App\Models\Product;
 use App\Models\TruckManufacturer;

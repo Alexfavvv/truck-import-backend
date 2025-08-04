@@ -3,7 +3,6 @@
 namespace App\Imports;
 
 use App\Models\Brand;
-use App\Models\Category;
 use App\Models\PartType;
 use App\Models\Product;
 use App\Models\TruckManufacturer;
