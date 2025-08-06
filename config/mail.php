@@ -115,4 +115,9 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    'to' => [
+        'address' => env('FEEDBACK_MAIL_RECEIVER', 'default@example.com'),
+        'name' => 'Support',
+    ],
+
 ];
