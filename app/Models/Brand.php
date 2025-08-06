@@ -13,6 +13,8 @@ class Brand extends Model
 {
     use HasFactory;
 
+    protected $casts = ['content' => 'array'];
+
     public function getRouteKeyName()
     {
         return 'slug';
