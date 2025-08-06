@@ -20,7 +20,7 @@ class TruckModelResource extends JsonResource
             'slug' => $this->slug,
             'title' => $this->title,
             'description' => $this->description,
-            'content' => $this->content,
+            ...$this->content,
             'image_url' => $this->image_url,
             'metatags' => MetatagResource::make($this->metatags),
         ];

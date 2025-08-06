@@ -21,7 +21,7 @@ class BrandResource extends JsonResource
             'slug' => $this->slug,
             'title' => $this->title,
             'description' => $this->description,
-            'content' => $this->content,
+            ...$this->content,
             'image_url' => $this->image_url,
             'part_types' => PartTypeResource::collection($this->whenLoaded('partTypes')),
             'truck_models' => TruckModelShortResource::collection($this->whenLoaded('truckModels')),
