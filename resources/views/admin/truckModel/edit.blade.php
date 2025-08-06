@@ -103,21 +103,101 @@
                         @enderror
                     </div>
 
+                    {{-- Поле "Контент" --}}
+                    <hr>
+                    <h4 class="mb-3">Содержимое страницы</h4>
+
+                    {{-- Первый блок контента (3 штуки) --}}
+                    <h5 class="mb-3">Первый блок контента (3 штуки)</h5>
+                    @for ($i = 0; $i < 3; $i++)
+                        @php
+                            $firstPlaceData = old("truckModel.content.first__place.$i.0", $truckModel->content['first__place'][$i][0] ?? '');
+                            $firstPlaceHtml = old("truckModel.content.first__place.$i.1", $truckModel->content['first__place'][$i][1] ?? '');
+                        @endphp
+                        <div class="form-group border p-3 rounded mb-3">
+                            <label>Блок {{ $i + 1 }}</label>
+                            <input type="text" class="form-control mb-2"
+                                   name="truckModel[content][first__place][{{ $i }}][0]"
+                                   value="{{ $firstPlaceData }}"
+                                   placeholder="Заголовок">
+                            <textarea class="form-control summernote"
+                                      name="truckModel[content][first__place][{{ $i }}][1]"
+                                      placeholder="Содержимое">{{ $firstPlaceHtml }}</textarea>
+                        </div>
+                    @endfor
+
+                    {{-- Второй блок контента (3 штуки) --}}
+                    <h5 class="mb-3 mt-4">Второй блок контента (3 штуки)</h5>
+                    @for ($i = 0; $i < 3; $i++)
+                        @php
+                            $secondPlaceData = old("truckModel.content.second__place.$i.0", $truckModel->content['second__place'][$i][0] ?? '');
+                            $secondPlaceHtml = old("truckModel.content.second__place.$i.1", $truckModel->content['second__place'][$i][1] ?? '');
+                        @endphp
+                        <div class="form-group border p-3 rounded mb-3">
+                            <label>Блок {{ $i + 1 }}</label>
+                            <input type="text" class="form-control mb-2"
+                                   name="truckModel[content][second__place][{{ $i }}][0]"
+                                   value="{{ $secondPlaceData }}"
+                                   placeholder="Заголовок">
+                            <textarea class="form-control summernote"
+                                      name="truckModel[content][second__place][{{ $i }}][1]"
+                                      placeholder="Содержимое">{{ $secondPlaceHtml }}</textarea>
+                        </div>
+                    @endfor
+
+                    {{-- FAQ --}}
+                    <h5 class="mb-3 mt-4">FAQ</h5>
                     <div class="form-group">
-                        <label for="truck-model-content">Контент</label>
-                        <textarea class="form-control @error('truckModel.content') is-invalid @enderror"
-                                  id="truck-model-content" name="truckModel[content]"
-                                  rows="6">{{ old('truckModel.content', $truckModel->content) }}</textarea>
-                        @error('truckModel.content')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <label for="faq__title">Заголовок FAQ</label>
+                        <input type="text" class="form-control" id="faq__title"
+                               name="truckModel[content][faq__title]"
+                               value="{{ old('truckModel.content.faq__title', $truckModel->content['faq__title'] ?? '') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Вопросы и ответы (FAQ)</label>
+                        <div id="faq-container">
+                            @php
+                                // Проверяем наличие old() данных, иначе используем данные из модели
+                                $faqData = old('truckModel.content.faq__data', $truckModel->content['faq__data'] ?? []);
+                                $faqCount = count($faqData);
+                            @endphp
+
+                            @if ($faqCount > 0)
+                                @foreach($faqData as $index => $faqItem)
+                                    <div class="faq-item mb-3 p-3 border rounded">
+                                        <div class="input-group mb-2">
+                                            <input type="text" class="form-control"
+                                                   name="truckModel[content][faq__data][{{ $index }}][0]"
+                                                   value="{{ $faqItem[0] ?? '' }}"
+                                                   placeholder="Вопрос">
+                                            <div class="input-group-append">
+                                                <button class="btn btn-danger remove-faq-field" type="button">Удалить</button>
+                                            </div>
+                                        </div>
+                                        <textarea class="form-control summernote"
+                                                  name="truckModel[content][faq__data][{{ $index }}][1]"
+                                                  placeholder="Ответ">{{ $faqItem[1] ?? '' }}</textarea>
+                                    </div>
+                                @endforeach
+                            @else
+                                {{-- Если данных нет, показываем одно пустое поле --}}
+                                <div class="faq-item mb-3 p-3 border rounded">
+                                    <div class="input-group mb-2">
+                                        <input type="text" class="form-control" name="truckModel[content][faq__data][0][0]" placeholder="Вопрос">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-danger remove-faq-field" type="button">Удалить</button>
+                                        </div>
+                                    </div>
+                                    <textarea class="form-control summernote" name="truckModel[content][faq__data][0][1]" placeholder="Ответ"></textarea>
+                                </div>
+                            @endif
+                        </div>
+                        <button class="btn btn-success mt-2 add-faq-field" type="button" data-target="#faq-container">Добавить вопрос</button>
                     </div>
 
                     <hr>
                     <h5 class="mb-3"><i class="fas fa-search"></i> SEO Настройки</h5>
-                    @php
-                        $meta = json_decode($truckModel->content, true)['meta'] ?? [];
-                    @endphp
 
                     <div class="row">
                         <div class="col-md-4">
@@ -193,12 +273,87 @@
 @endsection
 
 @push('scripts')
-    {{-- Скрипт для отображения имени файла в поле загрузки --}}
+    {{-- Скрипты для Summernote --}}
     <script>
-        document.getElementById('truck-model-image').addEventListener('change', function(event) {
-            var fileName = event.target.files[0].name;
-            var label = event.target.nextElementSibling;
-            label.innerText = fileName;
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализация Summernote
+            function initializeSummernote(selector) {
+                $(selector).summernote({
+                    tabsize: 2,
+                    height: 150,
+                    toolbar: [
+                        ['style', ['bold', 'italic', 'underline', 'clear']],
+                        ['font', ['strikethrough', 'superscript', 'subscript']],
+                        ['fontsize', ['fontsize']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['height', ['height']],
+                        ['codeview']
+                    ]
+                });
+            }
+
+            // Инициализируем Summernote для ВСЕХ существующих полей с классом '.summernote'
+            initializeSummernote('.summernote');
+
+            // -------------------------------------------------------------
+            // Функции для FAQ
+            // -------------------------------------------------------------
+            let faqContainer = document.getElementById('faq-container');
+            let addFaqBtn = document.querySelector('.add-faq-field');
+
+            function updateFaqIndexes() {
+                document.querySelectorAll('#faq-container .faq-item').forEach((item, index) => {
+                    item.querySelectorAll('input, textarea').forEach(field => {
+                        let name = field.getAttribute('name');
+                        if (name) {
+                            name = name.replace(/truckModel\[content\]\[faq__data\]\[\d+\]/, `truckModel[content][faq__data][${index}]`);
+                            field.setAttribute('name', name);
+                        }
+                    });
+                });
+            }
+
+            function addFaqField() {
+                const index = faqContainer.children.length;
+                const newFaqItem = document.createElement('div');
+                newFaqItem.classList.add('faq-item', 'mb-3', 'p-3', 'border', 'rounded');
+                newFaqItem.innerHTML = `
+            <div class="input-group mb-2">
+                <input type="text" class="form-control" name="truckModel[content][faq__data][${index}][0]" placeholder="Вопрос">
+                <div class="input-group-append">
+                    <button class="btn btn-danger remove-faq-field" type="button">Удалить</button>
+                </div>
+            </div>
+            <textarea class="form-control summernote" name="truckModel[content][faq__data][${index}][1]" placeholder="Ответ"></textarea>`;
+                faqContainer.appendChild(newFaqItem);
+                // Инициализируем Summernote только для нового поля
+                initializeSummernote($(newFaqItem).find('.summernote'));
+            }
+
+            function removeFaqField(event) {
+                if (event.target.classList.contains('remove-faq-field')) {
+                    // Предотвращаем удаление, если это единственный элемент
+                    if (faqContainer.children.length > 1) {
+                        const itemToRemove = event.target.closest('.faq-item');
+                        $(itemToRemove).find('.summernote').summernote('destroy');
+                        itemToRemove.remove();
+                        updateFaqIndexes();
+                    } else {
+                        alert('Нельзя удалить последний вопрос!');
+                    }
+                }
+            }
+
+            addFaqBtn.addEventListener('click', addFaqField);
+            faqContainer.addEventListener('click', removeFaqField);
+
+            // Скрипт для отображения имени файла в поле загрузки
+            document.getElementById('truck-model-image').addEventListener('change', function(event) {
+                var fileName = event.target.files[0].name;
+                var label = event.target.nextElementSibling;
+                label.innerText = fileName;
+            });
         });
     </script>
 @endpush

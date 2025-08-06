@@ -100,6 +100,8 @@
                     </div>
 
                     {{-- Поле "Контент" --}}
+                    <hr>
+                    <h4 class="mb-3">Содержимое страницы</h4>
                     <div class="form-group">
                         <label for="subcat__title">Заголовок подкатегории</label>
                         <input type="text" class="form-control" id="subcat__title" name="brand[content][subcat__title]" value="{{ old('brand.content.subcat__title') }}">

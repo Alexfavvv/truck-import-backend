@@ -103,7 +103,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProductShort' # Updated to ProductShort
+                  $ref: '#/components/schemas/ProductShort'
         '500':
           description: Внутренняя ошибка сервера
           content:
@@ -144,9 +144,6 @@ components:
     BrandResponse:
       type: object
       properties:
-        id:
-          type: integer
-          example: 1
         slug:
           type: string
           example: "brand-slug"
@@ -158,9 +155,7 @@ components:
           nullable: true
           example: "Description of the example brand."
         content:
-          type: string
-          nullable: true
-          example: "<html><p>Detailed content about the brand.</p></html>"
+          $ref: '#/components/schemas/BrandContent'
         image_url:
           type: string
           format: uri
@@ -173,6 +168,38 @@ components:
         metatags:
           $ref: '#/components/schemas/Metatags'
 
+    # Новая схема для поля content
+    BrandContent:
+      type: object
+      properties:
+        subcat__title:
+          type: string
+          nullable: true
+          example: "Заголовок подкатегории"
+        first__place:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+            example: ["Заголовок 1", "<p>Контент 1</p>"]
+        second__place:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+            example: ["Заголовок 2", "<p>Контент 2</p>"]
+        faq__title:
+          type: string
+          nullable: true
+          example: "Заголовок FAQ"
+        faq__data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FaqItem'
+
+    # Обновленная схема для TruckModelResponse
     TruckModelResponse:
       type: object
       properties:
@@ -193,9 +220,7 @@ components:
           nullable: true
           example: "Description of the truck model."
         content:
-          type: string
-          nullable: true
-          example: "<html><p>Detailed content about the truck model.</p></html>"
+          $ref: '#/components/schemas/TruckModelContent' # Ссылка на новую схему
         image_url:
           type: string
           format: uri
@@ -203,6 +228,39 @@ components:
           example: "https://via.placeholder.com/640x480.png/000099?text=model_image"
         metatags:
           $ref: '#/components/schemas/Metatags'
+
+    # Новая схема для контента TruckModel
+    TruckModelContent:
+      type: object
+      properties:
+        faq__title:
+          type: string
+          nullable: true
+          example: "Заголовок для FAQ"
+        faq__data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FaqItem'
+        first__place:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+            example: ["Заголовок 1", "<p>HTML-контент 1</p>"]
+        second__place:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+            example: ["Заголовок 2", "<p>HTML-контент 2</p>"]
+
+    FaqItem:
+      type: array
+      items:
+        type: string
+      example: ["Вопрос", "<p>Ответ</p>"]
 
     ProductResponse:
       type: object
@@ -227,7 +285,7 @@ components:
           nullable: true
           example: "Detailed description of the product."
         price:
-          type: number # Changed from string to number (float)
+          type: number
           format: float
           example: 123.45
         delivery:
@@ -254,15 +312,15 @@ components:
             $ref: '#/components/schemas/Characteristic'
 
     # Вспомогательные схемы
-    PartType: # Renamed from CategoryShort
+    PartType:
       type: object
       properties:
-        id:
-          type: integer
-          example: 1
+        title:
+          type: string
+          example: "consequatur est"
         slug:
           type: string
-          example: "part-type-slug"
+          example: "consequatur-est"
 
     Characteristic:
       type: object
@@ -300,7 +358,7 @@ components:
           type: string
           example: "manufacturer-slug"
 
-    ProductShort: # Moved from ProductShortResource
+    ProductShort:
       type: object
       properties:
         sku:

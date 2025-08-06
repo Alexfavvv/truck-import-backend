@@ -34,7 +34,7 @@
             <div class="card-body">
                 <form action="{{ route('admin.brands.update', $brand->slug) }}" method="POST" enctype="multipart/form-data">
                     @csrf
-                    @method('PATCH')
+                    @method('PUT')
 
                     {{-- Поле "Название бренда" --}}
                     <div class="form-group">
