@@ -16,7 +16,7 @@ class BrandController extends Controller
 
     public function show(Brand $brand): array
     {
-        $brand->load('partTypes');
+        $brand->load('partTypes', 'truckModels');
         return BrandResource::make($brand)->resolve();
     }
 }

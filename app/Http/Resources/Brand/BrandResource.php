@@ -4,6 +4,7 @@ namespace App\Http\Resources\Brand;
 
 use App\Http\Resources\Metatag\MetatagResource;
 use App\Http\Resources\PartType\PartTypeResource;
+use App\Http\Resources\TruckModel\TruckModelShortResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,13 +18,13 @@ class BrandResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
             'slug' => $this->slug,
             'title' => $this->title,
             'description' => $this->description,
             'content' => $this->content,
             'image_url' => $this->image_url,
             'part_types' => PartTypeResource::collection($this->whenLoaded('partTypes')),
+            'truck_models' => TruckModelShortResource::collection($this->whenLoaded('truckModels')),
             'metatags' => MetatagResource::make($this->metatags),
         ];
     }
