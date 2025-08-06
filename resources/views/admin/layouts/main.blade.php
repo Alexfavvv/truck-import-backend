@@ -16,7 +16,8 @@
     <link rel="stylesheet" href=" {{ asset('AdminLTE/plugins/overlayScrollbars/css/OverlayScrollbars.min.css') }}">
     <!-- Select2 -->
     <link rel="stylesheet" href="{{ asset('AdminLTE/plugins/select2/css/select2.min.css') }}">
-
+    <!-- summernote -->
+    <link rel="stylesheet" href="{{ asset('AdminLTE/plugins/summernote/summernote-bs4.min.css') }}">
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -239,6 +240,8 @@
 <script src="{{ asset('AdminLTE/plugins/bs-custom-file-input/bs-custom-file-input.min.js') }}"></script>
 <!-- Select2 -->
 <script src="{{ asset('AdminLTE/plugins/select2/js/select2.full.min.js') }}"></script>
+<!-- Summernote -->
+<script src="{{ asset('AdminLTE/plugins/summernote/summernote-bs4.min.js') }}"></script>
 <script>
     $(function () {
         bsCustomFileInput.init();
