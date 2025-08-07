@@ -149,7 +149,7 @@ components:
             slug:
               type: string
               example: "brand-slug"
-            title:
+            name:
               type: string
               example: "Example Brand"
             description:
