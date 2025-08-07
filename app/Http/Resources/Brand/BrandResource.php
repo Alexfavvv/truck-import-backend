@@ -19,13 +19,13 @@ class BrandResource extends JsonResource
     {
         return [
             'slug' => $this->slug,
-            'title' => $this->title,
+            'name' => $this->title,
             'description' => $this->description,
             ...$this->content,
             'image_url' => $this->image_url,
             'part_types' => PartTypeResource::collection($this->whenLoaded('partTypes')),
             'truck_models' => TruckModelShortResource::collection($this->whenLoaded('truckModels')),
-            'metatags' => MetatagResource::make($this->metatags),
+            ...MetatagResource::make($this->metatags),
         ];
     }
 }
