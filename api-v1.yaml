@@ -172,7 +172,7 @@ components:
         - $ref: '#/components/schemas/Metatags'
         - $ref: '#/components/schemas/BrandContent'
 
-    # Новая схема для контента BrandResponse
+    # Схема для контента BrandResponse
     BrandContent:
       type: object
       properties:
@@ -233,7 +233,7 @@ components:
               $ref: '#/components/schemas/Metatags'
         - $ref: '#/components/schemas/TruckModelContent'
 
-    # Новая схема для контента TruckModel
+    # Схема для контента TruckModel
     TruckModelContent:
       type: object
       properties:
@@ -259,22 +259,6 @@ components:
             items:
               type: string
             example: ["Заголовок 2", "<p>HTML-контент 2</p>"]
-
-    # Короткая схема для TruckModel
-    TruckModelShort:
-      type: object
-      properties:
-        slug:
-          type: string
-          example: "model-slug"
-        title:
-          type: string
-          example: "Example Truck Model"
-        image_url:
-          type: string
-          format: uri
-          nullable: true
-          example: "https://via.placeholder.com/640x480.png/000099?text=model_image"
 
     FaqItem:
       type: array
@@ -399,6 +383,22 @@ components:
           format: uri
           nullable: true
           example: "https://via.placeholder.com/640x480.png/002244?text=product_short_image"
+
+    # Короткая схема для TruckModel
+    TruckModelShort:
+      type: object
+      properties:
+        slug:
+          type: string
+          example: "model-slug"
+        title:
+          type: string
+          example: "Example Truck Model"
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+          example: "https://via.placeholder.com/640x480.png/000099?text=model_image"
 
     ErrorResponse:
       type: object
