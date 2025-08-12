@@ -21,7 +21,14 @@ class ProductController extends Controller
 {
     public function index(Request $request): View
     {
-        $products = Product::with([
+        $query = Product::query();
+        if ($request->has('search') && $request->search != null) {
+            $search = $request->search;
+            $query->where('title', 'like', "%$search%")
+                ->orWhere('sku', 'like', "%$search%");
+        }
+
+        $products = $query->with([
             'brand'
         ])->orderBy('id')->paginate(15);
 
