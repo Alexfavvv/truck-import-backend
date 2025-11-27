@@ -15,8 +15,14 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Отключаем проверку внешних ключей для массового удаления/создания
-        DB::statement('SET CONSTRAINTS ALL DEFERRED;');
-        DB::statement('SET session_replication_role = replica;');
+        $driver = DB::getDriverName();
+        
+        if ($driver === 'pgsql') {
+            DB::statement('SET CONSTRAINTS ALL DEFERRED;');
+            DB::statement('SET session_replication_role = replica;');
+        } elseif ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = OFF;');
+        }
 
         // Очищаем таблицы перед заполнением (опционально, но полезно для тестирования)
         $this->truncateTables([
@@ -42,8 +48,12 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Включаем проверку внешних ключей обратно
-        DB::statement('SET CONSTRAINTS ALL IMMEDIATE;');
-        DB::statement('SET session_replication_role = origin;');
+        if ($driver === 'pgsql') {
+            DB::statement('SET CONSTRAINTS ALL IMMEDIATE;');
+            DB::statement('SET session_replication_role = origin;');
+        } elseif ($driver === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = ON;');
+        }
     }
 
     /**
