@@ -1,0 +1,1221 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Truck Import API",
+        "description": "REST API магазина запчастей Truck Import.",
+        "contact": {
+            "name": "Truck Import",
+            "email": "info@truck-import.ru"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost/api",
+            "description": "API сервер"
+        }
+    ],
+    "paths": {
+        "/v1/auth/register": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Регистрация нового заказчика (admin_customer)",
+                "description": "Публичная регистрация. Создаёт пользователя с ролью **admin_customer**. После успешной регистрации возвращает Sanctum-токен для дальнейшей работы с API.",
+                "operationId": "58fb87dce972174198f99707c002431d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "login",
+                                    "password",
+                                    "password_confirmation",
+                                    "phone"
+                                ],
+                                "properties": {
+                                    "login": {
+                                        "description": "Уникальный логин (буквы, цифры, дефис, подчёркивание)",
+                                        "type": "string",
+                                        "example": "company_ivanov"
+                                    },
+                                    "password": {
+                                        "description": "Минимум 8 символов",
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "secret123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "secret123"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+7 (999) 123-45-67"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "ivanov@company.ru",
+                                        "nullable": true
+                                    },
+                                    "full_name": {
+                                        "type": "string",
+                                        "example": "Иванов Иван Иванович",
+                                        "nullable": true
+                                    },
+                                    "company": {
+                                        "type": "string",
+                                        "example": "ООО Ромашка",
+                                        "nullable": true
+                                    },
+                                    "position": {
+                                        "type": "string",
+                                        "example": "Директор",
+                                        "nullable": true
+                                    },
+                                    "requisites": {
+                                        "type": "string",
+                                        "example": "ИНН 7701234567, КПП 770101001",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Успешная регистрация",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthTokenResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации (логин занят, пароли не совпадают и т.д.)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Вход в систему (все роли)",
+                "description": "Универсальный логин для всех ролей. Принимает логин или email + пароль, возвращает Sanctum-токен.\n\n**Роли и права:**\n\n| Роль | Значение | Описание |\n|------|----------|---------|\n| `admin_truck` | Администратор Трак Импорт | Полный доступ: пользователи, заказы, счета |\n| `manager_truck` | Менеджер Трак Импорт | Заказы и счета; не может управлять пользователями |\n| `admin_customer` | Администратор Заказчика | Свои заказы/счета; управляет своими менеджерами |\n| `manager_customer` | Менеджер Заказчика | Видит заказы своей компании; не управляет пользователями |\n\nКак назначается роль:\n- `admin_truck` создаётся через seeder (один на систему)\n- `manager_truck` создаётся через админ-панель пользователем с ролью `admin_truck`\n- `admin_customer` регистрируется самостоятельно (`POST /v1/auth/register`)\n- `manager_customer` создаётся через кабинет пользователем с ролью `admin_customer`",
+                "operationId": "3ff5fdf1e87b064055e72ef143ecc7c5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "login",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "login": {
+                                        "description": "Логин или email",
+                                        "type": "string",
+                                        "example": "admin"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Успешный вход",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthTokenResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Неверный логин или пароль / аккаунт деактивирован",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Неверный логин или пароль"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Выход из системы (отзыв токена)",
+                "operationId": "5df06d8bf07ab28923f168580a1b2323",
+                "responses": {
+                    "200": {
+                        "description": "Токен отозван",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Выход выполнен"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не авторизован",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Unauthorized"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Текущий пользователь",
+                "description": "Возвращает данные авторизованного пользователя, включая его роль.",
+                "operationId": "43b10aadfac909e8840e7bd830e76590",
+                "responses": {
+                    "200": {
+                        "description": "Данные пользователя",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthUser"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не авторизован",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Unauthorized"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/client/brands": {
+            "get": {
+                "tags": [
+                    "Brands"
+                ],
+                "summary": "Список всех брендов",
+                "operationId": "55685bc7e64161b0398fe850a94cd491",
+                "responses": {
+                    "200": {
+                        "description": "Массив брендов",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/BrandShort"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/client/brands/{brand}": {
+            "get": {
+                "tags": [
+                    "Brands"
+                ],
+                "summary": "Бренд с моделями и типами деталей",
+                "operationId": "020c58375d6f00b7f19ceef180b83992",
+                "parameters": [
+                    {
+                        "name": "brand",
+                        "in": "path",
+                        "description": "Slug бренда",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "man"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Бренд",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Brand"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Бренд не найден"
+                    }
+                }
+            }
+        },
+        "/v1/client/cart": {
+            "get": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Получить корзину текущего пользователя",
+                "operationId": "e110e382f62c13602a72c892b0175ef5",
+                "responses": {
+                    "200": {
+                        "description": "Корзина пользователя",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cart"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не авторизован",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Unauthorized"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Очистить корзину полностью",
+                "operationId": "5bafcb8eb5ab6c70cd216f9de76f36ac",
+                "responses": {
+                    "200": {
+                        "description": "Пустая корзина",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cart"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не авторизован",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Unauthorized"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/client/cart/items": {
+            "post": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Добавить товар в корзину",
+                "operationId": "94e723fe5ebc15289b5d549bef4297b5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "product_id",
+                                    "quantity"
+                                ],
+                                "properties": {
+                                    "product_id": {
+                                        "description": "ID товара",
+                                        "type": "integer",
+                                        "example": 42
+                                    },
+                                    "quantity": {
+                                        "description": "Количество",
+                                        "type": "integer",
+                                        "maximum": 999,
+                                        "minimum": 1,
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Обновлённая корзина",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cart"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не авторизован",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Unauthorized"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Ошибка валидации (напр. недостаточно товара)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/client/cart/items/{cartItem}": {
+            "put": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Обновить количество позиции в корзине",
+                "operationId": "52d1da78247dbb46ad178e413c3039aa",
+                "parameters": [
+                    {
+                        "name": "cartItem",
+                        "in": "path",
+                        "description": "ID позиции корзины",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 7
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "quantity"
+                                ],
+                                "properties": {
+                                    "quantity": {
+                                        "type": "integer",
+                                        "maximum": 999,
+                                        "minimum": 1,
+                                        "example": 3
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Обновлённая корзина",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cart"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не авторизован",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Unauthorized"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Нет доступа к этой позиции"
+                    },
+                    "404": {
+                        "description": "Позиция не найдена"
+                    },
+                    "422": {
+                        "description": "Ошибка валидации",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Cart"
+                ],
+                "summary": "Удалить позицию из корзины",
+                "operationId": "8f2c1eaa04cf070e9598520321a973fc",
+                "parameters": [
+                    {
+                        "name": "cartItem",
+                        "in": "path",
+                        "description": "ID позиции корзины",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 7
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Корзина без удалённой позиции",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Cart"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не авторизован",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Unauthorized"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Нет доступа к этой позиции"
+                    },
+                    "404": {
+                        "description": "Позиция не найдена"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/v1/client/send-feedback": {
+            "post": {
+                "tags": [
+                    "Feedback"
+                ],
+                "summary": "Отправить заявку / обратную связь",
+                "operationId": "3c7166ede2392f51a78e69e375307da7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "phone",
+                                    "consentPrivacy"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "description": "Имя заявителя",
+                                        "type": "string",
+                                        "example": "Иван Иванов"
+                                    },
+                                    "phone": {
+                                        "description": "Телефон в формате +7 (XXX) XXX-XX-XX",
+                                        "type": "string",
+                                        "example": "+7 (999) 123-45-67"
+                                    },
+                                    "consentPrivacy": {
+                                        "description": "Согласие на обработку персональных данных",
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Заявка успешно отправлена"
+                    },
+                    "422": {
+                        "description": "Ошибка валидации",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/client/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Каталог запчастей с фильтрами",
+                "operationId": "f2bc825f5f5c33ef27e539282b8bc1f8",
+                "parameters": [
+                    {
+                        "name": "brand",
+                        "in": "query",
+                        "description": "Slug бренда",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "man"
+                        }
+                    },
+                    {
+                        "name": "model",
+                        "in": "query",
+                        "description": "Slug модели грузовика",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "man-tgx"
+                        }
+                    },
+                    {
+                        "name": "part",
+                        "in": "query",
+                        "description": "Slug типа детали",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "engine-parts"
+                        }
+                    },
+                    {
+                        "name": "sku",
+                        "in": "query",
+                        "description": "Артикул (поиск по вхождению)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "FL-001"
+                        }
+                    },
+                    {
+                        "name": "price",
+                        "in": "query",
+                        "description": "Диапазон цены в формате \"min,max\"",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "1000,5000"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Количество на странице",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 20
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Номер страницы",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Список запчастей",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ProductShort"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/client/products/{product}": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Детальная страница запчасти",
+                "operationId": "09eb06f21b1444bcfa0985bf53de20d9",
+                "parameters": [
+                    {
+                        "name": "product",
+                        "in": "path",
+                        "description": "ID запчасти",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 42
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Запчасть",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Product"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Запчасть не найдена"
+                    }
+                }
+            }
+        },
+        "/v1/client/trucks/{truckModel}": {
+            "get": {
+                "tags": [
+                    "TruckModels"
+                ],
+                "summary": "Данные модели грузовика",
+                "operationId": "4df3478c6bed645b84ef57125f8455de",
+                "parameters": [
+                    {
+                        "name": "truckModel",
+                        "in": "path",
+                        "description": "Slug модели грузовика",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "man-tgx"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Модель грузовика",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TruckModel"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Модель не найдена"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AuthTokenResponse": {
+                "description": "Ответ при успешной аутентификации",
+                "properties": {
+                    "token": {
+                        "description": "Sanctum API-токен. Используйте как: Authorization: Bearer {token}",
+                        "type": "string",
+                        "example": "1|AbCdEfGhIjKlMnOpQrStUvWxYz1234567890"
+                    },
+                    "token_type": {
+                        "type": "string",
+                        "example": "Bearer"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/AuthUser"
+                    }
+                },
+                "type": "object"
+            },
+            "AuthUser": {
+                "description": "Данные авторизованного пользователя",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "login": {
+                        "type": "string",
+                        "example": "company_ivanov"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "ivanov@company.ru",
+                        "nullable": true
+                    },
+                    "role": {
+                        "description": "Роль пользователя в системе",
+                        "type": "string",
+                        "enum": [
+                            "admin_truck",
+                            "manager_truck",
+                            "admin_customer",
+                            "manager_customer"
+                        ],
+                        "example": "admin_customer"
+                    },
+                    "role_label": {
+                        "description": "Читаемое название роли",
+                        "type": "string",
+                        "example": "Администратор Заказчика"
+                    },
+                    "full_name": {
+                        "type": "string",
+                        "example": "Иванов Иван Иванович",
+                        "nullable": true
+                    },
+                    "company": {
+                        "type": "string",
+                        "example": "ООО Ромашка",
+                        "nullable": true
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+7 (999) 123-45-67",
+                        "nullable": true
+                    },
+                    "customer_id": {
+                        "description": "ID заказчика (только для ролей admin_customer и manager_customer)",
+                        "type": "string",
+                        "example": "TI-00042",
+                        "nullable": true
+                    },
+                    "is_active": {
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "Brand": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/BrandShort"
+                    },
+                    {
+                        "properties": {
+                            "description": {
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "part_types": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/PartType"
+                                }
+                            },
+                            "truck_models": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/TruckModelShort"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "BrandShort": {
+                "properties": {
+                    "slug": {
+                        "type": "string",
+                        "example": "man"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "MAN"
+                    },
+                    "image_url": {
+                        "type": "string",
+                        "example": "https://example.com/man.png",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "CartItem": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "sku": {
+                        "type": "string",
+                        "example": "MAN-FL-001"
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Фильтр масляный MAN"
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 2500,
+                        "nullable": true
+                    },
+                    "image_url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "example": 2
+                    },
+                    "subtotal": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 5000
+                    }
+                },
+                "type": "object"
+            },
+            "Cart": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CartItem"
+                        }
+                    },
+                    "total": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 7500
+                    },
+                    "items_count": {
+                        "type": "integer",
+                        "example": 3
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "PartType": {
+                "properties": {
+                    "slug": {
+                        "type": "string",
+                        "example": "engine-parts"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Детали двигателя"
+                    }
+                },
+                "type": "object"
+            },
+            "Product": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/ProductShort"
+                    },
+                    {
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "example": 42
+                            },
+                            "brand_id": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "part_type_id": {
+                                "type": "integer",
+                                "example": 3,
+                                "nullable": true
+                            },
+                            "description": {
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "delivery": {
+                                "type": "string",
+                                "example": "7-14 дней",
+                                "nullable": true
+                            },
+                            "truck_manufacturers": {
+                                "type": "array",
+                                "items": {
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "example": "MAN"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            },
+                            "characteristics": {
+                                "type": "array",
+                                "items": {
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Вязкость"
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "example": "5W-40"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "ProductShort": {
+                "properties": {
+                    "sku": {
+                        "type": "string",
+                        "example": "MAN-FL-001"
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Фильтр масляный MAN"
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 2500,
+                        "nullable": true
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "example": 10,
+                        "nullable": true
+                    },
+                    "image_url": {
+                        "type": "string",
+                        "example": "https://example.com/part.jpg",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "TruckModel": {
+                "allOf": [
+                    {
+                        "$ref": "#/components/schemas/TruckModelShort"
+                    },
+                    {
+                        "properties": {
+                            "description": {
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "brand": {
+                                "$ref": "#/components/schemas/BrandShort"
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "TruckModelShort": {
+                "properties": {
+                    "slug": {
+                        "type": "string",
+                        "example": "man-tgx"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "MAN TGX"
+                    }
+                },
+                "type": "object"
+            },
+            "Unauthorized": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Unauthenticated."
+                    }
+                },
+                "type": "object"
+            },
+            "ValidationError": {
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "The quantity field is required."
+                    },
+                    "errors": {
+                        "type": "object",
+                        "example": {
+                            "quantity": [
+                                "The quantity field is required."
+                            ]
+                        }
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Laravel Sanctum token. Формат: Bearer {token}",
+                "in": "header",
+                "scheme": "bearer",
+                "bearerFormat": "Token"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "Аутентификация: регистрация, вход, выход, текущий пользователь"
+        },
+        {
+            "name": "Brands",
+            "description": "Бренды производителей"
+        },
+        {
+            "name": "Products",
+            "description": "Каталог запчастей"
+        },
+        {
+            "name": "TruckModels",
+            "description": "Модели грузовиков"
+        },
+        {
+            "name": "Cart",
+            "description": "Корзина (требует авторизации)"
+        },
+        {
+            "name": "Feedback",
+            "description": "Обратная связь"
+        }
+    ]
+}

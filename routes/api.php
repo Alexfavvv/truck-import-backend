@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\Client\FeedbackController;
 use App\Http\Controllers\Api\V1\Client\TruckModelController;
 use App\Http\Controllers\Api\V1\Client\BrandController;
@@ -8,9 +9,16 @@ use App\Http\Controllers\Api\V1\Client\ProductController;
 use App\Http\Controllers\Api\V1\Client\CartController;
 use Illuminate\Support\Facades\Route;
 
-//Route::get('/user', function (Request $request) {
-//    return $request->user();
-//})->middleware('auth:sanctum');
+// Аутентификация (Sanctum-токены)
+Route::prefix('v1/auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login',    [AuthController::class, 'login']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/me',      [AuthController::class, 'me']);
+    });
+});
 
 Route::prefix('v1/client')->group(function () {
 

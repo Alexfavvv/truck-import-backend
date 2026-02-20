@@ -9,9 +9,17 @@ class IsAdminMiddleware
 {
     public function handle($request, Closure $next)
     {
-        if (!Auth::check() || !Auth::user()->is_admin) {
-            return redirect('/login')->withErrors(['error' => 'Доступ запрещен']);
+        $user = Auth::user();
+
+        if (!$user || !$user->isAdmin()) {
+            return redirect('/admin/login')->withErrors(['error' => 'Доступ запрещён']);
         }
+
+        if (!$user->is_active) {
+            Auth::logout();
+            return redirect('/admin/login')->withErrors(['error' => 'Аккаунт деактивирован']);
+        }
+
         return $next($request);
     }
 }
