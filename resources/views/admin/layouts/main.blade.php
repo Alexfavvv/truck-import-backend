@@ -120,10 +120,19 @@
                     <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
                 </div>
             </li>
+            <li class="nav-item d-flex align-items-center mr-3">
+                <span class="text-muted mr-2">
+                    <i class="fas fa-user-circle mr-1"></i>
+                    {{ auth()->user()->full_name ?? auth()->user()->name }}
+                </span>
+                <span class="badge badge-secondary">{{ auth()->user()->role?->label() }}</span>
+            </li>
             <li class="nav-item">
                 <form action="{{ route('admin.logout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="btn btn-danger">Выйти</button>
+                    <button type="submit" class="btn btn-sm btn-danger">
+                        <i class="fas fa-sign-out-alt mr-1"></i>Выйти
+                    </button>
                 </form>
             </li>
             <li class="nav-item">
@@ -150,53 +159,90 @@
                     data-accordion="false">
                     <!-- Add icons to the links using the .nav-icon class
                          with font-awesome or any other icon font library -->
+                    {{-- Заказы и Счета --}}
+                    <li class="nav-header">Заказы</li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.orders.index') }}"
+                           class="nav-link {{ request()->routeIs('admin.orders*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-clipboard-list"></i>
+                            <p>Заказы</p>
+                        </a>
+                    </li>
+                    @if(auth()->user()->canCreateInvoice())
+                    <li class="nav-item">
+                        <a href="{{ route('admin.invoices.index') }}"
+                           class="nav-link {{ request()->routeIs('admin.invoices*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-file-invoice-dollar"></i>
+                            <p>Счета</p>
+                        </a>
+                    </li>
+                    @else
+                    <li class="nav-item">
+                        <a href="{{ route('admin.invoices.index') }}"
+                           class="nav-link {{ request()->routeIs('admin.invoices*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-file-invoice"></i>
+                            <p>Счета</p>
+                        </a>
+                    </li>
+                    @endif
+
+                    {{-- Пользователи (admin_truck и admin_customer) --}}
+                    @if(auth()->user()->canManageUsers() || auth()->user()->isAdminCustomer())
+                    <li class="nav-header">Пользователи</li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.users.index') }}"
+                           class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-users"></i>
+                            <p>Пользователи</p>
+                        </a>
+                    </li>
+                    @endif
+
+                    {{-- Каталог --}}
+                    @if(auth()->user()->isTruckSide())
                     <li class="nav-header">Управление магазином</li>
                     <li class="nav-item">
-                        <a href="{{ route('admin.brands.index') }}" class="nav-link">
+                        <a href="{{ route('admin.brands.index') }}"
+                           class="nav-link {{ request()->routeIs('admin.brands*') ? 'active' : '' }}">
                             <i class="nav-icon fab fa-bandcamp"></i>
-                            <p>
-                                Бренды
-                            </p>
+                            <p>Бренды</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ route('admin.truck-manufacturers.index') }}" class="nav-link">
+                        <a href="{{ route('admin.truck-manufacturers.index') }}"
+                           class="nav-link {{ request()->routeIs('admin.truck-manufacturers*') ? 'active' : '' }}">
                             <i class="nav-icon fab fa-sourcetree"></i>
-                            <p>
-                                Производители Траков
-                            </p>
+                            <p>Производители Траков</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ route('admin.truck-models.index') }}" class="nav-link">
+                        <a href="{{ route('admin.truck-models.index') }}"
+                           class="nav-link {{ request()->routeIs('admin.truck-models*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-truck"></i>
-                            <p>
-                                Модели Траков
-                            </p>
+                            <p>Модели Траков</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ route('admin.part-types.index') }}" class="nav-link">
+                        <a href="{{ route('admin.part-types.index') }}"
+                           class="nav-link {{ request()->routeIs('admin.part-types*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-wrench"></i>
-                            <p>
-                                Типы запчастей
-                            </p>
+                            <p>Типы запчастей</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ route('admin.products.index') }}" class="nav-link">
+                        <a href="{{ route('admin.products.index') }}"
+                           class="nav-link {{ request()->routeIs('admin.products*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-boxes"></i>
-                            <p>
-                                Товары
-                            </p>
+                            <p>Товары</p>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/horizon" target="_blank">
                             <i class="fas fa-tasks"></i>
-                            <span>Мониторинг Очередей<br>(Horizon)</span>
+                            <span>Мониторинг Очередей</span>
                         </a>
                     </li>
+                    @endif
                 </ul>
             </nav>
             <!-- /.sidebar-menu -->

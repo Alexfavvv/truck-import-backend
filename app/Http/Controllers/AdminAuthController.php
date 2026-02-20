@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AdminAuthController extends Controller
 {
@@ -14,23 +16,32 @@ class AdminAuthController extends Controller
 
     public function login(Request $request)
     {
-
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+        $request->validate([
+            'login'    => 'required|string',
+            'password' => 'required|string',
         ]);
 
-        if (!Auth::attempt($credentials)) {
-            return back()->withErrors(['error' => 'Неверные данные']);
+        $login    = $request->input('login');
+        $password = $request->input('password');
+
+        // Поиск по логину или email
+        $user = User::where('login', $login)
+            ->orWhere('email', $login)
+            ->first();
+
+        if (!$user || !Hash::check($password, $user->password)) {
+            return back()->withErrors(['error' => 'Неверный логин или пароль'])->withInput();
         }
 
-        $user = Auth::user();
-
-        // Проверяем, является ли пользователь админом
-        if (!$user->is_admin) {
-            Auth::logout();
-            return back()->withErrors(['error' => 'Доступ только для админов']);
+        if (!$user->isAdmin()) {
+            return back()->withErrors(['error' => 'Доступ запрещён'])->withInput();
         }
+
+        if (!$user->is_active) {
+            return back()->withErrors(['error' => 'Аккаунт деактивирован'])->withInput();
+        }
+
+        Auth::login($user, $request->boolean('remember'));
 
         return redirect()->route('admin.index');
     }

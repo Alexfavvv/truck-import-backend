@@ -11,12 +11,28 @@ use App\Models\CartItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use OpenApi\Attributes as OA;
 
 class CartController extends Controller
 {
-    /**
-     * Получить корзину пользователя
-     */
+    #[OA\Get(
+        path: '/v1/client/cart',
+        summary: 'Получить корзину текущего пользователя',
+        security: [['sanctum' => []]],
+        tags: ['Cart'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Корзина пользователя',
+                content: new OA\JsonContent(ref: '#/components/schemas/Cart')
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Не авторизован',
+                content: new OA\JsonContent(ref: '#/components/schemas/Unauthorized')
+            ),
+        ]
+    )]
     public function show(Request $request): array
     {
         $user = $request->user();
@@ -30,9 +46,39 @@ class CartController extends Controller
         return CartResource::make($cart)->resolve();
     }
 
-    /**
-     * Добавить товар в корзину
-     */
+    #[OA\Post(
+        path: '/v1/client/cart/items',
+        summary: 'Добавить товар в корзину',
+        security: [['sanctum' => []]],
+        tags: ['Cart'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['product_id', 'quantity'],
+                properties: [
+                    new OA\Property(property: 'product_id', type: 'integer', example: 42, description: 'ID товара'),
+                    new OA\Property(property: 'quantity', type: 'integer', minimum: 1, maximum: 999, example: 2, description: 'Количество'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Обновлённая корзина',
+                content: new OA\JsonContent(ref: '#/components/schemas/Cart')
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Не авторизован',
+                content: new OA\JsonContent(ref: '#/components/schemas/Unauthorized')
+            ),
+            new OA\Response(
+                response: 422,
+                description: 'Ошибка валидации (напр. недостаточно товара)',
+                content: new OA\JsonContent(ref: '#/components/schemas/ValidationError')
+            ),
+        ]
+    )]
     public function add(AddToCartRequest $request): array
     {
         $user = $request->user();
@@ -45,16 +91,13 @@ class CartController extends Controller
 
         $product = Product::findOrFail($data['product_id']);
 
-        // Проверяем, есть ли уже этот товар в корзине
         $cartItem = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $product->id)
             ->first();
 
         if ($cartItem) {
-            // Если товар уже есть, увеличиваем количество
             $newQuantity = $cartItem->quantity + $data['quantity'];
-            
-            // Проверка доступности при увеличении количества
+
             if ($product->quantity !== null && $newQuantity > $product->quantity) {
                 throw ValidationException::withMessages([
                     'quantity' => 'Недостаточно товара на складе. Доступно: ' . $product->quantity . ', в корзине уже: ' . $cartItem->quantity,
@@ -63,14 +106,12 @@ class CartController extends Controller
 
             $cartItem->update(['quantity' => $newQuantity]);
         } else {
-            // Проверка доступности товара перед созданием нового элемента
             if ($product->quantity !== null && $data['quantity'] > $product->quantity) {
                 throw ValidationException::withMessages([
                     'quantity' => 'Недостаточно товара на складе. Доступно: ' . $product->quantity,
                 ]);
             }
 
-            // Создаем новый элемент корзины
             CartItem::create([
                 'cart_id' => $cart->id,
                 'product_id' => $product->id,
@@ -83,15 +124,46 @@ class CartController extends Controller
         return CartResource::make($cart)->resolve();
     }
 
-    /**
-     * Обновить количество товара в корзине
-     */
+    #[OA\Put(
+        path: '/v1/client/cart/items/{cartItem}',
+        summary: 'Обновить количество позиции в корзине',
+        security: [['sanctum' => []]],
+        tags: ['Cart'],
+        parameters: [
+            new OA\Parameter(
+                name: 'cartItem',
+                in: 'path',
+                required: true,
+                description: 'ID позиции корзины',
+                schema: new OA\Schema(type: 'integer', example: 7)
+            ),
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['quantity'],
+                properties: [
+                    new OA\Property(property: 'quantity', type: 'integer', minimum: 1, maximum: 999, example: 3),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Обновлённая корзина',
+                content: new OA\JsonContent(ref: '#/components/schemas/Cart')
+            ),
+            new OA\Response(response: 401, description: 'Не авторизован', content: new OA\JsonContent(ref: '#/components/schemas/Unauthorized')),
+            new OA\Response(response: 403, description: 'Нет доступа к этой позиции'),
+            new OA\Response(response: 404, description: 'Позиция не найдена'),
+            new OA\Response(response: 422, description: 'Ошибка валидации', content: new OA\JsonContent(ref: '#/components/schemas/ValidationError')),
+        ]
+    )]
     public function update(UpdateCartItemRequest $request, CartItem $cartItem): array
     {
         $user = $request->user();
         $data = $request->validated();
 
-        // Загружаем корзину и проверяем, что элемент корзины принадлежит пользователю
         $cartItem->load('cart');
         if ($cartItem->cart->user_id !== $user->id) {
             abort(403, 'Доступ запрещен');
@@ -100,7 +172,6 @@ class CartController extends Controller
         $cartItem->load('product.brand');
         $product = $cartItem->product;
 
-        // Проверка доступности товара
         if ($product->quantity !== null && $data['quantity'] > $product->quantity) {
             throw ValidationException::withMessages([
                 'quantity' => 'Недостаточно товара на складе. Доступно: ' . $product->quantity,
@@ -115,14 +186,35 @@ class CartController extends Controller
         return CartResource::make($cart)->resolve();
     }
 
-    /**
-     * Удалить товар из корзины
-     */
+    #[OA\Delete(
+        path: '/v1/client/cart/items/{cartItem}',
+        summary: 'Удалить позицию из корзины',
+        security: [['sanctum' => []]],
+        tags: ['Cart'],
+        parameters: [
+            new OA\Parameter(
+                name: 'cartItem',
+                in: 'path',
+                required: true,
+                description: 'ID позиции корзины',
+                schema: new OA\Schema(type: 'integer', example: 7)
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Корзина без удалённой позиции',
+                content: new OA\JsonContent(ref: '#/components/schemas/Cart')
+            ),
+            new OA\Response(response: 401, description: 'Не авторизован', content: new OA\JsonContent(ref: '#/components/schemas/Unauthorized')),
+            new OA\Response(response: 403, description: 'Нет доступа к этой позиции'),
+            new OA\Response(response: 404, description: 'Позиция не найдена'),
+        ]
+    )]
     public function remove(Request $request, CartItem $cartItem): array
     {
         $user = $request->user();
 
-        // Загружаем корзину и проверяем, что элемент корзины принадлежит пользователю
         $cartItem->load('cart');
         if ($cartItem->cart->user_id !== $user->id) {
             abort(403, 'Доступ запрещен');
@@ -136,9 +228,20 @@ class CartController extends Controller
         return CartResource::make($cart)->resolve();
     }
 
-    /**
-     * Очистить корзину
-     */
+    #[OA\Delete(
+        path: '/v1/client/cart',
+        summary: 'Очистить корзину полностью',
+        security: [['sanctum' => []]],
+        tags: ['Cart'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Пустая корзина',
+                content: new OA\JsonContent(ref: '#/components/schemas/Cart')
+            ),
+            new OA\Response(response: 401, description: 'Не авторизован', content: new OA\JsonContent(ref: '#/components/schemas/Unauthorized')),
+        ]
+    )]
     public function clear(Request $request): array
     {
         $user = $request->user();
