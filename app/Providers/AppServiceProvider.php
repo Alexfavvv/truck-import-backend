@@ -11,6 +11,7 @@ use App\Policies\UserPolicy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends AuthServiceProvider
 {
@@ -30,5 +31,10 @@ class AppServiceProvider extends AuthServiceProvider
         $this->registerPolicies();
         Model::unguard();
         Paginator::useBootstrapFive();
+
+        // За прокси (Nginx) Laravel не видит HTTPS — принудительно используем схему из APP_URL
+        if (str_starts_with(config('app.url'), 'https://')) {
+            URL::forceScheme('https');
+        }
     }
 }

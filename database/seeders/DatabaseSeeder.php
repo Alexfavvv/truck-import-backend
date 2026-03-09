@@ -39,6 +39,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             UserSeeder::class,
+            AdminTruckSeeder::class,
             PartTypeSeeder::class,
             BrandSeeder::class,
             TruckManufacturerSeeder::class,

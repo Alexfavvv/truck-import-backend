@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class AdminTruckSeeder extends Seeder
 {
@@ -14,7 +13,12 @@ class AdminTruckSeeder extends Seeder
         $existing = User::where('role', UserRole::AdminTruck->value)->first();
 
         if ($existing) {
-            $this->command->info('Администратор Трак Импорт уже существует: ' . $existing->email);
+            $existing->update([
+                'login'    => 'admin',
+                'password' => 'admin12345',
+                'is_active' => true,
+            ]);
+            $this->command->info('Пароль администратора обновлён. Логин: admin, пароль: admin12345');
             return;
         }
 
@@ -23,7 +27,7 @@ class AdminTruckSeeder extends Seeder
             'full_name' => 'Администратор Трак Импорт',
             'email'     => 'admin@truck-import.ru',
             'login'     => 'admin',
-            'password'  => Hash::make('admin12345'),
+            'password'  => 'admin12345', // хешируется автоматически через cast в модели User
             'role'      => UserRole::AdminTruck,
             'is_admin'  => true,
             'is_active' => true,
