@@ -14,10 +14,19 @@ class CustomerManagerController extends Controller
 {
     public function __construct(private readonly UserService $userService) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
         $this->ensureAdminCustomer();
-        $managers = Auth::user()->managers()->withCount('orders')->get();
+        $query = Auth::user()->managers()->withCount('orders');
+        if ($request->filled('search')) {
+            $term = '%' . $request->get('search') . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('full_name', 'like', $term)
+                    ->orWhere('email', 'like', $term)
+                    ->orWhere('phone', 'like', $term);
+            });
+        }
+        $managers = $query->orderBy('full_name')->get();
         return view('customer.managers.index', compact('managers'));
     }
 
@@ -50,12 +59,43 @@ class CustomerManagerController extends Controller
             ));
     }
 
-    public function show(User $manager): View
+    public function show(Request $request, User $manager): View
     {
         $this->ensureAdminCustomer();
         $this->ensureOwns($manager);
-        $manager->load(['orders' => fn($q) => $q->latest()]);
-        return view('customer.managers.show', compact('manager'));
+
+        $tab = $request->get('tab', 'personal');
+        $tab = in_array($tab, ['personal', 'auth', 'orders', 'invoices'], true) ? $tab : 'personal';
+
+        $manager->load(['parent', 'orders' => fn ($q) => $q->latest()->with('invoice')]);
+        $ordersList = $manager->orders;
+        $invoices = $ordersList->map->invoice->filter()->values();
+        $canEdit = true; // admin_customer может редактировать своего менеджера
+
+        return view('customer.managers.show', compact('manager', 'tab', 'ordersList', 'invoices', 'canEdit'));
+    }
+
+    public function update(Request $request, User $manager): RedirectResponse
+    {
+        $this->ensureAdminCustomer();
+        $this->ensureOwns($manager);
+
+        $rules = [
+            'full_name' => 'nullable|string|max:255',
+            'phone'     => 'nullable|string|max:30',
+            'email'     => 'nullable|email|unique:users,email,' . $manager->id,
+            'login'     => 'nullable|string|max:100|unique:users,login,' . $manager->id,
+            'password'  => 'nullable|string|min:8|confirmed',
+        ];
+        $validated = $request->validate($rules);
+
+        if (empty($validated['password'])) {
+            unset($validated['password']);
+        }
+        $manager->update($validated);
+
+        $tab = $request->get('_return_tab', 'personal');
+        return redirect()->route('customer.managers.show', [$manager, 'tab' => $tab])->with('success', 'Данные обновлены');
     }
 
     public function destroy(User $manager): RedirectResponse

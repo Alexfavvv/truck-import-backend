@@ -12,12 +12,12 @@ class IsAdminMiddleware
         $user = Auth::user();
 
         if (!$user || !$user->isAdmin()) {
-            return redirect('/admin/login')->withErrors(['error' => 'Доступ запрещён']);
+            return redirect()->route('login')->withErrors(['error' => 'Доступ запрещён']);
         }
 
         if (!$user->is_active) {
             Auth::logout();
-            return redirect('/admin/login')->withErrors(['error' => 'Аккаунт деактивирован']);
+            return redirect()->route('login')->withErrors(['error' => 'Аккаунт деактивирован']);
         }
 
         return $next($request);

@@ -13,18 +13,18 @@ class IsCustomerMiddleware
         $user = Auth::user();
 
         if (!$user) {
-            return redirect()->route('customer.login');
+            return redirect()->route('login');
         }
 
         if (!$user->isCustomerSide()) {
             Auth::logout();
-            return redirect()->route('customer.login')
+            return redirect()->route('login')
                 ->withErrors(['error' => 'Доступ только для заказчиков']);
         }
 
         if (!$user->is_active) {
             Auth::logout();
-            return redirect()->route('customer.login')
+            return redirect()->route('login')
                 ->withErrors(['error' => 'Аккаунт деактивирован']);
         }
 

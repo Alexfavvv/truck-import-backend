@@ -27,7 +27,7 @@
         <div class="card-header">
             <h3 class="card-title">Создать аккаунт заказчика</h3>
             <div class="card-tools">
-                <a href="{{ route('customer.login') }}" class="btn btn-sm btn-outline-secondary">
+                <a href="{{ route('login') }}" class="btn btn-sm btn-outline-secondary">
                     Уже есть аккаунт? Войти
                 </a>
             </div>

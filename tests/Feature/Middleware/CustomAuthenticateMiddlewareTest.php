@@ -15,7 +15,7 @@ class CustomAuthenticateMiddlewareTest extends TestCase
     public function testGuestGetsRedirectedToLogin()
     {
         $response = $this->get('/admin');
-        $response->assertRedirect(route('admin.login'));
+        $response->assertRedirect(route('login'));
     }
 
     // Админ пробует зайти в админку

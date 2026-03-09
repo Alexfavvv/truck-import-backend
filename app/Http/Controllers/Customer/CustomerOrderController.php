@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Enums\OrderStatus;
+use App\Enums\UserRole;
 use App\Models\Order;
+use App\Models\User;
 use App\Services\OrderService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,10 +17,38 @@ class CustomerOrderController extends Controller
 {
     public function __construct(private readonly OrderService $orderService) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $orders = $this->orderService->getOrdersForUser(Auth::user());
-        return view('customer.orders.index', compact('orders'));
+        /** @var User $user */
+        $user = Auth::user();
+
+        $tab = $request->get('tab', 'my');
+        if (!in_array($tab, ['my', 'company'], true)) {
+            $tab = 'my';
+        }
+
+        // Для manager_customer вкладка company недоступна
+        if ($tab === 'company' && !$user->isAdminCustomer()) {
+            $tab = 'my';
+        }
+
+        $filters = [
+            'status'     => $request->get('status'),
+            'number'     => $request->get('number'),
+            'manager_id' => $request->get('manager_id'),
+        ];
+
+        $orders   = $this->orderService->getOrdersForUser($user, $tab, $filters);
+        $statuses = OrderStatus::filterOptions();
+
+        $managers = collect();
+        if ($user->isAdminCustomer()) {
+            $managers = $user->managers()
+                ->orderBy('full_name')
+                ->get();
+        }
+
+        return view('customer.orders.index', compact('orders', 'tab', 'statuses', 'managers'));
     }
 
     public function create(): View

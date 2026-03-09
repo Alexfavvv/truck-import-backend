@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Enums\CustomerInvoiceStatus;
+use App\Enums\TruckInvoiceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Services\InvoiceService;
@@ -15,10 +16,16 @@ class CustomerInvoiceController extends Controller
 {
     public function __construct(private readonly InvoiceService $invoiceService) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $invoices = $this->invoiceService->getInvoicesForUser(Auth::user());
-        return view('customer.invoices.index', compact('invoices'));
+        $user = Auth::user();
+        $filters = array_filter([
+            'number' => $request->get('number'),
+            'status' => $request->get('status'),
+        ]);
+        $invoices = $this->invoiceService->getInvoicesForUserWithFilters($user, 'my', $filters, 20);
+        $statusOptions = collect(TruckInvoiceStatus::cases())->map(fn ($s) => ['value' => $s->value, 'label' => $s->label()])->all();
+        return view('customer.invoices.index', compact('invoices', 'statusOptions'));
     }
 
     public function show(Invoice $invoice): View

@@ -16,7 +16,9 @@ class CustomerProfileController extends Controller
     public function show(): View
     {
         $user = Auth::user();
-        return view('customer.profile', compact('user'));
+        $user->load('parent');
+        $administratorName = $user->parent ? ($user->parent->full_name ?? $user->parent->name) : null;
+        return view('customer.profile', compact('user', 'administratorName'));
     }
 
     public function update(Request $request): RedirectResponse
@@ -28,13 +30,34 @@ class CustomerProfileController extends Controller
             'phone'      => 'required|string|max:30',
             'email'      => 'nullable|email|unique:users,email,' . $user->id,
             'company'    => 'nullable|string|max:255',
-            'requisites' => 'nullable|string|max:2000',
             'position'   => 'nullable|string|max:255',
         ]);
 
         $user->update($validated);
 
         return back()->with('success', 'Профиль обновлён');
+    }
+
+    public function updateAuth(Request $request): RedirectResponse
+    {
+        $user = Auth::user();
+
+        if (!$user->isAdminCustomer()) {
+            abort(403, 'Изменение данных авторизации доступно только администратору заказчика');
+        }
+
+        $validated = $request->validate([
+            'login'    => ['required', 'string', 'max:255', 'unique:users,login,' . $user->id],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $data = ['login' => $validated['login']];
+        if (!empty($validated['password'])) {
+            $data['password'] = $validated['password'];
+        }
+        $user->update($data);
+
+        return redirect()->route('customer.profile', ['tab' => 'auth'])->with('success', 'Данные авторизации сохранены');
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -49,7 +72,7 @@ class CustomerProfileController extends Controller
         $this->userService->deleteAdminCustomer($user);
         $request->session()->invalidate();
 
-        return redirect()->route('customer.login')
+        return redirect()->route('login')
             ->with('success', 'Аккаунт удалён');
     }
 }

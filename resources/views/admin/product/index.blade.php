@@ -90,7 +90,7 @@
                                         <a href="{{ route('admin.products.edit', $product) }}" class="btn btn-sm btn-warning" title="Редактировать">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <button class="btn btn-sm btn-danger ml-1" data-toggle="modal" data-target="#deleteModal" data-action="{{ route('admin.products.destroy', $product->id) }}" onclick="setDeleteAction(this)">
+                                        <button class="btn btn-sm btn-danger ml-1" data-toggle="modal" data-target="#deleteModal" data-action="{{ route('admin.products.destroy', $product) }}" onclick="setDeleteAction(this)">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </div>

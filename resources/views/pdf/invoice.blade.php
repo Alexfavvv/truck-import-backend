@@ -255,7 +255,7 @@
             <tr>
                 <td>{{ $i + 1 }}</td>
                 <td>{{ $item->product->title ?? '—' }}</td>
-                <td style="color:#6b7280">{{ $item->product->article ?? '—' }}</td>
+                <td style="color:#6b7280">{{ $item->product->sku ?? '—' }}</td>
                 <td class="r">{{ $item->quantity }}</td>
                 <td class="r">{{ number_format($item->price, 2, '.', ' ') }}</td>
                 <td class="r">{{ number_format($item->subtotal, 2, '.', ' ') }}</td>

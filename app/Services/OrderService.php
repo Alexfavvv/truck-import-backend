@@ -12,23 +12,89 @@ use Illuminate\Support\Facades\DB;
 class OrderService
 {
     /**
-     * Возвращает список заказов с учётом прав пользователя.
+     * Возвращает список заказов с учётом прав пользователя, вкладки и фильтров.
+     *
+     * @param  User  $user
+     * @param  string  $scope   my|company|archive
+     * @param  array  $filters  ['status' => ?, 'number' => ?, 'company_id' => ?, 'manager_id' => ?]
      */
-    public function getOrdersForUser(User $user, int $perPage = 20): LengthAwarePaginator
+    public function getOrdersForUser(User $user, string $scope = 'my', array $filters = [], int $perPage = 20): LengthAwarePaginator
     {
+        $scope = in_array($scope, ['my', 'company', 'archive'], true) ? $scope : 'my';
+
         $query = Order::with(['user', 'companyAdmin'])->latest();
 
+        // ─── Базовая выборка по роли и вкладке ────────────────────────────────
+
         if ($user->isTruckSide()) {
-            // Видят все заказы
+            // Для Трак Импорт:
+            // - my: только свои заказы
+            // - company: все заказы
+            // - archive: все выполненные/отменённые
+            if ($scope === 'my') {
+                $query->where('user_id', $user->id);
+            } elseif ($scope === 'archive') {
+                $query->whereIn('status', [OrderStatus::Completed, OrderStatus::Cancelled]);
+            }
         } elseif ($user->isAdminCustomer()) {
-            // Заказы своей компании (свои + менеджеров)
-            $query->where(function ($q) use ($user) {
-                $q->where('company_admin_id', $user->id)
-                  ->orWhere('user_id', $user->id);
-            });
+            // Для admin_customer:
+            // - my: только свои
+            // - company/archive: заказы своей компании (свои + менеджеров)
+            if ($scope === 'my') {
+                $query->where('user_id', $user->id);
+            } else {
+                $query->where(function ($q) use ($user) {
+                    $q->where('company_admin_id', $user->id)
+                      ->orWhere('user_id', $user->id);
+                });
+
+                if ($scope === 'archive') {
+                    $query->whereIn('status', [OrderStatus::Completed, OrderStatus::Cancelled]);
+                }
+            }
         } elseif ($user->isManagerCustomer()) {
-            // Только свои заказы
+            // Для manager_customer: только свои, archive — только выполненные/отменённые
             $query->where('user_id', $user->id);
+            if ($scope === 'archive') {
+                $query->whereIn('status', [OrderStatus::Completed, OrderStatus::Cancelled]);
+            }
+        }
+
+        // ─── Фильтры ──────────────────────────────────────────────────────────
+
+        // Статус — только для вкладок my/company (три варианта: Выполнен, Отменен, В работе)
+        if (($scope === 'my' || $scope === 'company') && !empty($filters['status'])) {
+            $status = $filters['status'];
+            if ($status === 'in_progress') {
+                $query->whereIn('status', OrderStatus::inProgressValues());
+            } elseif (in_array($status, OrderStatus::values(), true)) {
+                $query->where('status', $status);
+            }
+        }
+
+        // Поиск по номеру заказа
+        if (!empty($filters['number'])) {
+            $number = trim((string) $filters['number']);
+            $query->where('order_number', 'like', '%' . $number . '%');
+        }
+
+        // Фильтр по компании (для Трак Импорт на вкладках company/archive)
+        if ($user->isTruckSide() && ($scope === 'company' || $scope === 'archive') && !empty($filters['company_id'])) {
+            $companyId = (int) $filters['company_id'];
+
+            // Если выбрана компания Трак Импорт (главный админ), показываем заказы без company_admin_id
+            $adminTruckId = User::where('role', UserRole::AdminTruck->value)->value('id');
+
+            if ($adminTruckId && $companyId === (int) $adminTruckId) {
+                $query->whereNull('company_admin_id');
+            } else {
+                $query->where('company_admin_id', $companyId);
+            }
+        }
+
+        // Фильтр по менеджеру (для Трак Импорт на вкладках company/archive)
+        if ($user->isTruckSide() && ($scope === 'company' || $scope === 'archive') && !empty($filters['manager_id'])) {
+            $query->where('user_id', (int) $filters['manager_id']);
         }
 
         return $query->paginate($perPage);

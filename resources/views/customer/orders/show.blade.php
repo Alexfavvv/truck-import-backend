@@ -89,9 +89,11 @@
                                class="btn btn-success btn-block btn-sm">
                                 <i class="fas fa-file-pdf mr-1"></i>Скачать PDF
                             </a>
-                            <a href="{{ route('customer.invoices.show', $order->invoice) }}"
-                               class="btn btn-outline-secondary btn-block btn-sm mt-1">
-                                <i class="fas fa-eye mr-1"></i>Просмотр
+                            <a href="{{ route('customer.invoices.pdf', $order->invoice) }}"
+                               class="btn btn-outline-secondary btn-block btn-sm mt-1"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                <i class="fas fa-eye mr-1"></i>Смотреть счёт
                             </a>
                         @else
                             <p class="text-muted text-center mb-0">

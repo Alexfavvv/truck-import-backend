@@ -1,141 +1,206 @@
 @extends('admin.layouts.main')
 
 @section('content')
-<div class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-6">
-                <h1 class="m-0">Заказы</h1>
-            </div>
+<div class="orders-page">
+    @if(session('success'))
+        <div class="orders-page__alert orders-page__alert--success" role="alert">
+            {{ session('success') }}
+            <button type="button" class="orders-page__alert-close" data-dismiss="alert" aria-label="Закрыть"><span aria-hidden="true">&times;</span></button>
         </div>
-    </div>
-</div>
+    @endif
 
-<section class="content">
-    <div class="container-fluid">
-
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show">
-                {{ session('success') }}
-                <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    <div class="orders-page__card">
+        <div class="orders-page__card-header">
+            <div class="orders-page__tabs-dropdown">
+                <select class="orders-page__tabs-select" data-orders-tab-select data-orders-tab-base="{{ route('admin.orders.index') }}">
+                    <option value="my" {{ $tab === 'my' ? 'selected' : '' }}>Мои заказы</option>
+                    <option value="company" {{ $tab === 'company' ? 'selected' : '' }}>Заказы компаний</option>
+                    <option value="archive" {{ $tab === 'archive' ? 'selected' : '' }}>Архив заказов</option>
+                </select>
             </div>
-        @endif
-
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="card-title">Список заказов</h3>
-                @can('create', \App\Models\Order::class)
-                    <a href="{{ route('admin.orders.create') }}" class="btn btn-success btn-sm">
-                        <i class="fas fa-plus mr-1"></i>Создать заказ
+            <ul class="orders-page__tabs">
+                <li class="orders-page__tab">
+                    <a class="orders-page__tab-link {{ $tab === 'my' ? 'orders-page__tab-link--active' : '' }}"
+                       href="{{ route('admin.orders.index', ['tab' => 'my']) }}">
+                        Мои заказы
                     </a>
-                @endcan
-            </div>
+                </li>
+                <li class="orders-page__tab">
+                    <a class="orders-page__tab-link {{ $tab === 'company' ? 'orders-page__tab-link--active' : '' }}"
+                       href="{{ route('admin.orders.index', ['tab' => 'company']) }}">
+                        Заказы компаний
+                    </a>
+                </li>
+                <li class="orders-page__tab">
+                    <a class="orders-page__tab-link {{ $tab === 'archive' ? 'orders-page__tab-link--active' : '' }}"
+                       href="{{ route('admin.orders.index', ['tab' => 'archive']) }}">
+                        Архив заказов
+                    </a>
+                </li>
+            </ul>
+            @can('create', \App\Models\Order::class)
+                <a href="{{ route('admin.orders.create') }}" class="orders-page__btn orders-page__btn--success orders-page__btn--create">
+                    <i class="fas fa-plus"></i><span class="orders-page__btn-text">Создать заказ</span>
+                </a>
+            @endcan
+        </div>
 
-            {{-- Фильтр по статусу --}}
-            <div class="card-body pb-0">
-                <form method="GET" class="form-inline flex-wrap">
-                    <select name="status" class="form-control form-control-sm mr-2 mb-2">
+        <header class="orders-page__section-header">
+            <h1 class="orders-page__title">
+                @if($tab === 'my')
+                    Мои заказы
+                @elseif($tab === 'company')
+                    Заказы компаний
+                @else
+                    Архив заказов
+                @endif
+            </h1>
+        </header>
+
+        <div class="orders-page__filters-wrap">
+            <form method="GET" class="orders-page__filters">
+                <input type="hidden" name="tab" value="{{ $tab }}">
+
+                @if($tab === 'my' || $tab === 'company')
+                    <select name="status" class="orders-page__select" data-orders-filter-auto-submit>
                         <option value="">Все статусы</option>
-                        @foreach($statuses as $status)
-                            <option value="{{ $status->value }}" {{ request('status') === $status->value ? 'selected' : '' }}>
-                                {{ $status->label() }}
+                        @foreach($statuses as $option)
+                            <option value="{{ $option['value'] }}" {{ (string)request('status') === (string)$option['value'] ? 'selected' : '' }}>
+                                {{ $option['label'] }}
                             </option>
                         @endforeach
                     </select>
-                    <button class="btn btn-secondary btn-sm mr-2 mb-2" type="submit">
-                        <i class="fas fa-filter mr-1"></i>Фильтр
-                    </button>
-                    @if(request('status'))
-                        <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary btn-sm mb-2">
-                            <i class="fas fa-times mr-1"></i>Сбросить
-                        </a>
-                    @endif
-                </form>
-            </div>
+                @endif
 
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover table-striped mb-0">
+                
+
+                @if($tab === 'company' || $tab === 'archive')
+                    @if($companies->isNotEmpty())
+                        <select name="company_id" class="orders-page__select" data-orders-filter-auto-submit>
+                            <option value="">Все компании</option>
+                            @foreach($companies as $company)
+                                <option value="{{ $company->id }}" {{ (string)request('company_id') === (string)$company->id ? 'selected' : '' }}>
+                                    {{ $company->company ?? $company->full_name ?? $company->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    @endif
+
+                    @if($managers->isNotEmpty())
+                        <select name="manager_id" class="orders-page__select" data-orders-filter-auto-submit>
+                            <option value="">Все менеджеры</option>
+                            @foreach($managers as $manager)
+                                <option value="{{ $manager->id }}" {{ (string)request('manager_id') === (string)$manager->id ? 'selected' : '' }}>
+                                    {{ $manager->full_name ?? $manager->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    @endif
+                @endif
+
+                @if(request()->except('tab'))
+                    <a href="{{ route('admin.orders.index', ['tab' => $tab]) }}" class="orders-page__btn orders-page__btn--outline">
+                        <i class="fas fa-times"></i><span class="orders-page__btn-text">Сбросить</span>
+                    </a>
+                @endif
+                <div class="orders-page__search-group">
+                    <input type="text"
+                           name="number"
+                           value="{{ request('number') }}"
+                           class="orders-page__search-input"
+                           placeholder="Введите номер заказа">
+                    <button type="submit" class="orders-page__search-submit" aria-label="Искать">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="orders-page__body">
+            @if($orders->isNotEmpty())
+                <div class="orders-page__table-wrap">
+                    <table class="orders-page__table">
                         <thead>
                             <tr>
-                                <th>№ Заказа</th>
-                                <th>Статус</th>
-                                <th>Создал</th>
-                                <th>Дата создания</th>
-                                <th>Сумма</th>
-                                <th style="width:120px">Действия</th>
+                                <th class="orders-page__th orders-page__th--number">№ Заказа</th>
+                                <th class="orders-page__th orders-page__th--status">Статус</th>
+                                <th class="orders-page__th orders-page__th--date">Дата, время</th>
+                                <th class="orders-page__th orders-page__th--author">Автор заказа</th>
+                                <th class="orders-page__th orders-page__th--company">Компания</th>
+                                <th class="orders-page__th orders-page__th--total">Сумма, руб.</th>
                             </tr>
                         </thead>
                         <tbody>
-                        @forelse($orders as $order)
-                            <tr>
-                                <td>
-                                    <a href="{{ route('admin.orders.show', $order) }}">
-                                        <strong>{{ $order->order_number }}</strong>
+                        @foreach($orders as $order)
+                            @php
+                                $badgeMod = $order->status === \App\Enums\OrderStatus::Completed ? 'completed' : ($order->status === \App\Enums\OrderStatus::Cancelled ? 'cancelled' : 'in-progress');
+                            @endphp
+                            <tr class="orders-page__row">
+                                <td class="orders-page__td orders-page__td--number">
+                                    <a href="{{ route('admin.orders.show', $order) }}" class="orders-page__link">
+                                        {{ $order->order_number }}
                                     </a>
                                 </td>
-                                <td>
-                                    <span class="badge {{ $order->status->badgeClass() }}">
+                                <td class="orders-page__td orders-page__td--status">
+                                    <span class="orders-page__badge orders-page__badge--{{ $badgeMod }}">
                                         {{ $order->status->label() }}
                                     </span>
                                 </td>
-                                <td>
-                                    {{ $order->user->full_name ?? $order->user->name }}
-                                    <small class="text-muted d-block">{{ $order->user->role?->label() }}</small>
+                                <td class="orders-page__td orders-page__td--date">{{ $order->created_at->format('d.m.Y, H:i') }}</td>
+                                <td class="orders-page__td orders-page__td--author">
+                                    <span class="orders-page__author-name">{{ $order->user->full_name ?? $order->user->name }}</span>
+                                    <!-- <span class="orders-page__author-role">{{ $order->user->role?->label() }}</span> -->
                                 </td>
-                                <td>{{ $order->created_at->format('d.m.Y H:i') }}</td>
-                                <td>{{ number_format($order->total, 2, '.', ' ') }} ₽</td>
-                                <td>
-                                    <a href="{{ route('admin.orders.show', $order) }}"
-                                       class="btn btn-sm btn-info" title="Просмотр">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    @can('delete', $order)
-                                        <button class="btn btn-sm btn-danger ml-1"
-                                                data-toggle="modal" data-target="#deleteModal"
-                                                data-action="{{ route('admin.orders.destroy', $order) }}"
-                                                onclick="setDeleteAction(this)" title="Удалить">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    @endcan
+                                <td class="orders-page__td orders-page__td--company">
+                                    @php
+                                        $companyName =
+                                            optional($order->companyAdmin)->company
+                                            ?? optional($order->companyAdmin)->full_name
+                                            ?? ($order->user->company ?? null);
+                                    @endphp
+                                    {{ $companyName ?? '—' }}
                                 </td>
+                                <td class="orders-page__td orders-page__td--total">{{ number_format($order->total, 2, '.', ' ') }} ₽</td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-4">
-                                    <i class="fas fa-clipboard-list fa-2x mb-2 d-block"></i>
-                                    Заказов не найдено
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                         </tbody>
                     </table>
                 </div>
-            </div>
-            <div class="card-footer d-flex justify-content-center">
-                {{ $orders->withQueryString()->links() }}
-            </div>
+            @else
+                <div class="orders-page__empty">
+                    <span class="orders-page__empty-icon"><i class="fas fa-clipboard-list"></i></span>
+                    Заказов не найдено
+                </div>
+            @endif
         </div>
+        @if($orders->hasPages())
+        <footer class="orders-page__footer">
+            {{ $orders->withQueryString()->links('vendor.pagination.orders-page') }}
+        </footer>
+        @endif
     </div>
-</section>
+</div>
 
 {{-- Модальное окно подтверждения удаления --}}
-<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <form id="deleteForm" method="POST">
-            @csrf @method('DELETE')
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle text-danger mr-2"></i>Удаление заказа</h5>
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+<div class="orders-page__modal" id="deleteOrderModal" tabindex="-1" role="dialog" aria-labelledby="deleteOrderModalLabel" aria-hidden="true">
+    <div class="orders-page__modal-dialog" role="document">
+        <form id="deleteOrderForm" method="POST">
+            @csrf
+            @method('DELETE')
+            <div class="orders-page__modal-content">
+                <div class="orders-page__modal-header">
+                    <h2 class="orders-page__modal-title" id="deleteOrderModalLabel">
+                        <i class="fas fa-exclamation-triangle orders-page__modal-title-icon"></i>Удаление заказа
+                    </h2>
+                    <button type="button" class="orders-page__modal-close" data-dismiss="modal" aria-label="Закрыть"><span aria-hidden="true">&times;</span></button>
                 </div>
-                <div class="modal-body">
-                    <p>Вы уверены, что хотите удалить этот заказ?</p>
-                    <p class="text-danger"><strong>Это действие необратимо.</strong></p>
+                <div class="orders-page__modal-body">
+                    <p class="orders-page__modal-text">Вы уверены, что хотите удалить этот заказ?</p>
+                    <p class="orders-page__modal-warning">Это действие необратимо.</p>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-danger">Удалить</button>
+                <div class="orders-page__modal-footer">
+                    <button type="button" class="orders-page__btn orders-page__btn--secondary" data-dismiss="modal">Отмена</button>
+                    <button type="submit" class="orders-page__btn orders-page__btn--danger">Удалить</button>
                 </div>
             </div>
         </form>
@@ -145,8 +210,45 @@
 
 @push('scripts')
 <script>
-    function setDeleteAction(btn) {
-        document.getElementById('deleteForm').action = btn.getAttribute('data-action');
+(function() {
+    var sel = document.querySelector('[data-orders-tab-select]');
+    if (sel) {
+        sel.addEventListener('change', function() {
+            var base = this.getAttribute('data-orders-tab-base') || '';
+            var params = new URLSearchParams(window.location.search);
+            params.set('tab', this.value);
+            window.location.href = base + (params.toString() ? '?' + params.toString() : '');
+        });
     }
+})();
+(function() {
+    document.querySelectorAll('[data-orders-filter-auto-submit]').forEach(function(select) {
+        select.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+})();
+(function() {
+    var modal = document.getElementById('deleteOrderModal');
+    var form = document.getElementById('deleteOrderForm');
+    if (!modal || !form) return;
+    document.querySelectorAll('[data-orders-modal-open]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            form.action = this.getAttribute('data-action');
+            modal.classList.add('orders-page__modal--open');
+            modal.setAttribute('aria-hidden', 'false');
+        });
+    });
+    function closeModal() {
+        modal.classList.remove('orders-page__modal--open');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+    modal.querySelectorAll('[data-dismiss="modal"]').forEach(function(btn) {
+        btn.addEventListener('click', closeModal);
+    });
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeModal();
+    });
+})();
 </script>
 @endpush

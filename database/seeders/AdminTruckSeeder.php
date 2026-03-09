@@ -27,6 +27,7 @@ class AdminTruckSeeder extends Seeder
             'role'      => UserRole::AdminTruck,
             'is_admin'  => true,
             'is_active' => true,
+            'company'   => 'Трак Импорт',
         ]);
 
         $this->command->info('Администратор создан:');

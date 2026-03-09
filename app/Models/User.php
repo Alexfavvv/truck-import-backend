@@ -19,6 +19,7 @@ class User extends Authenticatable
         'role', 'parent_id', 'is_active', 'customer_id',
         'phone', 'company', 'requisites', 'full_name', 'position',
         'login',
+        'inn', 'ogrn', 'bank_account', 'bank', 'bik', 'correspondent_account',
     ];
 
     protected $hidden = ['password', 'remember_token'];

@@ -12,7 +12,7 @@ class CustomAuthenticateMiddleware
     {
         // Если не авторизован, перенаправляем в админскую форму логина
         if (!Auth::check()) {
-            return redirect()->route('admin.login');
+            return redirect()->route('login');
         }
 
         return $next($request);

@@ -10,12 +10,15 @@ class RedirectIfAuthenticatedMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        // Если пользователь уже залогинен, отправляем его в админку
-        if (Auth::check()) {
-            return redirect()->route('admin.index');
+        if (!Auth::check()) {
+            return $next($request);
         }
 
-        return $next($request);
+        $user = Auth::user();
+        if ($user->isTruckSide()) {
+            return redirect()->route('admin.index');
+        }
+        return redirect()->route('customer.dashboard');
     }
 }
 

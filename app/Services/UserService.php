@@ -19,6 +19,7 @@ class UserService
             'full_name' => $data['full_name'] ?? $data['name'],
             'email'     => $data['email'] ?? null,
             'phone'     => $data['phone'] ?? null,
+            'company'   => 'Трак Импорт',
             'login'     => $data['login'],
             'password'  => $data['password'],
             'role'      => UserRole::ManagerTruck,

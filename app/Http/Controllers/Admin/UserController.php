@@ -15,21 +15,105 @@ class UserController extends Controller
 {
     public function __construct(private readonly UserService $userService) {}
 
-    /** Список всех пользователей (только admin_truck) */
-    public function index(): View
+    /** Профили компаний: список компаний (admin_customer) с табами Активные / Архив */
+    public function index(Request $request): View
     {
         $this->authorize('viewAny', User::class);
-        $users = User::with('parent')->orderBy('role')->paginate(20);
-        $roles = UserRole::cases();
-        return view('admin.users.index', compact('users', 'roles'));
+        $tab = $request->get('tab', 'active');
+
+        $companies = collect();
+        if ($tab === 'active') {
+            $query = User::where('role', UserRole::AdminCustomer->value)
+                ->where('is_active', true)
+                ->withCount(['managers', 'companyOrders']);
+
+            $search = $request->get('search');
+            if ($search !== null && $search !== '') {
+                $query->where(function ($q) use ($search) {
+                    $q->where('company', 'ilike', '%' . $search . '%')
+                        ->orWhere('full_name', 'ilike', '%' . $search . '%');
+                });
+            }
+
+            $companies = $query->orderBy('company')->paginate(20)->withQueryString();
+        }
+
+        return view('admin.users.index', compact('companies', 'tab'));
     }
 
-    /** Карточка пользователя */
+    /** Карточка пользователя: для админ/менеджер заказчика — новая страница с табами, для остальных — старая */
     public function show(User $user): View
     {
         $this->authorize('view', $user);
+
+        $roleValue = $user->role?->value;
+        $isCustomerSide = in_array($roleValue, [UserRole::AdminCustomer->value, UserRole::ManagerCustomer->value], true);
+
+        if ($isCustomerSide) {
+            $user->load([
+                'parent',
+                'orders' => fn($q) => $q->with('invoice')->latest(),
+                'companyOrders' => fn($q) => $q->with('invoice')->latest(),
+            ]);
+            return view('admin.managers.show', compact('user'));
+        }
+
         $user->load(['managers', 'orders' => fn($q) => $q->latest()]);
         return view('admin.users.show', compact('user'));
+    }
+
+    /** Карточка компании (профиль компании, не админа) */
+    public function showCompany(Request $request, User $user): View
+    {
+        if ($user->role !== UserRole::AdminCustomer) {
+            abort(404);
+        }
+        $this->authorize('view', $user);
+        $user->loadCount('companyOrders');
+        $user->load(['managers' => fn($q) => $q->withCount('orders'), 'companyOrders' => fn($q) => $q->latest()]);
+
+        $companyUsers = collect([
+            (object)['user' => $user, 'role_label' => 'Администратор', 'orders_count' => $user->company_orders_count],
+        ])->merge(
+            $user->managers->map(fn($m) => (object)['user' => $m, 'role_label' => 'Менеджер', 'orders_count' => $m->orders_count])
+        );
+
+        $search = $request->get('search');
+        if ($search !== null && $search !== '') {
+            $search = mb_strtolower($search);
+            $companyUsers = $companyUsers->filter(function ($row) use ($search) {
+                $u = $row->user;
+                $name = mb_strtolower($u->full_name ?? $u->name ?? '');
+                $customerId = mb_strtolower((string)($u->customer_id ?? ''));
+                return str_contains($name, $search) || str_contains($customerId, $search);
+            });
+        }
+
+        return view('admin.companies.show', compact('user', 'companyUsers'));
+    }
+
+    /** Сохранение реквизитов компании */
+    public function updateCompany(Request $request, User $user): RedirectResponse
+    {
+        if ($user->role !== UserRole::AdminCustomer) {
+            abort(404);
+        }
+        $this->authorize('update', $user);
+
+        $validated = $request->validate([
+            'company'               => 'nullable|string|max:255',
+            'inn'                   => 'nullable|string|max:50',
+            'ogrn'                  => 'nullable|string|max:50',
+            'bank_account'          => 'nullable|string|max:50',
+            'bank'                  => 'nullable|string|max:255',
+            'bik'                   => 'nullable|string|max:50',
+            'correspondent_account' => 'nullable|string|max:50',
+        ]);
+
+        $user->update($validated);
+
+        return redirect()->route('admin.companies.show', $user)
+            ->with('success', 'Изменения сохранены');
     }
 
     /** Форма создания пользователя */
@@ -86,7 +170,12 @@ class UserController extends Controller
             $message .= ". Логин: {$result['user']->login}, пароль: {$result['password']}";
         }
 
-        return redirect()->route('admin.users.show', $result['user'])
+        $user = $result['user'];
+        $redirectRoute = $user->role === UserRole::AdminCustomer
+            ? 'admin.companies.show'
+            : 'admin.users.show';
+
+        return redirect()->route($redirectRoute, $user)
             ->with('success', $message);
     }
 
@@ -120,8 +209,13 @@ class UserController extends Controller
 
         $user->update($validated);
 
-        return redirect()->route('admin.users.show', $user)
-            ->with('success', 'Данные обновлены');
+        $tab = $request->get('_return_tab', 'personal');
+        $url = route('admin.users.show', $user);
+        if (in_array($tab, ['personal', 'auth', 'orders', 'invoices'], true)) {
+            $url .= '?tab=' . urlencode($tab);
+        }
+
+        return redirect()->to($url)->with('success', 'Данные обновлены');
     }
 
     /** Удаление пользователя */
