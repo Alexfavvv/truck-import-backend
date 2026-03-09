@@ -17,6 +17,11 @@ class ForceHttps
             return $next($request);
         }
 
+        // За Nginx/прокси: Laravel не видит HTTPS, запрос приходит как HTTP — учитываем заголовок от прокси
+        if (strtolower((string) $request->header('X-Forwarded-Proto', '')) === 'https') {
+            return $next($request);
+        }
+
         if (! str_starts_with(config('app.url'), 'https://')) {
             return $next($request);
         }
