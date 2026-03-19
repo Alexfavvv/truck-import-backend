@@ -27,7 +27,12 @@ class CustomerAuthController extends Controller
             'email'      => 'nullable|email|unique:users,email',
             'full_name'  => 'nullable|string|max:255',
             'company'    => 'nullable|string|max:255',
-            'requisites' => 'nullable|string|max:2000',
+            'inn'                   => 'nullable|string|max:50',
+            'ogrn'                  => 'nullable|string|max:50',
+            'bank_account'          => 'nullable|string|max:50',
+            'bank'                  => 'nullable|string|max:255',
+            'bik'                   => 'nullable|string|max:50',
+            'correspondent_account' => 'nullable|string|max:50',
             'position'   => 'nullable|string|max:255',
             'login'      => 'required|string|max:100|unique:users,login|alpha_dash',
             'password'   => 'required|string|min:8|confirmed',
@@ -42,12 +47,10 @@ class CustomerAuthController extends Controller
             'email.unique'      => 'Этот email уже используется',
         ]);
 
-        $user = $this->userService->createAdminCustomer($validated);
+        $user = $this->userService->createAdminCustomer($validated, selfRegistered: true);
 
-        Auth::login($user);
-
-        return redirect()->route('customer.dashboard')
-            ->with('success', 'Добро пожаловать! Ваш ID заказчика: ' . $user->customer_id);
+        return redirect()->route('login')
+            ->with('success', 'Регистрация успешна! Ваш ID заказчика: ' . $user->customer_id . '. Ожидайте одобрения администратором Трак Импорт для входа в личный кабинет.');
     }
 
     public function showLoginForm(): View

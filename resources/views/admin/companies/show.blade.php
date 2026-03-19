@@ -18,7 +18,17 @@
         <i class="fas fa-arrow-left" aria-hidden="true"></i> К списку всех компаний
     </a>
 
-    <h1 class="company-profile-page__title">Профиль компании {{ $companyName }}</h1>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h1 class="company-profile-page__title mb-0">Профиль компании {{ $companyName }}</h1>
+        @if($user->isPendingApproval() && auth()->user()?->canManageUsers())
+            <form method="POST" action="{{ route('admin.users.approve', $user) }}" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-check mr-1"></i>Одобрить заявку
+                </button>
+            </form>
+        @endif
+    </div>
 
     <div class="company-profile-page__card">
         <div class="company-profile-page__card-header">

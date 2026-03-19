@@ -69,6 +69,8 @@ Route::middleware([CustomAuthenticateMiddleware::class, IsAdminMiddleware::class
     // ── Пользователи (admin_truck + admin_customer) ──────────────────
     Route::resource('/admin/users', UserController::class)
         ->names('admin.users');
+    Route::post('/admin/users/{user}/approve', [UserController::class, 'approve'])
+        ->name('admin.users.approve');
 
     // ── Профиль компании (карточка компании, не админа) ─────────────
     Route::get('/admin/companies/{user}', [UserController::class, 'showCompany'])

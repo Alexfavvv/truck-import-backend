@@ -15,11 +15,12 @@ class UserController extends Controller
 {
     public function __construct(private readonly UserService $userService) {}
 
-    /** Профили компаний: список компаний (admin_customer) с табами Активные / Архив */
+    /** Профили компаний: список компаний (admin_customer) с табами Активные / Ожидают одобрения / Архив */
     public function index(Request $request): View
     {
         $this->authorize('viewAny', User::class);
         $tab = $request->get('tab', 'active');
+        $tab = in_array($tab, ['active', 'pending', 'archive'], true) ? $tab : 'active';
 
         $companies = collect();
         if ($tab === 'active') {
@@ -36,9 +37,40 @@ class UserController extends Controller
             }
 
             $companies = $query->orderBy('company')->paginate(20)->withQueryString();
+        } elseif ($tab === 'pending') {
+            $query = User::where('role', UserRole::AdminCustomer->value)
+                ->where('is_active', false)
+                ->whereNull('approved_at')
+                ->withCount(['managers', 'companyOrders']);
+
+            $search = $request->get('search');
+            if ($search !== null && $search !== '') {
+                $query->where(function ($q) use ($search) {
+                    $q->where('company', 'ilike', '%' . $search . '%')
+                        ->orWhere('full_name', 'ilike', '%' . $search . '%')
+                        ->orWhere('customer_id', 'ilike', '%' . $search . '%');
+                });
+            }
+
+            $companies = $query->orderBy('created_at', 'desc')->paginate(20)->withQueryString();
         }
 
         return view('admin.users.index', compact('companies', 'tab'));
+    }
+
+    /** Одобрить заявку на регистрацию (admin_truck) */
+    public function approve(User $user): RedirectResponse
+    {
+        $this->authorize('update', $user);
+
+        if ($user->role !== UserRole::AdminCustomer || $user->approved_at !== null) {
+            return back()->with('error', 'Эту заявку нельзя одобрить.');
+        }
+
+        $user->update(['is_active' => true, 'approved_at' => now()]);
+
+        return redirect()->route('admin.companies.show', $user)
+            ->with('success', 'Компания одобрена. Пользователь может войти в личный кабинет.');
     }
 
     /** Карточка пользователя: для админ/менеджер заказчика — новая страница с табами, для остальных — старая */
@@ -139,6 +171,12 @@ class UserController extends Controller
             'phone'     => 'required|string|max:30',
             'company'   => 'nullable|string|max:255',
             'requisites' => 'nullable|string',
+            'inn'                   => 'nullable|string|max:50',
+            'ogrn'                  => 'nullable|string|max:50',
+            'bank_account'          => 'nullable|string|max:50',
+            'bank'                  => 'nullable|string|max:255',
+            'bik'                   => 'nullable|string|max:50',
+            'correspondent_account' => 'nullable|string|max:50',
             'position'  => 'nullable|string|max:255',
             'parent_id' => 'nullable|exists:users,id',
             'login'     => 'nullable|string|max:100|unique:users,login',

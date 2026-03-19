@@ -30,25 +30,33 @@ class UserService
 
     /**
      * Создать администратора заказчика (admin_truck или самостоятельная регистрация).
+     *
+     * @param  bool  $selfRegistered  true = самостоятельная регистрация (ожидает одобрения)
      */
-    public function createAdminCustomer(array $data): User
+    public function createAdminCustomer(array $data, bool $selfRegistered = false): User
     {
         $login    = $data['login'] ?? $this->generateLogin();
         $password = $data['password'] ?? $this->generatePassword();
 
         $user = User::create([
-            'name'        => $data['full_name'] ?? $data['name'] ?? $login,
-            'full_name'   => $data['full_name'] ?? null,
-            'email'       => $data['email'] ?? null,
-            'phone'       => $data['phone'],
-            'company'     => $data['company'] ?? null,
-            'requisites'  => $data['requisites'] ?? null,
-            'position'    => $data['position'] ?? null,
-            'login'       => $login,
-            'password'    => $password,
-            'role'        => UserRole::AdminCustomer,
-            'customer_id' => $this->generateCustomerId(),
-            'is_active'   => true,
+            'name'                 => $data['full_name'] ?? $data['name'] ?? $login,
+            'full_name'            => $data['full_name'] ?? null,
+            'email'                => $data['email'] ?? null,
+            'phone'                => $data['phone'],
+            'company'              => $data['company'] ?? null,
+            'inn'                  => $data['inn'] ?? null,
+            'ogrn'                 => $data['ogrn'] ?? null,
+            'bank_account'         => $data['bank_account'] ?? null,
+            'bank'                 => $data['bank'] ?? null,
+            'bik'                  => $data['bik'] ?? null,
+            'correspondent_account' => $data['correspondent_account'] ?? null,
+            'position'             => $data['position'] ?? null,
+            'login'                => $login,
+            'password'             => $password,
+            'role'                 => UserRole::AdminCustomer,
+            'customer_id'          => $this->generateCustomerId(),
+            'is_active'            => !$selfRegistered,
+            'approved_at'           => $selfRegistered ? null : now(),
         ]);
 
         return $user;

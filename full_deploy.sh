@@ -219,11 +219,15 @@ echo ""
 # Шаг 9: Оптимизация Laravel
 echo "⚡ Шаг 9: Оптимизация Laravel..."
 php artisan optimize:clear
+php artisan config:clear
 php artisan optimize
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 php artisan event:cache
+
+# Перезапуск queue workers (Horizon, queue:work) — иначе используют старый кэш конфига
+php artisan queue:restart 2>/dev/null || true
 
 echo "✅ Оптимизация выполнена"
 echo ""

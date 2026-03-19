@@ -209,6 +209,25 @@
                     @endif
                     @if($customer->requisites)
                         <div class="party-line" style="white-space:pre-wrap">{{ $customer->requisites }}</div>
+                    @elseif($customer->inn ?? $customer->ogrn ?? $customer->bank_account ?? $customer->bank ?? $customer->bik)
+                        @if($customer->inn)
+                            <div class="party-line">ИНН: {{ $customer->inn }}@if($customer->ogrn) / ОГРН: {{ $customer->ogrn }}@endif</div>
+                        @endif
+                        @if($customer->bank_account)
+                            <div class="party-line">Р/с: {{ $customer->bank_account }}@if($customer->bank) в {{ $customer->bank }}@endif</div>
+                        @endif
+                        @if($customer->bik)
+                            <div class="party-line">БИК: {{ $customer->bik }}@if($customer->correspondent_account) / К/с: {{ $customer->correspondent_account }}@endif</div>
+                        @endif
+                        @if($customer->full_name ?? $customer->name)
+                            <div class="party-line">{{ $customer->full_name ?? $customer->name }}</div>
+                        @endif
+                        @if($customer->phone)
+                            <div class="party-line">Тел.: {{ $customer->phone }}</div>
+                        @endif
+                        @if($customer->email)
+                            <div class="party-line">{{ $customer->email }}</div>
+                        @endif
                     @else
                         @if($customer->full_name ?? $customer->name)
                             <div class="party-line">{{ $customer->full_name ?? $customer->name }}</div>

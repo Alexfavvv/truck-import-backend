@@ -46,7 +46,10 @@ class UnifiedAuthController extends Controller
         }
 
         if (!$user->is_active) {
-            return back()->withErrors(['error' => 'Аккаунт деактивирован'])->withInput();
+            $message = $user->isPendingApproval()
+                ? 'Ваш аккаунт ожидает одобрения администратором Трак Импорт.'
+                : 'Аккаунт деактивирован';
+            return back()->withErrors(['error' => $message])->withInput();
         }
 
         Auth::login($user, $request->boolean('remember'));

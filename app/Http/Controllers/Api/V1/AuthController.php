@@ -63,14 +63,11 @@ class AuthController extends Controller
             'password'   => 'required|string|min:8|confirmed',
         ]);
 
-        $user = $this->userService->createAdminCustomer($validated);
-
-        $token = $user->createToken('api')->plainTextToken;
+        $user = $this->userService->createAdminCustomer($validated, selfRegistered: true);
 
         return response()->json([
-            'token'       => $token,
-            'token_type'  => 'Bearer',
-            'user'        => $this->formatUser($user),
+            'message'    => 'Регистрация успешна. Ожидайте одобрения администратором Трак Импорт.',
+            'customer_id' => $user->customer_id,
         ], 201);
     }
 
@@ -139,7 +136,10 @@ DESC,
         }
 
         if (!$user->is_active) {
-            return response()->json(['message' => 'Аккаунт деактивирован'], 401);
+            $message = $user->isPendingApproval()
+                ? 'Ваш аккаунт ожидает одобрения администратором Трак Импорт.'
+                : 'Аккаунт деактивирован';
+            return response()->json(['message' => $message], 401);
         }
 
         // Удаляем старые токены (опционально — один активный токен)

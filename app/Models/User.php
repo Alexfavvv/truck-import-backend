@@ -16,7 +16,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name', 'email', 'password', 'is_admin',
-        'role', 'parent_id', 'is_active', 'customer_id',
+        'role', 'parent_id', 'is_active', 'approved_at', 'customer_id',
         'phone', 'company', 'requisites', 'full_name', 'position',
         'login',
         'inn', 'ogrn', 'bank_account', 'bank', 'bik', 'correspondent_account',
@@ -27,6 +27,7 @@ class User extends Authenticatable
     protected $casts = [
         'is_admin'           => 'boolean',
         'is_active'          => 'boolean',
+        'approved_at'        => 'datetime',
         'email_verified_at'  => 'datetime',
         'password'           => 'hashed',
         'role'               => UserRole::class,
@@ -62,6 +63,12 @@ class User extends Authenticatable
     public function isCustomerSide(): bool
     {
         return $this->role?->isCustomerSide() ?? false;
+    }
+
+    /** Ожидает одобрения (самостоятельная регистрация, ещё не одобрен) */
+    public function isPendingApproval(): bool
+    {
+        return $this->isAdminCustomer() && !$this->is_active && $this->approved_at === null;
     }
 
     /** Обратная совместимость */
