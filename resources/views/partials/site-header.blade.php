@@ -1,7 +1,10 @@
 {{-- Шапка сайта (как в ЛК) — desktop + mobile + модалка «Заказать звонок» --}}
+@php
+    $front = rtrim(config('app.frontend_url', 'https://truck-import.ru'), '/');
+@endphp
 <header class="header _desktop">
     <div class="header__top">
-        <a class="logo" href="https://truck-import.ru">
+        <a class="logo" href="{{ $front }}/">
             <img src="/logo.svg" alt="logo" width="500" height="300">
         </a>
         <div class="header__inner">

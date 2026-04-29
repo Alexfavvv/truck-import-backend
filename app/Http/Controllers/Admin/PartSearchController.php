@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Services\PartSearchListImportService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class PartSearchController extends Controller
 {
     private const PREVIOUS_SEARCHES_KEY = 'admin_part_search_history';
+
     private const MAX_PREVIOUS_SEARCHES = 15;
 
     public function index(Request $request): View
@@ -21,8 +24,8 @@ class PartSearchController extends Controller
         if ($query !== '') {
             $products = Product::query()
                 ->where(function ($q) use ($query) {
-                    $q->where('title', 'like', '%' . $query . '%')
-                        ->orWhere('sku', 'like', '%' . $query . '%');
+                    $q->where('title', 'like', '%'.$query.'%')
+                        ->orWhere('sku', 'like', '%'.$query.'%');
                 })
                 ->with('brand', 'partType')
                 ->orderBy('id')
@@ -53,8 +56,8 @@ class PartSearchController extends Controller
 
             $items = Product::query()
                 ->where(function ($q) use ($term) {
-                    $q->where('title', 'like', '%' . $term . '%')
-                        ->orWhere('sku', 'like', '%' . $term . '%');
+                    $q->where('title', 'like', '%'.$term.'%')
+                        ->orWhere('sku', 'like', '%'.$term.'%');
                 })
                 ->with('brand', 'partType')
                 ->orderByRaw('CASE WHEN sku = ? THEN 0 ELSE 1 END', [$term])
@@ -73,6 +76,31 @@ class PartSearchController extends Controller
             'products' => $products,
             'previousSearches' => $previousSearches,
             'previousProducts' => $previousProducts,
+        ]);
+    }
+
+    public function uploadList(Request $request, PartSearchListImportService $importService): JsonResponse
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'max:10240', 'mimes:xlsx,xls,csv'],
+        ]);
+
+        $parsed = $importService->parseUploadedFile($request->file('file'));
+        $resolved = $importService->resolveProducts($parsed);
+
+        $rowsHtml = [];
+        foreach ($resolved['items'] as $item) {
+            $rowsHtml[] = view('partials.search-product-table-row', [
+                'product' => $item['product'],
+                'quantity' => $item['quantity'],
+                'checked' => true,
+            ])->render();
+        }
+
+        return response()->json([
+            'rows_html' => $rowsHtml,
+            'not_found' => $resolved['not_found'],
+            'matched_count' => count($resolved['items']),
         ]);
     }
 

@@ -5,13 +5,14 @@ use App\Http\Controllers\Admin\CartController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PartSearchController;
-use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\PartTypeController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\TruckManufacturerController;
 use App\Http\Controllers\Admin\TruckModelController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\SsoController;
 use App\Http\Controllers\UnifiedAuthController;
 use App\Http\Middleware\CustomAuthenticateMiddleware;
 use App\Http\Middleware\IsAdminMiddleware;
@@ -23,10 +24,13 @@ Route::get('/', fn () => redirect()->route('login'))->name('home');
 
 // Доступ в админку — только для авторизованного пользователя с ролью
 Route::middleware([CustomAuthenticateMiddleware::class, IsAdminMiddleware::class])->group(function () {
-    Route::get('/admin', function () { return view('admin.main.index'); })->name('admin.index');
+    Route::get('/admin', function () {
+        return view('admin.main.index');
+    })->name('admin.index');
 
     // ── Поиск деталей (отдельная страница) ───────────────────────────
     Route::get('/admin/search', [PartSearchController::class, 'index'])->name('admin.search.index');
+    Route::post('/admin/search/upload-list', [PartSearchController::class, 'uploadList'])->name('admin.search.upload-list');
 
     // ── Корзина (добавление из админки в корзину текущего пользователя) ─
     Route::post('/admin/cart/add', [CartController::class, 'add'])->name('admin.cart.add');
@@ -37,6 +41,7 @@ Route::middleware([CustomAuthenticateMiddleware::class, IsAdminMiddleware::class
     Route::resource('/admin/truck-manufacturers', TruckManufacturerController::class)->names('admin.truck-manufacturers')->except('show');
     Route::resource('/admin/part-types', PartTypeController::class)->names('admin.part-types')->except('show');
     Route::resource('/admin/products', ProductController::class)->names('admin.products')->except('show');
+    Route::delete('/admin/products', [ProductController::class, 'destroyAll'])->name('admin.products.destroy-all');
 
     Route::get('admin/products/import', [ProductController::class, 'showImportForm'])->name('admin.products.import.form');
     Route::post('admin/products/import', [ProductController::class, 'import'])->name('admin.products.import');
@@ -85,20 +90,23 @@ Route::middleware([RedirectIfAuthenticatedMiddleware::class])->group(function ()
 });
 Route::post('/login', [UnifiedAuthController::class, 'login'])->name('login.post');
 
+// SSO: после входа на lk пользователь открывает этот URL — редирект на фронт с одноразовым code
+Route::middleware('auth')->get('/sso/authorize', [SsoController::class, 'oauthAuthorize'])->name('sso.authorize');
+
 // Обратная совместимость: старый URL админки ведёт на общую страницу входа
 Route::get('/admin/login', fn () => redirect()->route('login'))->name('admin.login');
 
 Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
 // ── Кабинет заказчика ─────────────────────────────────────────────────────
-use App\Http\Controllers\CustomerAuthController;
-use App\Http\Controllers\Customer\CustomerDashboardController;
-use App\Http\Controllers\Customer\CustomerOrderController;
-use App\Http\Controllers\Customer\CustomerInvoiceController;
 use App\Http\Controllers\Customer\CustomerCompanyController;
-use App\Http\Controllers\Customer\CustomerProfileController;
+use App\Http\Controllers\Customer\CustomerDashboardController;
+use App\Http\Controllers\Customer\CustomerInvoiceController;
 use App\Http\Controllers\Customer\CustomerManagerController;
+use App\Http\Controllers\Customer\CustomerOrderController;
+use App\Http\Controllers\Customer\CustomerProfileController;
 use App\Http\Controllers\Customer\CustomerSearchController;
+use App\Http\Controllers\CustomerAuthController;
 use App\Http\Middleware\IsCustomerMiddleware;
 
 // Публичные страницы заказчика (без авторизации)
@@ -112,6 +120,7 @@ Route::middleware([IsCustomerMiddleware::class])->prefix('cabinet')->name('custo
 
     // Поиск деталей
     Route::get('/search', [CustomerSearchController::class, 'index'])->name('search.index');
+    Route::post('/search/upload-list', [CustomerSearchController::class, 'uploadList'])->name('search.upload-list');
 
     // Заказы
     Route::get('/orders', [CustomerOrderController::class, 'index'])->name('orders.index');
@@ -149,7 +158,7 @@ if (config('app.debug')) {
     Route::get('/_debug-routes', function () {
         return response()->json([
             'customer.search.index' => route('customer.search.index'),
-            'admin.search.index'    => route('admin.search.index'),
+            'admin.search.index' => route('admin.search.index'),
         ], 200, ['Content-Type' => 'application/json'], JSON_UNESCAPED_SLASHES);
     });
 }

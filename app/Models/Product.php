@@ -54,6 +54,11 @@ class Product extends Model
         return $this->hasMany(Characteristic::class);
     }
 
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
 
     public function metatags(): MorphOne
     {

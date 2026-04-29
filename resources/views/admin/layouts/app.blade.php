@@ -7,10 +7,13 @@
     <title>Трак Импорт — Вход</title>
     <link rel="stylesheet" href="{{ asset('AdminLTE/plugins/fontawesome-free/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('AdminLTE/dist/css/adminlte.min.css') }}">
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 </head>
-<body class="hold-transition login-page">
-
+<body class="hold-transition login-page login-page--with-footer">
+<div class="login-page__center-slot">
 @yield('content')
+</div>
+@include('partials.site-footer')
 
 <script src="{{ asset('AdminLTE/plugins/jquery/jquery.min.js') }}"></script>
 <script src="{{ asset('AdminLTE/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>

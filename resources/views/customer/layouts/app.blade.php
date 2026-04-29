@@ -950,9 +950,7 @@
         @yield('content')
     </div>
 
-    <footer class="main-footer">
-        <strong>Трак Импорт</strong> &copy; {{ now()->year }}
-    </footer>
+    @include('partials.site-footer')
 
     <aside class="control-sidebar control-sidebar-dark"></aside>
 </div>

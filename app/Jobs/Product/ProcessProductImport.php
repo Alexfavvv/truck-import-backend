@@ -3,6 +3,7 @@
 namespace App\Jobs\Product;
 
 use App\Imports\ProductsImport;
+use App\Services\ImportService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
@@ -12,14 +13,19 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
 use Maatwebsite\Excel\Facades\Excel;
+use Throwable;
 
 
 class ProcessProductImport implements ShouldQueue
 {
     use Queueable, SerializesModels, Dispatchable, InteractsWithQueue;
 
+    private const STATUS_TTL_HOURS = 12;
+
     private string $filePath;
     private int $userId;
+    public int $timeout = 3600;
+    public int $tries = 1;
 
     /**
      * Create a new job instance.
@@ -46,13 +52,20 @@ class ProcessProductImport implements ShouldQueue
         $failures = [];
 
         try {
+            ImportService::updateImportJob($this->filePath, [
+                'status' => 'processing',
+                'job_id' => $jobId,
+                'started_at' => now()->toDateTimeString(),
+            ]);
+
             Cache::put($cacheKey, [
                 'status' => $status,
                 'message' => $message,
                 'failures' => [],
                 'jobId' => $jobId,
                 'timestamp' => now()->timestamp,
-            ], now()->addMinutes(10));
+                'jobs' => ImportService::getImportJobsForUser($this->userId),
+            ], now()->addHours(self::STATUS_TTL_HOURS));
 
             $fullPath = Storage::path($this->filePath);
 
@@ -86,6 +99,13 @@ class ProcessProductImport implements ShouldQueue
                 'values' => [],
             ];
         } finally {
+            ImportService::updateImportJob($this->filePath, [
+                'status' => $status,
+                'job_id' => $jobId,
+                'finished_at' => now()->toDateTimeString(),
+                'failures_count' => count($failures),
+            ]);
+
             // Сохраняем финальный статус в Redis
             Cache::put($cacheKey, [
                 'status' => $status,
@@ -93,9 +113,37 @@ class ProcessProductImport implements ShouldQueue
                 'failures' => $failures,
                 'jobId' => $jobId,
                 'timestamp' => now()->timestamp,
-            ], now()->addMinutes(10));
+                'jobs' => ImportService::getImportJobsForUser($this->userId),
+            ], now()->addHours(self::STATUS_TTL_HOURS));
 
             Storage::delete($this->filePath);
         }
+    }
+
+    public function failed(Throwable $exception): void
+    {
+        $cacheKey = "import_status:user_{$this->userId}";
+        $jobId = $this->job?->getJobId();
+
+        ImportService::updateImportJob($this->filePath, [
+            'status' => 'error',
+            'job_id' => $jobId,
+            'finished_at' => now()->toDateTimeString(),
+            'failures_count' => 1,
+        ]);
+
+        Cache::put($cacheKey, [
+            'status' => 'error',
+            'message' => 'Импорт прерван: задача очереди завершилась с ошибкой или по таймауту.',
+            'failures' => [[
+                'row' => 0,
+                'attribute' => 'system',
+                'errors' => [$exception->getMessage()],
+                'values' => [],
+            ]],
+            'jobId' => $jobId,
+            'timestamp' => now()->timestamp,
+            'jobs' => ImportService::getImportJobsForUser($this->userId),
+        ], now()->addHours(self::STATUS_TTL_HOURS));
     }
 }

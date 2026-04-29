@@ -146,8 +146,8 @@
 </div>
 
 @can('create', \App\Models\User::class)
-<div class="modal fade" id="createCompanyModal" tabindex="-1" role="dialog" aria-labelledby="createCompanyModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+<div class="modal fade auth-modal-wrap" id="createCompanyModal" tabindex="-1" role="dialog" aria-labelledby="createCompanyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg auth-modal" role="document">
         <form method="POST" action="{{ route('admin.users.store') }}">
             @csrf
             <input type="hidden" name="role" value="admin_customer">
@@ -160,138 +160,138 @@
                 </div>
                 <div class="modal-body">
                     @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
+                        <div class="auth-page__alert auth-page__alert--danger">
+                            <ul class="mb-0 pl-3">
                                 @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
                             </ul>
                         </div>
                     @endif
 
-                    <h6 class="text-muted mb-2"><i class="fas fa-user mr-1"></i>Личные данные</h6>
+                    <div class="auth-page__section-title"><i class="fas fa-user"></i> Личные данные</div>
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label>ФИО <span class="text-danger">*</span></label>
+                            <div class="form-group auth-page__form-group">
+                                <label>ФИО <span class="auth-page__required">*</span></label>
                                 <input type="text" name="full_name" class="form-control @error('full_name') is-invalid @enderror"
                                        value="{{ old('full_name') }}" required placeholder="Иванов Иван Иванович">
-                                @error('full_name')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                @error('full_name')<span class="invalid-feedback d-block">{{ $message }}</span>@enderror
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group auth-page__form-group">
                                 <label>Должность</label>
                                 <input type="text" name="position" class="form-control @error('position') is-invalid @enderror"
                                        value="{{ old('position') }}" placeholder="Директор">
-                                @error('position')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                @error('position')<span class="invalid-feedback d-block">{{ $message }}</span>@enderror
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Телефон <span class="text-danger">*</span></label>
+                            <div class="form-group auth-page__form-group">
+                                <label>Телефон <span class="auth-page__required">*</span></label>
                                 <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror"
                                        value="{{ old('phone') }}" required placeholder="+7 (000) 000-00-00">
-                                @error('phone')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                @error('phone')<span class="invalid-feedback d-block">{{ $message }}</span>@enderror
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group auth-page__form-group">
                                 <label>Email</label>
                                 <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
                                        value="{{ old('email') }}" placeholder="email@example.com">
-                                @error('email')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                @error('email')<span class="invalid-feedback d-block">{{ $message }}</span>@enderror
                             </div>
                         </div>
                     </div>
 
-                    <h6 class="text-muted mb-2 mt-3"><i class="fas fa-building mr-1"></i>Данные компании</h6>
-                    <div class="form-group">
+                    <div class="auth-page__section-title auth-page__section-title--spaced"><i class="fas fa-building"></i> Данные компании</div>
+                    <div class="form-group auth-page__form-group">
                         <label>Название компании</label>
                         <input type="text" name="company" class="form-control @error('company') is-invalid @enderror"
                                value="{{ old('company') }}" placeholder='ООО "Название"'>
-                        @error('company')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                        @error('company')<span class="invalid-feedback d-block">{{ $message }}</span>@enderror
                     </div>
 
-                    <h6 class="text-muted mb-2 mt-3"><i class="fas fa-file-invoice mr-1"></i>Реквизиты</h6>
+                    <div class="auth-page__section-title auth-page__section-title--spaced"><i class="fas fa-file-invoice"></i> Реквизиты</div>
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group auth-page__form-group">
                                 <label>ИНН</label>
                                 <input type="text" name="inn" class="form-control @error('inn') is-invalid @enderror"
                                        value="{{ old('inn') }}" placeholder="7701234567">
-                                @error('inn')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                @error('inn')<span class="invalid-feedback d-block">{{ $message }}</span>@enderror
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group auth-page__form-group">
                                 <label>ОГРН</label>
                                 <input type="text" name="ogrn" class="form-control @error('ogrn') is-invalid @enderror"
                                        value="{{ old('ogrn') }}" placeholder="1234567890123">
-                                @error('ogrn')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                @error('ogrn')<span class="invalid-feedback d-block">{{ $message }}</span>@enderror
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group auth-page__form-group">
                                 <label>Расчётный счёт</label>
                                 <input type="text" name="bank_account" class="form-control @error('bank_account') is-invalid @enderror"
                                        value="{{ old('bank_account') }}" placeholder="40702810000000000000">
-                                @error('bank_account')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                @error('bank_account')<span class="invalid-feedback d-block">{{ $message }}</span>@enderror
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group auth-page__form-group">
                                 <label>Банк</label>
                                 <input type="text" name="bank" class="form-control @error('bank') is-invalid @enderror"
                                        value="{{ old('bank') }}" placeholder="ПАО Сбербанк">
-                                @error('bank')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                @error('bank')<span class="invalid-feedback d-block">{{ $message }}</span>@enderror
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group auth-page__form-group">
                                 <label>БИК</label>
                                 <input type="text" name="bik" class="form-control @error('bik') is-invalid @enderror"
                                        value="{{ old('bik') }}" placeholder="044525225">
-                                @error('bik')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                @error('bik')<span class="invalid-feedback d-block">{{ $message }}</span>@enderror
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group auth-page__form-group">
                                 <label>Корр. счёт</label>
                                 <input type="text" name="correspondent_account" class="form-control @error('correspondent_account') is-invalid @enderror"
                                        value="{{ old('correspondent_account') }}" placeholder="30101810400000000225">
-                                @error('correspondent_account')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                @error('correspondent_account')<span class="invalid-feedback d-block">{{ $message }}</span>@enderror
                             </div>
                         </div>
                     </div>
 
-                    <h6 class="text-muted mb-2 mt-3"><i class="fas fa-lock mr-1"></i>Данные для входа</h6>
+                    <div class="auth-page__section-title auth-page__section-title--spaced"><i class="fas fa-lock"></i> Данные для входа</div>
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group auth-page__form-group">
                                 <label>Логин</label>
                                 <input type="text" name="login" class="form-control @error('login') is-invalid @enderror"
                                        value="{{ old('login') }}" placeholder="Оставьте пустым — сгенерируется автоматически">
-                                @error('login')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                @error('login')<span class="invalid-feedback d-block">{{ $message }}</span>@enderror
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="form-group">
+                            <div class="form-group auth-page__form-group">
                                 <label>Пароль</label>
                                 <input type="text" name="password" class="form-control @error('password') is-invalid @enderror"
                                        value="{{ old('password') }}" placeholder="Оставьте пустым — сгенерируется автоматически">
-                                @error('password')<span class="invalid-feedback">{{ $message }}</span>@enderror
+                                @error('password')<span class="invalid-feedback d-block">{{ $message }}</span>@enderror
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">
+                <div class="modal-footer auth-modal__footer">
+                    <button type="button" class="auth-modal__btn auth-modal__btn--ghost" data-dismiss="modal">Отмена</button>
+                    <button type="submit" class="auth-page__btn">
                         <i class="fas fa-plus mr-1"></i>Создать компанию
                     </button>
                 </div>
@@ -316,7 +316,7 @@
 
     // Открыть модалку при ошибках валидации (редирект с формы)
     var createModal = document.getElementById('createCompanyModal');
-    var hasErrors = document.querySelector('#createCompanyModal .alert-danger');
+    var hasErrors = document.querySelector('#createCompanyModal .auth-page__alert--danger');
     if (createModal && hasErrors) {
         $(createModal).modal('show');
     }

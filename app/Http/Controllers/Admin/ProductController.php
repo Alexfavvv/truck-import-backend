@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Models\TruckManufacturer;
 use App\Services\Admin\ProductService;
 use App\Services\ImportService;
+use Illuminate\Database\QueryException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -79,7 +80,54 @@ class ProductController extends Controller
 
     public function destroy(Product $product): RedirectResponse
     {
-        $product->delete();
+        try {
+            $product->delete();
+            session()->flash('success', 'Товар успешно удален!');
+        } catch (QueryException $e) {
+            if (($e->errorInfo[0] ?? null) === '23503') {
+                session()->flash(
+                    'error',
+                    'Нельзя удалить товар, так как он используется в заказах. Сначала удалите/измените связанные позиции заказов.'
+                );
+                return redirect()->route('admin.products.index');
+            }
+
+            throw $e;
+        }
+
+        return redirect()->route('admin.products.index');
+    }
+
+    public function destroyAll(): RedirectResponse
+    {
+        $deleted = 0;
+
+        Product::query()
+            ->whereDoesntHave('orderItems')
+            ->select(['id'])
+            ->chunkById(200, function ($products) use (&$deleted) {
+                foreach ($products as $product) {
+                    $product->delete();
+                    $deleted++;
+                }
+            });
+
+        $blocked = Product::query()
+            ->whereHas('orderItems')
+            ->count();
+
+        if ($deleted > 0) {
+            $message = "Удалено товаров: {$deleted}.";
+            if ($blocked > 0) {
+                $message .= " Не удалено (используются в заказах): {$blocked}.";
+            }
+            session()->flash('success', $message);
+        } elseif ($blocked > 0) {
+            session()->flash('error', "Все товары связаны с заказами. Удаление невозможно. Кол-во: {$blocked}.");
+        } else {
+            session()->flash('error', 'Товары для удаления не найдены.');
+        }
+
         return redirect()->route('admin.products.index');
     }
 

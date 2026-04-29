@@ -1,0 +1,86 @@
+---
+description: Next.js + lk.truck-import.ru — SSO, Sanctum API, env, безопасность токена
+globs: "**/*.{ts,tsx,js,jsx,mjs,cjs}"
+alwaysApply: false
+---
+
+# Truck Import — интеграция фронта (Next.js) с lk
+
+**Размещение:** этот файл — образец из репозитория Laravel. В проекте **Next.js** скопируйте его в `.cursor/rules/truck-import-lk.mdc` (или объедините с вашими правилами).
+
+## Домены
+
+- **Публичный сайт / фронт:** `https://truck-import.ru` (Next.js).
+- **Личный кабинет / API:** `https://lk.truck-import.ru` (Laravel).
+- Префикс API: `https://lk.truck-import.ru/api`.
+
+## Переменные окружения (Next.js)
+
+- `NEXT_PUBLIC_LK_URL` — базовый URL lk без слэша в конце, например `https://lk.truck-import.ru`.
+- Для **серверных** запросов (Route Handlers, Server Actions) можно дублировать как `LK_API_URL` или использовать только `NEXT_PUBLIC_LK_URL` на сервере (переменные без `NEXT_PUBLIC_` предпочтительнее для секретов, но для публичного базового URL это нормально).
+
+На стороне **Laravel** в `.env` должны быть заданы префиксы callback для SSO, например:
+
+`SSO_ALLOWED_REDIRECT_PREFIXES=https://truck-import.ru,https://www.truck-import.ru`
+
+Локальная разработка: добавьте `http://localhost:3000` (или ваш порт) в тот же список на lk.
+
+## SSO (вход с lk → сессия на фронте через API-токен)
+
+Поток:
+
+1. Пользователь открывает в браузере (или редирект с Next):
+
+   `{NEXT_PUBLIC_LK_URL}/sso/authorize?redirect_uri={encodeURIComponent(callbackUrl)}&state={state}`
+
+   - `callbackUrl` — полный URL страницы/роута Next, например `https://truck-import.ru/auth/callback`.
+   - `state` — случайная строка (CSRF): сгенерировать, сохранить в **httpOnly cookie** или зашифрованной сессии, после возврата сравнить с query `state`.
+
+2. Если пользователь не залогинен на lk, его отправят на `/login`, после входа вернут на тот же `/sso/authorize` (Laravel хранит intended URL).
+
+3. Успех: редирект на `callbackUrl?code=...&state=...` (код одноразовый, короткое время жизни, ~2 минуты).
+
+4. **Обмен кода на токен** — только **с сервера Next** (Route Handler / Server Action), не светить успешный ответ с токеном в клиентский JS без необходимости:
+
+   - `POST {NEXT_PUBLIC_LK_URL}/api/v1/auth/sso/exchange`
+   - `Content-Type: application/json`
+   - Body: `{ "code": "<code из query>" }`
+   - Ответ при успехе: `{ "token", "token_type": "Bearer", "user": { ... } }` (как у `POST /api/v1/auth/login`).
+
+5. Сохранить `token` в **httpOnly cookie** на домене `truck-import.ru` (имя cookie согласовать, например `access_token` или `lk_token`). Дальше API вызывать с заголовком `Authorization: Bearer <token>`.
+
+6. Удалить `code` из URL после обработки (`redirect` на чистый путь).
+
+## Обычный логин без SSO (опционально)
+
+`POST /api/v1/auth/login` с `{ "login", "password" }` — тот же формат ответа с токеном. Подходит для формы входа прямо на Next; SSO нужен, когда пользователь уже в кабинете на lk.
+
+## CORS
+
+Если обмен `sso/exchange` или `login` вызывается **из браузера** с `truck-import.ru` на lk, на Laravel должны быть разрешены credentials и конкретный origin (не `*`). Предпочтительно вызывать exchange **только с сервера Next** — тогда CORS на этот запрос не нужен.
+
+## Практики для Cursor при генерации кода
+
+- Реализуйте **`/auth/callback`** через `app/auth/callback/route.ts` (GET): читать `searchParams`, проверить `state`, вызвать lk `sso/exchange`, выставить httpOnly cookie, редирект на главную или dashboard.
+- Для данных пользователя на сервере: прокси-запрос к `GET /api/v1/auth/me` с Bearer из cookie.
+- Не класть долгоживущий токен в `localStorage`, если достаточно httpOnly cookie + server components / route handlers.
+- Все сравнения `state` — на сервере; не доверять только клиенту.
+- Обрабатывать ошибки exchange (401 истёкший код, 403 неактивный аккаунт) и показывать понятную страницу.
+
+## Полезные пути на lk
+
+| Назначение | Метод и путь |
+|------------|----------------|
+| SSO старт | `GET /sso/authorize?redirect_uri=&state=` |
+| Обмен кода | `POST /api/v1/auth/sso/exchange` |
+| Логин API | `POST /api/v1/auth/login` |
+| Текущий пользователь | `GET /api/v1/auth/me` (Bearer) |
+| Выход (отзыв токена) | `POST /api/v1/auth/logout` (Bearer) |
+
+## Ссылка «Открыть каталог» с lk
+
+На стороне Laravel можно дать пользователю ссылку вида:
+
+`${APP_URL}/sso/authorize?redirect_uri=...&state=...`
+
+или статически на фронт: кнопка ведёт на полный URL authorize с закодированным `redirect_uri` на ваш Next callback.

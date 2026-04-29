@@ -61,6 +61,31 @@
                 </div>
             </div>
         </div>
+
+        <div id="jobsArea" class="mt-4 card shadow-sm" style="display:none;">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-tasks"></i> Задачи по импорту</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead>
+                        <tr>
+                            <th>Файл</th>
+                            <th>Статус</th>
+                            <th>Job ID</th>
+                            <th>Обновлено</th>
+                        </tr>
+                        </thead>
+                        <tbody id="jobsTableBody">
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">Задачи импорта пока отсутствуют.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     {{-- Небольшой скрипт для обновления текста "Выберите файл" в custom-file-input --}}

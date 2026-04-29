@@ -8,13 +8,14 @@ use App\Models\Product;
 use App\Models\TruckManufacturer;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\OnEachRow;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Row;
 use Maatwebsite\Excel\Validators\Failure;
 
-class ProductsImport implements OnEachRow, WithHeadingRow, WithValidation, SkipsOnFailure
+class ProductsImport implements OnEachRow, WithHeadingRow, WithValidation, SkipsOnFailure, WithChunkReading
 {
     private array $failures = [];
 
@@ -127,6 +128,11 @@ class ProductsImport implements OnEachRow, WithHeadingRow, WithValidation, Skips
     public function getFailures(): array
     {
         return $this->failures;
+    }
+
+    public function chunkSize(): int
+    {
+        return 200;
     }
 
 }

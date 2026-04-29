@@ -1,72 +1,69 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Трак Импорт — Вход</title>
-    <link rel="stylesheet" href="{{ asset('AdminLTE/plugins/fontawesome-free/css/all.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('AdminLTE/dist/css/adminlte.min.css') }}">
-</head>
-<body class="hold-transition login-page">
+@extends('auth.layout')
 
-<div class="login-box">
-    <div class="login-logo">
-        <strong>Трак Импорт</strong><br>
-        <small style="font-size:13px; color:#6b7280">Личный кабинет заказчика</small>
-    </div>
-    <div class="card">
-        <div class="card-body login-card-body">
-            <p class="login-box-msg">Войдите в ваш аккаунт</p>
+@section('title', 'Трак Импорт — Вход в личный кабинет')
 
-            @if($errors->has('error'))
-                <div class="alert alert-danger alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-                    {{ $errors->first('error') }}
-                </div>
-            @endif
+@section('content')
+    <h1 class="auth-page__title">Вход в личный кабинет</h1>
+    <p class="auth-page__subtitle">Личный кабинет заказчика — войдите в ваш аккаунт</p>
 
-            <form method="POST" action="{{ route('customer.login.post') }}">
-                @csrf
-                <div class="input-group mb-3">
-                    <input type="text" name="login"
-                           class="form-control @error('login') is-invalid @enderror"
-                           placeholder="Логин или Email"
-                           value="{{ old('login') }}" required autofocus>
-                    <div class="input-group-append">
-                        <div class="input-group-text"><span class="fas fa-user"></span></div>
-                    </div>
-                </div>
-                <div class="input-group mb-3">
-                    <input type="password" name="password"
-                           class="form-control" placeholder="Пароль" required>
-                    <div class="input-group-append">
-                        <div class="input-group-text"><span class="fas fa-lock"></span></div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-7">
-                        <div class="icheck-primary">
-                            <input type="checkbox" id="remember" name="remember">
-                            <label for="remember">Запомнить меня</label>
-                        </div>
-                    </div>
-                    <div class="col-5">
-                        <button type="submit" class="btn btn-primary btn-block">Войти</button>
-                    </div>
-                </div>
-            </form>
-
-            <p class="mt-3 mb-1 text-center">
-                <a href="{{ route('customer.register') }}">
-                    <i class="fas fa-user-plus mr-1"></i>Зарегистрироваться
-                </a>
-            </p>
+    @if(session('success'))
+        <div class="auth-page__alert auth-page__alert--info">
+            {{ session('success') }}
         </div>
-    </div>
-</div>
+    @endif
 
-<script src="{{ asset('AdminLTE/plugins/jquery/jquery.min.js') }}"></script>
-<script src="{{ asset('AdminLTE/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-<script src="{{ asset('AdminLTE/dist/js/adminlte.js') }}"></script>
-</body>
-</html>
+    @if($errors->has('error'))
+        <div class="auth-page__alert auth-page__alert--danger">
+            {{ $errors->first('error') }}
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('customer.login.post') }}">
+        @csrf
+
+        <div class="auth-page__input-group">
+            <div class="input-group">
+                <input type="text" name="login"
+                       class="form-control auth-page__input @error('login') is-invalid @enderror"
+                       placeholder="Логин или Email"
+                       value="{{ old('login') }}" required autofocus autocomplete="username">
+                <div class="input-group-append">
+                    <div class="input-group-text"><span class="fas fa-user"></span></div>
+                </div>
+            </div>
+            @error('login')
+                <span class="invalid-feedback d-block"><strong>{{ $message }}</strong></span>
+            @enderror
+        </div>
+
+        <div class="auth-page__input-group">
+            <div class="input-group">
+                <input type="password" name="password"
+                       class="form-control auth-page__input @error('password') is-invalid @enderror"
+                       placeholder="Пароль" required autocomplete="current-password">
+                <div class="input-group-append">
+                    <div class="input-group-text"><span class="fas fa-lock"></span></div>
+                </div>
+            </div>
+            @error('password')
+                <span class="invalid-feedback d-block"><strong>{{ $message }}</strong></span>
+            @enderror
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <label class="auth-page__checkbox-label">
+                <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
+                Запомнить меня
+            </label>
+            <button type="submit" class="auth-page__btn auth-page__btn--block" style="max-width: 8rem;">
+                Войти
+            </button>
+        </div>
+    </form>
+
+    <div class="auth-page__footer">
+        <a href="{{ route('customer.register') }}" class="auth-page__link">
+            <i class="fas fa-user-plus mr-1"></i>Зарегистрироваться
+        </a>
+    </div>
+@endsection

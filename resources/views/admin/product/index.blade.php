@@ -30,6 +30,9 @@
                 <a href="{{ route('admin.products.import') }}" class="btn btn-primary">
                     <i class="fas fa-plus"></i> Массовый импорт
                 </a>
+                <button class="btn btn-outline-danger" data-toggle="modal" data-target="#deleteAllModal">
+                    <i class="fas fa-trash"></i> Удалить все
+                </button>
             </div>
         </div>
 
@@ -131,6 +134,31 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
                         <button type="submit" class="btn btn-danger">Удалить</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteAllModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <form method="POST" action="{{ route('admin.products.destroy-all') }}">
+                @csrf
+                @method('DELETE')
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Массовое удаление товаров</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Удалить все товары, которые не участвуют в заказах?</p>
+                        <p class="mb-0 text-muted">Товары, связанные с заказами, будут пропущены.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-danger">Удалить все</button>
                     </div>
                 </div>
             </form>

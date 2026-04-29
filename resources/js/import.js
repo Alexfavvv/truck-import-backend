@@ -11,9 +11,12 @@ const processedRowsSpan = document.getElementById('processedRows');
 const totalRowsSpan = document.getElementById('totalRows');
 const errorListContainer = document.getElementById('errorList');
 const failuresList = document.getElementById('failuresList');
+const jobsArea = document.getElementById('jobsArea');
+const jobsTableBody = document.getElementById('jobsTableBody');
 
 let pollingIntervalId = null;
 const POLLING_INTERVAL_MS = 2000;
+let notFoundCounter = 0;
 
 /**
  * Останавливает текущий опрос статуса.
@@ -40,6 +43,7 @@ async function fetchImportStatus() {
             }
         });
         const data = response.data;
+        renderJobs(data.jobs || []);
 
         statusMessageElement.textContent = data.message || 'Обновление статуса...';
         statusMessageElement.className = 'fw-bold';
@@ -57,6 +61,10 @@ async function fetchImportStatus() {
             processedRowsSpan.textContent = data.processedRows || 0;
             totalRowsSpan.textContent = data.totalRows || 'Ожидание...';
 
+        } else if (data.status === 'queued') {
+            statusMessageElement.style.color = '#0d6efd';
+            progressBarContainer.style.display = 'none';
+            importDetails.style.display = 'none';
         } else if (data.status === 'success') {
             statusMessageElement.style.color = 'green';
             progressBarContainer.style.display = 'none';
@@ -76,8 +84,17 @@ async function fetchImportStatus() {
             displayFailures(data.failures);
             stopPolling();
         } else if (data.status === 'not_found') {
-            statusMessageElement.textContent = 'Ожидание Job\'а или Job завершен/не найден. Повторная попытка...';
-            statusMessageElement.style.color = 'gray';
+            notFoundCounter += 1;
+            if (notFoundCounter >= 5) {
+                statusMessageElement.textContent = 'Job не найден длительное время. Вероятно, воркер очереди не запущен.';
+                statusMessageElement.style.color = 'red';
+                stopPolling();
+            } else {
+                statusMessageElement.textContent = 'Ожидание Job\'а или Job завершен/не найден. Повторная попытка...';
+                statusMessageElement.style.color = 'gray';
+            }
+        } else {
+            notFoundCounter = 0;
         }
 
     } catch (error) {
@@ -93,11 +110,58 @@ async function fetchImportStatus() {
     }
 }
 
+function statusBadgeText(status) {
+    switch (status) {
+        case 'queued':
+            return 'В очереди';
+        case 'processing':
+            return 'В работе';
+        case 'success':
+            return 'Успешно';
+        case 'warning':
+            return 'С предупреждениями';
+        case 'error':
+            return 'Ошибка';
+        default:
+            return status || '—';
+    }
+}
+
+function renderJobs(jobs) {
+    if (!jobsArea || !jobsTableBody) return;
+
+    if (!Array.isArray(jobs) || jobs.length === 0) {
+        jobsArea.style.display = 'none';
+        jobsTableBody.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center text-muted py-3">Задачи импорта пока отсутствуют.</td>
+            </tr>
+        `;
+        return;
+    }
+
+    jobsArea.style.display = 'block';
+    jobsTableBody.innerHTML = jobs.map(job => {
+        const fileName = job.file_name || job.import_key || '—';
+        const status = statusBadgeText(job.status);
+        const jobId = job.job_id || '—';
+        const updatedAt = job.updated_at || job.finished_at || job.created_at || '—';
+
+        return `<tr>
+            <td>${fileName}</td>
+            <td>${status}</td>
+            <td>${jobId}</td>
+            <td>${updatedAt}</td>
+        </tr>`;
+    }).join('');
+}
+
 /**
  * Начинает опрос статуса Job'а.
  */
 function startPolling() {
     stopPolling();
+    notFoundCounter = 0;
     fetchImportStatus(); // Сразу запрашиваем статус
     pollingIntervalId = setInterval(fetchImportStatus, POLLING_INTERVAL_MS); // Затем по интервалу
 }
