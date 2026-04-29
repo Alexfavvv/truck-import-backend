@@ -54,10 +54,22 @@ class ProductFilter
 
     protected function brand(Builder $builder, $value)
     {
-        $brandId = Brand::query()->where('slug', $value)->pluck('id');
+        $slugs = is_array($value)
+            ? $value
+            : explode(',', (string) $value);
+        $slugs = array_values(array_filter(array_map('trim', $slugs)));
 
-        if ($brandId) {
-            $builder->where('brand_id', $brandId);
+        if (empty($slugs)) {
+            return;
+        }
+
+        $brandIds = Brand::query()
+            ->whereIn('slug', $slugs)
+            ->pluck('id')
+            ->all();
+
+        if (!empty($brandIds)) {
+            $builder->whereIn('brand_id', $brandIds);
         }
     }
 

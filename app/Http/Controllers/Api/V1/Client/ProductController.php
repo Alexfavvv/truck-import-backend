@@ -44,8 +44,8 @@ class ProductController extends Controller
                 name: 'brand',
                 in: 'query',
                 required: false,
-                description: 'Slug бренда',
-                schema: new OA\Schema(type: 'string', example: 'man')
+                description: 'Slug бренда или список через запятую',
+                schema: new OA\Schema(type: 'string', example: 'man,bf')
             ),
             new OA\Parameter(
                 name: 'model',
@@ -108,14 +108,26 @@ class ProductController extends Controller
         $page = max((int) ($data['page'] ?? 1), 1);
         $offset = ($page - 1) * $limit;
 
-        $posts = Product::query()
+        $query = Product::query()
             ->select(['id', 'sku', 'title', 'price', 'quantity', 'brand_id', 'part_type_id', 'image_path']);
-        $posts = (new ProductFilter())->apply($data, $posts)
+
+        $query = (new ProductFilter())->apply($data, $query);
+        $total = (clone $query)->count();
+
+        $posts = $query
             ->offset($offset)
             ->limit($limit)
             ->get();
 
-        return ProductShortResource::collection($posts)->resolve();
+        return [
+            'data' => ProductShortResource::collection($posts)->resolve(),
+            'meta' => [
+                'total' => $total,
+                'per_page' => $limit,
+                'current_page' => $page,
+                'last_page' => max(1, (int) ceil($total / $limit)),
+            ],
+        ];
     }
 
     #[OA\Get(
