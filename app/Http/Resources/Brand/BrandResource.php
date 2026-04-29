@@ -18,7 +18,9 @@ class BrandResource extends JsonResource
     public function toArray(Request $request): array
     {
         $content = is_array($this->content) ? $this->content : [];
-        $metatags = MetatagResource::make($this->metatags)->resolve();
+        $metatags = $this->metatags
+            ? MetatagResource::make($this->metatags)->resolve()
+            : [];
 
         return [
             'slug' => $this->slug,
