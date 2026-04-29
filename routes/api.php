@@ -1,22 +1,23 @@
 <?php
 
-
 use App\Http\Controllers\Api\V1\AuthController;
-use App\Http\Controllers\Api\V1\Client\FeedbackController;
-use App\Http\Controllers\Api\V1\Client\TruckModelController;
 use App\Http\Controllers\Api\V1\Client\BrandController;
-use App\Http\Controllers\Api\V1\Client\ProductController;
 use App\Http\Controllers\Api\V1\Client\CartController;
+use App\Http\Controllers\Api\V1\Client\FeedbackController;
+use App\Http\Controllers\Api\V1\Client\ProductController;
+use App\Http\Controllers\Api\V1\Client\TruckModelController;
 use Illuminate\Support\Facades\Route;
 
 // Аутентификация (Sanctum-токены)
 Route::prefix('v1/auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login',    [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/sso/exchange', [AuthController::class, 'ssoExchange'])
+        ->middleware('throttle:30,1');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
-        Route::get('/me',      [AuthController::class, 'me']);
+        Route::get('/me', [AuthController::class, 'me']);
     });
 });
 
@@ -28,7 +29,6 @@ Route::prefix('v1/client')->group(function () {
     Route::get('/trucks/{truckModel}', [TruckModelController::class, 'show']);
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{product}', [ProductController::class, 'show']);
-
 
     // Почта
     Route::post('/send-feedback', [FeedbackController::class, 'send']);

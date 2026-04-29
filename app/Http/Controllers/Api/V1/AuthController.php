@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Services\UserService;
 use App\Models\User;
+use App\Services\SsoService;
+use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 use OpenApi\Attributes as OA;
 
 class AuthController extends Controller
@@ -53,20 +53,20 @@ class AuthController extends Controller
     public function register(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'phone'      => 'required|string|max:30',
-            'email'      => 'nullable|email|unique:users,email',
-            'full_name'  => 'nullable|string|max:255',
-            'company'    => 'nullable|string|max:255',
+            'phone' => 'required|string|max:30',
+            'email' => 'nullable|email|unique:users,email',
+            'full_name' => 'nullable|string|max:255',
+            'company' => 'nullable|string|max:255',
             'requisites' => 'nullable|string|max:2000',
-            'position'   => 'nullable|string|max:255',
-            'login'      => 'required|string|max:100|unique:users,login|alpha_dash',
-            'password'   => 'required|string|min:8|confirmed',
+            'position' => 'nullable|string|max:255',
+            'login' => 'required|string|max:100|unique:users,login|alpha_dash',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         $user = $this->userService->createAdminCustomer($validated, selfRegistered: true);
 
         return response()->json([
-            'message'    => 'Регистрация успешна. Ожидайте одобрения администратором Трак Импорт.',
+            'message' => 'Регистрация успешна. Ожидайте одобрения администратором Трак Импорт.',
             'customer_id' => $user->customer_id,
         ], 201);
     }
@@ -123,7 +123,7 @@ DESC,
     public function login(Request $request): JsonResponse
     {
         $request->validate([
-            'login'    => 'required|string',
+            'login' => 'required|string',
             'password' => 'required|string',
         ]);
 
@@ -131,14 +131,15 @@ DESC,
             ->orWhere('email', $request->login)
             ->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
             return response()->json(['message' => 'Неверный логин или пароль'], 401);
         }
 
-        if (!$user->is_active) {
+        if (! $user->is_active) {
             $message = $user->isPendingApproval()
                 ? 'Ваш аккаунт ожидает одобрения администратором Трак Импорт.'
                 : 'Аккаунт деактивирован';
+
             return response()->json(['message' => $message], 401);
         }
 
@@ -148,9 +149,43 @@ DESC,
         $token = $user->createToken('api')->plainTextToken;
 
         return response()->json([
-            'token'      => $token,
+            'token' => $token,
             'token_type' => 'Bearer',
-            'user'       => $this->formatUser($user),
+            'user' => $this->formatUser($user),
+        ]);
+    }
+
+    /**
+     * Обмен одноразового кода SSO (выдан на GET /sso/authorize) на API-токен.
+     * Вызывайте с сервера Next или с клиента при настроенном CORS.
+     */
+    public function ssoExchange(Request $request, SsoService $ssoService): JsonResponse
+    {
+        $request->validate([
+            'code' => ['required', 'string', 'min:32', 'max:128'],
+        ]);
+
+        $user = $ssoService->redeemCode($request->input('code'));
+        if (! $user) {
+            return response()->json(['message' => 'Код недействителен или истёк.'], 401);
+        }
+
+        if (! $user->is_active) {
+            $message = $user->isPendingApproval()
+                ? 'Ваш аккаунт ожидает одобрения администратором Трак Импорт.'
+                : 'Аккаунт деактивирован';
+
+            return response()->json(['message' => $message], 403);
+        }
+
+        $user->tokens()->delete();
+
+        $token = $user->createToken('api')->plainTextToken;
+
+        return response()->json([
+            'token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $this->formatUser($user),
         ]);
     }
 
@@ -202,16 +237,16 @@ DESC,
     private function formatUser(User $user): array
     {
         return [
-            'id'          => $user->id,
-            'login'       => $user->login,
-            'email'       => $user->email,
-            'role'        => $user->role->value,
-            'role_label'  => $user->role->label(),
-            'full_name'   => $user->full_name,
-            'company'     => $user->company,
-            'phone'       => $user->phone,
+            'id' => $user->id,
+            'login' => $user->login,
+            'email' => $user->email,
+            'role' => $user->role->value,
+            'role_label' => $user->role->label(),
+            'full_name' => $user->full_name,
+            'company' => $user->company,
+            'phone' => $user->phone,
             'customer_id' => $user->customer_id,
-            'is_active'   => $user->is_active,
+            'is_active' => $user->is_active,
         ];
     }
 }

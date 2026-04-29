@@ -30,31 +30,36 @@ class UnifiedAuthController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $request->validate([
-            'login'    => 'required|string',
+            'login' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        $login    = $request->input('login');
+        $login = $request->input('login');
         $password = $request->input('password');
 
         $user = User::where('login', $login)
             ->orWhere('email', $login)
             ->first();
 
-        if (!$user || !Hash::check($password, $user->password)) {
+        if (! $user || ! Hash::check($password, $user->password)) {
             return back()->withErrors(['error' => 'Неверный логин или пароль'])->withInput();
         }
 
-        if (!$user->is_active) {
+        if (! $user->is_active) {
             $message = $user->isPendingApproval()
                 ? 'Ваш аккаунт ожидает одобрения администратором Трак Импорт.'
                 : 'Аккаунт деактивирован';
+
             return back()->withErrors(['error' => $message])->withInput();
         }
 
         Auth::login($user, $request->boolean('remember'));
 
-        return $this->redirectByRole($user);
+        $fallback = $user->isTruckSide()
+            ? route('admin.index')
+            : route('customer.dashboard');
+
+        return redirect()->intended($fallback);
     }
 
     private function redirectByRole(User $user): RedirectResponse
