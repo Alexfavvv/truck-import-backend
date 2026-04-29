@@ -115,6 +115,7 @@ class ProductController extends Controller
         $total = (clone $query)->count();
 
         $posts = $query
+            ->with('brand')
             ->offset($offset)
             ->limit($limit)
             ->get();
@@ -154,7 +155,7 @@ class ProductController extends Controller
     )]
     public function show(Product $product): array
     {
-        $product->load('truckManufacturers', 'characteristics', 'metatags');
+        $product->load('brand', 'truckManufacturers', 'characteristics', 'metatags');
         return ProductResource::make($product)->resolve();
     }
 }

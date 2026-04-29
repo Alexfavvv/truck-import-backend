@@ -17,6 +17,8 @@ class ProductShortResource extends JsonResource
         return [
             'sku' => $this->sku,
             'title' => $this->title,
+            'brand_slug' => $this->brand?->slug,
+            'brand_name' => $this->brand?->title,
             'price' => $this->price,
             'quantity' => $this->quantity,
             'image_url' => $this->image_url,
