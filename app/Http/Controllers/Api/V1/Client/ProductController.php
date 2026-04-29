@@ -14,6 +14,28 @@ use OpenApi\Attributes as OA;
 class ProductController extends Controller
 {
     #[OA\Get(
+        path: '/v1/client/products/count',
+        summary: 'Количество товаров',
+        tags: ['Products'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Количество товаров',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    example: ['count' => 123456]
+                )
+            ),
+        ]
+    )]
+    public function count(): array
+    {
+        return [
+            'count' => Product::query()->count(),
+        ];
+    }
+
+    #[OA\Get(
         path: '/v1/client/products',
         summary: 'Каталог запчастей с фильтрами',
         tags: ['Products'],

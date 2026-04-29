@@ -27,6 +27,7 @@ Route::prefix('v1/client')->group(function () {
     Route::get('/brands', [BrandController::class, 'index']);
     Route::get('/brands/{brand}', [BrandController::class, 'show']);
     Route::get('/trucks/{truckModel}', [TruckModelController::class, 'show']);
+    Route::get('/products/count', [ProductController::class, 'count']);
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{product}', [ProductController::class, 'show']);
 
