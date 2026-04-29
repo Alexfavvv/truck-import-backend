@@ -17,15 +17,18 @@ class BrandResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $content = is_array($this->content) ? $this->content : [];
+        $metatags = MetatagResource::make($this->metatags)->resolve();
+
         return [
             'slug' => $this->slug,
             'name' => $this->title,
             'description' => $this->description,
-            ...$this->content,
+            ...$content,
             'image_url' => $this->image_url,
             'part_types' => PartTypeResource::collection($this->whenLoaded('partTypes')),
             'truck_models' => TruckModelShortResource::collection($this->whenLoaded('truckModels')),
-            ...MetatagResource::make($this->metatags)->resolve(),
+            ...(is_array($metatags) ? $metatags : []),
         ];
     }
 }

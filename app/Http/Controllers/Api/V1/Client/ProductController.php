@@ -82,9 +82,17 @@ class ProductController extends Controller
     public function index(IndexRequest $request): array
     {
         $data = $request->validated();
-        $posts = Product::query();
-        $posts = (new ProductFilter())->apply($data, $posts);
-        $posts = $posts->get();
+        $limit = min(max((int) ($data['limit'] ?? 20), 1), 100);
+        $page = max((int) ($data['page'] ?? 1), 1);
+        $offset = ($page - 1) * $limit;
+
+        $posts = Product::query()
+            ->select(['id', 'sku', 'title', 'price', 'quantity', 'brand_id', 'part_type_id', 'image_path']);
+        $posts = (new ProductFilter())->apply($data, $posts)
+            ->offset($offset)
+            ->limit($limit)
+            ->get();
+
         return ProductShortResource::collection($posts)->resolve();
     }
 
