@@ -127,6 +127,16 @@ mkdir -p $PROJECT_PATH/storage/app/public
 chown -R www-data:www-data $PROJECT_PATH/storage
 chown -R www-data:www-data $PROJECT_PATH/bootstrap/cache
 
+# Laravel Sail: PHP в контейнере работает от пользователя sail (uid 1337), не www-data.
+# Иначе PackageManifest не может записать bootstrap/cache/packages.php.
+if [ -f "$PROJECT_PATH/docker-compose.yml" ] && grep -q 'laravel\.test:' "$PROJECT_PATH/docker-compose.yml"; then
+    echo "-> Права для Laravel Sail (uid 1337): storage и bootstrap/cache..."
+    chown -R 1337:0 "$PROJECT_PATH/bootstrap/cache" "$PROJECT_PATH/storage"
+    chmod -R ug+rwx "$PROJECT_PATH/bootstrap/cache"
+    find "$PROJECT_PATH/storage" -type d -exec chmod ug+rwx {} \;
+    find "$PROJECT_PATH/storage" -type f -exec chmod ug+rw {} \; 2>/dev/null || true
+fi
+
 echo "✅ Права доступа настроены"
 echo ""
 
