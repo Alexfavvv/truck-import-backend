@@ -15,12 +15,10 @@ class CartItemResource extends JsonResource
     public function toArray(Request $request): array
     {
         $product = $this->product;
-        $brandTitle = $product && $product->relationLoaded('brand') && $product->brand ? $product->brand->title : null;
-        $skuWithBrand = $brandTitle ? $brandTitle . '-' . $product->sku : $product->sku;
 
         return [
             'id' => $this->id,
-            'sku' => $skuWithBrand,
+            'sku' => $product->sku,
             'title' => $product->title,
             'price' => $product->price,
             'image_url' => $product->image_url,

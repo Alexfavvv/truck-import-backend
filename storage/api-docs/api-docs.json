@@ -1196,8 +1196,9 @@
                         "example": 1
                     },
                     "sku": {
+                        "description": "Артикул из каталога (поле sku товара)",
                         "type": "string",
-                        "example": "MAN-FL-001"
+                        "example": "51875000001"
                     },
                     "title": {
                         "type": "string",

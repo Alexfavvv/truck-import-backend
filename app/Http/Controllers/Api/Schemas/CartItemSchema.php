@@ -8,7 +8,7 @@ use OpenApi\Attributes as OA;
     schema: 'CartItem',
     properties: [
         new OA\Property(property: 'id', type: 'integer', example: 1),
-        new OA\Property(property: 'sku', type: 'string', example: 'MAN-FL-001'),
+        new OA\Property(property: 'sku', type: 'string', example: '51875000001', description: 'Артикул из каталога (поле sku товара)'),
         new OA\Property(property: 'title', type: 'string', example: 'Фильтр масляный MAN'),
         new OA\Property(property: 'price', type: 'number', format: 'float', nullable: true, example: 2500.00),
         new OA\Property(property: 'image_url', type: 'string', nullable: true),
