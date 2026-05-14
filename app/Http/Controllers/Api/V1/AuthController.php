@@ -9,6 +9,7 @@ use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Attributes as OA;
 
 class AuthController extends Controller
@@ -231,15 +232,70 @@ DESC,
         ]);
     }
 
+    #[OA\Get(
+        path: '/v1/auth/status',
+        summary: 'Проверка сессии для витрины (Bearer опционален)',
+        description: 'Без обязательной авторизации: если передан валидный Bearer-токен — `authenticated: true` и данные пользователя; иначе — `authenticated: false`. Удобно для гидрации состояния входа на Next без трактовки 401 как ошибки сети.',
+        tags: ['Auth'],
+        parameters: [
+            new OA\Parameter(
+                name: 'Authorization',
+                in: 'header',
+                required: false,
+                description: 'Bearer {token}',
+                schema: new OA\Schema(type: 'string', example: 'Bearer 1|xxxxxxxx')
+            ),
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Статус входа',
+                content: new OA\JsonContent(
+                    required: ['authenticated'],
+                    properties: [
+                        new OA\Property(property: 'authenticated', type: 'boolean', example: true),
+                        new OA\Property(property: 'user', ref: '#/components/schemas/AuthUser', nullable: true),
+                    ]
+                )
+            ),
+        ]
+    )]
+    public function status(Request $request): JsonResponse
+    {
+        $plain = $request->bearerToken();
+        if ($plain === null || $plain === '') {
+            return response()->json(['authenticated' => false]);
+        }
+
+        $accessToken = PersonalAccessToken::findToken($plain);
+        if (! $accessToken) {
+            return response()->json(['authenticated' => false]);
+        }
+
+        $user = $accessToken->tokenable;
+        if (! $user instanceof User) {
+            return response()->json(['authenticated' => false]);
+        }
+
+        if (! $user->is_active) {
+            return response()->json(['authenticated' => false]);
+        }
+
+        return response()->json([
+            'authenticated' => true,
+            'user' => $this->formatUser($user),
+        ]);
+    }
+
     #[OA\Post(
         path: '/v1/auth/logout',
-        summary: 'Выход из системы (отзыв токена)',
+        summary: 'Выход из системы (отзыв всех API-токенов пользователя)',
         security: [['sanctum' => []]],
         tags: ['Auth'],
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Токен отозван',
+                description: 'Все токены пользователя отозваны (как при новом входе)',
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'message', type: 'string', example: 'Выход выполнен'),
@@ -251,7 +307,7 @@ DESC,
     )]
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $request->user()->tokens()->delete();
 
         return response()->json(['message' => 'Выход выполнен']);
     }

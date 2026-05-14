@@ -270,16 +270,67 @@
                 }
             }
         },
+        "/v1/auth/status": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Проверка сессии для витрины (Bearer опционален)",
+                "description": "Без обязательной авторизации: если передан валидный Bearer-токен — `authenticated: true` и данные пользователя; иначе — `authenticated: false`. Удобно для гидрации состояния входа на Next без трактовки 401 как ошибки сети.",
+                "operationId": "9b3b5faabfea9c426530292e0755f904",
+                "parameters": [
+                    {
+                        "name": "Authorization",
+                        "in": "header",
+                        "description": "Bearer {token}",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Bearer 1|xxxxxxxx"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Статус входа",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "required": [
+                                        "authenticated"
+                                    ],
+                                    "properties": {
+                                        "authenticated": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "user": {
+                                            "oneOf": [
+                                                {
+                                                    "$ref": "#/components/schemas/AuthUser"
+                                                }
+                                            ],
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v1/auth/logout": {
             "post": {
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Выход из системы (отзыв токена)",
+                "summary": "Выход из системы (отзыв всех API-токенов пользователя)",
                 "operationId": "5df06d8bf07ab28923f168580a1b2323",
                 "responses": {
                     "200": {
-                        "description": "Токен отозван",
+                        "description": "Все токены пользователя отозваны (как при новом входе)",
                         "content": {
                             "application/json": {
                                 "schema": {

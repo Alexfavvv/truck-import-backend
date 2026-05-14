@@ -15,6 +15,8 @@ Route::prefix('v1/auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/sso/exchange', [AuthController::class, 'ssoExchange'])
         ->middleware('throttle:30,1');
+    Route::get('/status', [AuthController::class, 'status'])
+        ->middleware('throttle:120,1');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
