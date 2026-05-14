@@ -22,7 +22,7 @@
                     "Auth"
                 ],
                 "summary": "Регистрация нового заказчика (admin_customer)",
-                "description": "Публичная регистрация. Создаёт пользователя с ролью **admin_customer**. После успешной регистрации возвращает Sanctum-токен для дальнейшей работы с API.",
+                "description": "Публичная регистрация. Создаёт пользователя с ролью **admin_customer**. Токен API **не выдаётся** до одобрения администратором; в ответе — сообщение и `customer_id`.",
                 "operationId": "58fb87dce972174198f99707c002431d",
                 "requestBody": {
                     "required": true,
@@ -90,11 +90,22 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Успешная регистрация",
+                        "description": "Заявка на регистрацию принята (токен не выдаётся до одобрения администратором)",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/AuthTokenResponse"
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Регистрация успешна. Ожидайте одобрения администратором Трак Импорт."
+                                        },
+                                        "customer_id": {
+                                            "description": "Публичный идентификатор заказчика",
+                                            "type": "string",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -169,6 +180,89 @@
                                         }
                                     },
                                     "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/sso/exchange": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Обмен кода SSO на API-токен",
+                "description": "Одноразовый `code` выдаётся после `GET /sso/authorize` на ЛК. Предпочтительно вызывать с сервера витрины (Next Route Handler).",
+                "operationId": "2e3656628f33a3f9dc2fcba1a5e2e90b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "code"
+                                ],
+                                "properties": {
+                                    "code": {
+                                        "description": "Код из query после authorize",
+                                        "type": "string",
+                                        "maxLength": 128,
+                                        "minLength": 32
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Токен выдан",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthTokenResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Код недействителен или истёк",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Аккаунт не активен или ожидает одобрения",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Нет поля code",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidationError"
                                 }
                             }
                         }
@@ -652,6 +746,30 @@
                 }
             }
         },
+        "/v1/client/products/count": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Количество товаров",
+                "operationId": "de4cc6404ced41bc806c6f854d635def",
+                "responses": {
+                    "200": {
+                        "description": "Количество товаров",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                },
+                                "example": {
+                                    "count": 123456
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v1/client/products": {
             "get": {
                 "tags": [
@@ -663,11 +781,11 @@
                     {
                         "name": "brand",
                         "in": "query",
-                        "description": "Slug бренда",
+                        "description": "Slug бренда или список через запятую",
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "example": "man"
+                            "example": "man,bf"
                         }
                     },
                     {
@@ -733,14 +851,44 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Список запчастей",
+                        "description": "Список запчастей и пагинация",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/ProductShort"
-                                    }
+                                    "required": [
+                                        "data",
+                                        "meta"
+                                    ],
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ProductShort"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 1000
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 20
+                                                },
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 50
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -759,11 +907,11 @@
                     {
                         "name": "product",
                         "in": "path",
-                        "description": "ID запчасти",
+                        "description": "SKU запчасти (route model binding по полю sku)",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "example": 42
+                            "type": "string",
+                            "example": "MAN-FL-001"
                         }
                     }
                 ],
@@ -782,6 +930,100 @@
                         "description": "Запчасть не найдена"
                     }
                 }
+            }
+        },
+        "/v1/client/orders": {
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Создать заказ с витрины (checkout)",
+                "description": "Заказчик определяется по **Bearer-токену**. Контакты в примечание к заказу берутся из профиля пользователя. Позиции: **`sku`** (как в `products.sku`) + `quantity`. Цены строк — из каталога.",
+                "operationId": "577aa41b79be22ffba4d6b0310a55a76",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "items"
+                                ],
+                                "properties": {
+                                    "comment": {
+                                        "description": "Доп. комментарий к заказу",
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "sku",
+                                                "quantity"
+                                            ],
+                                            "properties": {
+                                                "sku": {
+                                                    "description": "Должен совпадать с products.sku",
+                                                    "type": "string"
+                                                },
+                                                "quantity": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Заказ создан",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "order_id": {
+                                            "type": "integer"
+                                        },
+                                        "order_number": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Не авторизован"
+                    },
+                    "403": {
+                        "description": "Нет права создавать заказы"
+                    },
+                    "404": {
+                        "description": "Товар по sku не найден в каталоге"
+                    },
+                    "409": {
+                        "description": "Недостаточно товара на складе"
+                    },
+                    "422": {
+                        "description": "Ошибка валидации"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
         "/v1/client/trucks/{truckModel}": {
@@ -1096,6 +1338,11 @@
             },
             "ProductShort": {
                 "properties": {
+                    "id": {
+                        "description": "ID товара в каталоге",
+                        "type": "integer",
+                        "example": 42
+                    },
                     "sku": {
                         "type": "string",
                         "example": "MAN-FL-001"
@@ -1103,6 +1350,16 @@
                     "title": {
                         "type": "string",
                         "example": "Фильтр масляный MAN"
+                    },
+                    "brand_slug": {
+                        "type": "string",
+                        "example": "man",
+                        "nullable": true
+                    },
+                    "brand_name": {
+                        "type": "string",
+                        "example": "MAN",
+                        "nullable": true
                     },
                     "price": {
                         "type": "number",
@@ -1212,6 +1469,10 @@
         {
             "name": "Cart",
             "description": "Корзина (требует авторизации)"
+        },
+        {
+            "name": "Orders",
+            "description": "Заказы с витрины (требует авторизации)"
         },
         {
             "name": "Feedback",

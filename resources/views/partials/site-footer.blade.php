@@ -25,16 +25,16 @@
       <div class="footer__nav">
         <ul class="footer__menu">
           <li class="footer__menu_item">
-            <a class="footer__menu_link" href="/oplata-i-dostavka">Оплата и доставка</a>
+            <a class="footer__menu_link" href="{{ $front }}/oplata-i-dostavka">Оплата и доставка</a>
           </li>
           <li class="footer__menu_item">
-            <a class="footer__menu_link" href="/garantii-i-vozvrat">Гарантия и возврат</a>
+            <a class="footer__menu_link" href="{{ $front }}/garantii-i-vozvrat">Гарантия и возврат</a>
           </li>
           <li class="footer__menu_item">
-            <a class="footer__menu_link" href="/catalog">Каталог запчастей</a>
+            <a class="footer__menu_link" href="{{ $front }}/catalog">Каталог запчастей</a>
           </li>
           <li class="footer__menu_item">
-            <a class="footer__menu_link" href="/contacts">Контакты</a>
+            <a class="footer__menu_link" href="{{ $front }}/contacts">Контакты</a>
           </li>
         </ul>
       </div>
@@ -137,7 +137,7 @@
                 </svg>
         </a>
       </div>
-      <a class="footer__privacy" href="/privacy">Политика<br/>конфиденциальности</a>
+      <a class="footer__privacy" href="{{ $front }}/privacy">Политика<br/>конфиденциальности</a>
     </div>
     </div>
   </footer>

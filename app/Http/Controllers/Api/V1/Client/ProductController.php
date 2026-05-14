@@ -93,10 +93,26 @@ class ProductController extends Controller
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Список запчастей',
+                description: 'Список запчастей и пагинация',
                 content: new OA\JsonContent(
-                    type: 'array',
-                    items: new OA\Items(ref: '#/components/schemas/ProductShort')
+                    required: ['data', 'meta'],
+                    properties: [
+                        new OA\Property(
+                            property: 'data',
+                            type: 'array',
+                            items: new OA\Items(ref: '#/components/schemas/ProductShort')
+                        ),
+                        new OA\Property(
+                            property: 'meta',
+                            type: 'object',
+                            properties: [
+                                new OA\Property(property: 'total', type: 'integer', example: 1000),
+                                new OA\Property(property: 'per_page', type: 'integer', example: 20),
+                                new OA\Property(property: 'current_page', type: 'integer', example: 1),
+                                new OA\Property(property: 'last_page', type: 'integer', example: 50),
+                            ]
+                        ),
+                    ]
                 )
             ),
         ]
@@ -140,8 +156,8 @@ class ProductController extends Controller
                 name: 'product',
                 in: 'path',
                 required: true,
-                description: 'ID запчасти',
-                schema: new OA\Schema(type: 'integer', example: 42)
+                description: 'SKU запчасти (route model binding по полю sku)',
+                schema: new OA\Schema(type: 'string', example: 'MAN-FL-001')
             ),
         ],
         responses: [

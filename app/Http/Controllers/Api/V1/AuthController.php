@@ -18,7 +18,7 @@ class AuthController extends Controller
     #[OA\Post(
         path: '/v1/auth/register',
         summary: 'Регистрация нового заказчика (admin_customer)',
-        description: 'Публичная регистрация. Создаёт пользователя с ролью **admin_customer**. После успешной регистрации возвращает Sanctum-токен для дальнейшей работы с API.',
+        description: 'Публичная регистрация. Создаёт пользователя с ролью **admin_customer**. Токен API **не выдаётся** до одобрения администратором; в ответе — сообщение и `customer_id`.',
         tags: ['Auth'],
         requestBody: new OA\RequestBody(
             required: true,
@@ -40,8 +40,13 @@ class AuthController extends Controller
         responses: [
             new OA\Response(
                 response: 201,
-                description: 'Успешная регистрация',
-                content: new OA\JsonContent(ref: '#/components/schemas/AuthTokenResponse')
+                description: 'Заявка на регистрацию принята (токен не выдаётся до одобрения администратором)',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string', example: 'Регистрация успешна. Ожидайте одобрения администратором Трак Импорт.'),
+                        new OA\Property(property: 'customer_id', type: 'string', nullable: true, description: 'Публичный идентификатор заказчика'),
+                    ]
+                )
             ),
             new OA\Response(
                 response: 422,
@@ -155,10 +160,47 @@ DESC,
         ]);
     }
 
-    /**
-     * Обмен одноразового кода SSO (выдан на GET /sso/authorize) на API-токен.
-     * Вызывайте с сервера Next или с клиента при настроенном CORS.
-     */
+    #[OA\Post(
+        path: '/v1/auth/sso/exchange',
+        summary: 'Обмен кода SSO на API-токен',
+        description: 'Одноразовый `code` выдаётся после `GET /sso/authorize` на ЛК. Предпочтительно вызывать с сервера витрины (Next Route Handler).',
+        tags: ['Auth'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['code'],
+                properties: [
+                    new OA\Property(property: 'code', type: 'string', minLength: 32, maxLength: 128, description: 'Код из query после authorize'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Токен выдан',
+                content: new OA\JsonContent(ref: '#/components/schemas/AuthTokenResponse')
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Код недействителен или истёк',
+                content: new OA\JsonContent(
+                    properties: [new OA\Property(property: 'message', type: 'string')]
+                )
+            ),
+            new OA\Response(
+                response: 403,
+                description: 'Аккаунт не активен или ожидает одобрения',
+                content: new OA\JsonContent(
+                    properties: [new OA\Property(property: 'message', type: 'string')]
+                )
+            ),
+            new OA\Response(
+                response: 422,
+                description: 'Нет поля code',
+                content: new OA\JsonContent(ref: '#/components/schemas/ValidationError')
+            ),
+        ]
+    )]
     public function ssoExchange(Request $request, SsoService $ssoService): JsonResponse
     {
         $request->validate([

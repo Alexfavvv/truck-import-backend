@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Order;
 use App\Models\Product;
+use App\Services\OrderService;
 use App\Services\PartSearchListImportService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class PartSearchController extends Controller
 {
@@ -101,6 +104,39 @@ class PartSearchController extends Controller
             'rows_html' => $rowsHtml,
             'not_found' => $resolved['not_found'],
             'matched_count' => count($resolved['items']),
+        ]);
+    }
+
+    public function storeOrderFromSearch(Request $request, OrderService $orderService): JsonResponse
+    {
+        $this->authorize('create', Order::class);
+
+        $validated = $request->validate([
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|integer|exists:products,id',
+            'items.*.quantity' => 'required|integer|min:1|max:999',
+        ]);
+
+        try {
+            $order = $orderService->createOrderFromSearchSelection(
+                $request->user(),
+                array_map(static fn (array $item) => [
+                    'product_id' => (int) $item['product_id'],
+                    'quantity' => (int) $item['quantity'],
+                ], $validated['items']),
+                'Заявка со страницы поиска (админка)',
+            );
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => collect($e->errors())->flatten()->first() ?? 'Ошибка оформления заказа.',
+                'errors' => $e->errors(),
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Заказ ' . $order->order_number . ' создан.',
+            'redirect' => route('admin.orders.show', $order),
         ]);
     }
 

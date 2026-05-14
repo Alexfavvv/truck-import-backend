@@ -263,14 +263,39 @@
                     body: JSON.stringify(payload),
                 });
 
+                const contentType = response.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    alert('Не удалось добавить в корзину: сервер вернул не JSON (часто это редирект на вход или нет доступа). Обновите страницу.');
+                    return;
+                }
+
                 const data = await response.json().catch(() => ({}));
 
                 if (!response.ok) {
                     let message = data.message || 'Ошибка добавления в корзину (код ' + response.status + ')';
-                    if (Array.isArray(data.errors) && data.errors.length) {
-                        message = data.errors.join('\n');
+                    if (data.errors) {
+                        if (Array.isArray(data.errors)) {
+                            message = data.errors.join('\n');
+                        } else if (typeof data.errors === 'object') {
+                            const parts = [];
+                            for (const k of Object.keys(data.errors)) {
+                                const v = data.errors[k];
+                                parts.push(Array.isArray(v) ? v.join(' ') : String(v));
+                            }
+                            if (parts.length) {
+                                message = parts.join('\n');
+                            }
+                        }
                     }
                     alert(message);
+                    return;
+                }
+
+                const cartUrl = (section && section.getAttribute('data-storefront-cart'))
+                    || (bar && bar.getAttribute('data-storefront-cart'))
+                    || '';
+                if (cartUrl.trim() !== '') {
+                    window.location.assign(cartUrl.trim());
                     return;
                 }
 
@@ -280,26 +305,106 @@
             }
         };
 
-        const sendRequestStub = () => {
-            alert('Отправка запроса пока не реализована.');
+        const createOrderFromSearchSelection = async () => {
+            const selected = getSelectedItems();
+            if (!selected.length) {
+                alert('Не выбраны товары.');
+                return;
+            }
+            const url = (section && section.getAttribute('data-create-order-url')) || '';
+            if (!url) {
+                alert('Создание заказа с этой страницы не настроено.');
+                return;
+            }
+            if (!confirm('Оформить заказ по выбранным позициям?')) {
+                return;
+            }
+
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            const csrfToken = csrfMeta ? csrfMeta.content : null;
+
+            const payload = {
+                items: selected.map(item => ({
+                    product_id: item.productId,
+                    quantity: item.quantity,
+                })),
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload),
+                });
+
+                const contentType = response.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    alert('Не удалось создать заказ: неожиданный ответ сервера.');
+                    return;
+                }
+
+                const data = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    let message = data.message || 'Ошибка создания заказа (код ' + response.status + ')';
+                    if (data.errors) {
+                        if (Array.isArray(data.errors)) {
+                            message = data.errors.join('\n');
+                        } else if (typeof data.errors === 'object') {
+                            const parts = [];
+                            for (const k of Object.keys(data.errors)) {
+                                const v = data.errors[k];
+                                parts.push(Array.isArray(v) ? v.join(' ') : String(v));
+                            }
+                            if (parts.length) {
+                                message = parts.join('\n');
+                            }
+                        }
+                    }
+                    alert(message);
+                    return;
+                }
+
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                    return;
+                }
+
+                alert(data.message || 'Заказ создан.');
+            } catch (e) {
+                alert('Сетевая ошибка при создании заказа.');
+            }
         };
 
-        document.querySelectorAll('[data-admin-search-action]').forEach(button => {
-            button.addEventListener('click', () => {
-                const action = button.dataset.adminSearchAction;
-                (async () => {
-                    if (action === 'delete-selected') {
-                        deleteSelected();
-                    } else if (action === 'add-to-cart') {
-                        await addToCartViaAdmin();
-                    } else if (action === 'send-request') {
-                        sendRequestStub();
-                    }
-                })();
+        section.addEventListener('click', (e) => {
+            const raw = e.target;
+            const el = raw instanceof Element ? raw : raw && raw.parentElement;
+            const button = el && typeof el.closest === 'function' ? el.closest('[data-admin-search-action]') : null;
+            if (!button || !section.contains(button)) {
+                return;
+            }
+            const action = button.getAttribute('data-admin-search-action') || '';
+            (async () => {
+                if (action === 'delete-selected') {
+                    deleteSelected();
+                } else if (action === 'add-to-cart') {
+                    await addToCartViaAdmin();
+                } else if (action === 'send-request') {
+                    await createOrderFromSearchSelection();
+                }
+            })().catch((err) => {
+                console.error(err);
+                alert('Ошибка: ' + (err && err.message ? err.message : String(err)));
             });
-        });
+        }, true);
 
-        const uploadUrl = section.dataset.uploadListUrl;
+        const uploadUrl = section.getAttribute('data-upload-list-url') || '';
         const fileInput = document.getElementById('adminSearchUploadListInput');
         const uploadBtn = document.getElementById('adminSearchUploadListBtn');
         const helpBtn = document.getElementById('adminSearchUploadHelpBtn');

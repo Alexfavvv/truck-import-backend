@@ -96,26 +96,41 @@ class CartController extends Controller
             ->first();
 
         if ($cartItem) {
-            $newQuantity = $cartItem->quantity + $data['quantity'];
+            $desired = $cartItem->quantity + $data['quantity'];
+            $applied = $desired;
 
-            if ($product->quantity !== null && $newQuantity > $product->quantity) {
-                throw ValidationException::withMessages([
-                    'quantity' => 'Недостаточно товара на складе. Доступно: ' . $product->quantity . ', в корзине уже: ' . $cartItem->quantity,
-                ]);
+            if ($product->quantity !== null) {
+                $available = (int) $product->quantity;
+                if ($available < 1) {
+                    throw ValidationException::withMessages([
+                        'quantity' => 'Товар отсутствует на складе.',
+                    ]);
+                }
+                if ($desired > $available) {
+                    $applied = $available;
+                }
             }
 
-            $cartItem->update(['quantity' => $newQuantity]);
+            $cartItem->update(['quantity' => $applied]);
         } else {
-            if ($product->quantity !== null && $data['quantity'] > $product->quantity) {
-                throw ValidationException::withMessages([
-                    'quantity' => 'Недостаточно товара на складе. Доступно: ' . $product->quantity,
-                ]);
+            $applied = $data['quantity'];
+
+            if ($product->quantity !== null) {
+                $available = (int) $product->quantity;
+                if ($available < 1) {
+                    throw ValidationException::withMessages([
+                        'quantity' => 'Товар отсутствует на складе.',
+                    ]);
+                }
+                if ($data['quantity'] > $available) {
+                    $applied = $available;
+                }
             }
 
             CartItem::create([
                 'cart_id' => $cart->id,
                 'product_id' => $product->id,
-                'quantity' => $data['quantity'],
+                'quantity' => $applied,
             ]);
         }
 

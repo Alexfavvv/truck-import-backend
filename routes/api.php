@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\Client\BrandController;
 use App\Http\Controllers\Api\V1\Client\CartController;
 use App\Http\Controllers\Api\V1\Client\FeedbackController;
 use App\Http\Controllers\Api\V1\Client\ProductController;
+use App\Http\Controllers\Api\V1\Client\SiteOrderController;
 use App\Http\Controllers\Api\V1\Client\TruckModelController;
 use Illuminate\Support\Facades\Route;
 
@@ -34,8 +35,10 @@ Route::prefix('v1/client')->group(function () {
     // Почта
     Route::post('/send-feedback', [FeedbackController::class, 'send']);
 
-    // Корзина (требует аутентификации)
+    // Корзина и заказ с витрины (требует аутентификации)
     Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/orders', [SiteOrderController::class, 'store'])
+            ->middleware('throttle:30,1');
         Route::get('/cart', [CartController::class, 'show']);
         Route::delete('/cart', [CartController::class, 'clear']);
         Route::post('/cart/items', [CartController::class, 'add']);

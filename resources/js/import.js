@@ -186,51 +186,53 @@ function displayFailures(failures) {
     }
 }
 
-importForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    statusAreaContainer.style.display = 'block';
-    statusMessageElement.textContent = 'Файл загружается...';
-    statusMessageElement.style.color = 'black';
-    progressBarContainer.style.display = 'none';
-    importDetails.style.display = 'none';
-    errorListContainer.style.display = 'none';
-    failuresList.innerHTML = '';
-    stopPolling();
+if (importForm && statusAreaContainer && statusMessageElement) {
+    importForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        statusAreaContainer.style.display = 'block';
+        statusMessageElement.textContent = 'Файл загружается...';
+        statusMessageElement.style.color = 'black';
+        if (progressBarContainer) progressBarContainer.style.display = 'none';
+        if (importDetails) importDetails.style.display = 'none';
+        if (errorListContainer) errorListContainer.style.display = 'none';
+        if (failuresList) failuresList.innerHTML = '';
+        stopPolling();
 
-    const formData = new FormData(importForm);
+        const formData = new FormData(importForm);
 
-    try {
-        const response = await axios.post(importForm.action, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                'Accept': 'application/json'
+        try {
+            const response = await axios.post(importForm.action, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (response.data.success) {
+                statusMessageElement.textContent = response.data.message + ' Начат импорт. Ожидаем статус...';
+                statusMessageElement.style.color = 'blue';
+                startPolling();
+            } else {
+                statusMessageElement.textContent = 'Ошибка загрузки файла: ' + response.data.message;
+                statusMessageElement.style.color = 'red';
             }
-        });
 
-        if (response.data.success) {
-            statusMessageElement.textContent = response.data.message + ' Начат импорт. Ожидаем статус...';
-            statusMessageElement.style.color = 'blue';
-            startPolling();
-        } else {
-            statusMessageElement.textContent = 'Ошибка загрузки файла: ' + response.data.message;
+        } catch (error) {
+            console.error('Ошибка отправки формы:', error);
+            let errorMessage = 'Неизвестная ошибка при загрузке файла.';
+            if (error.response && error.response.data && error.response.data.message) {
+                errorMessage = error.response.data.message;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            statusMessageElement.textContent = 'Ошибка: ' + errorMessage;
             statusMessageElement.style.color = 'red';
         }
-
-    } catch (error) {
-        console.error('Ошибка отправки формы:', error);
-        let errorMessage = 'Неизвестная ошибка при загрузке файла.';
-        if (error.response && error.response.data && error.response.data.message) {
-            errorMessage = error.response.data.message;
-        } else if (error.message) {
-            errorMessage = error.message;
-        }
-        statusMessageElement.textContent = 'Ошибка: ' + errorMessage;
-        statusMessageElement.style.color = 'red';
-    }
-});
+    });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-    progressBarContainer.style.display = 'none';
-    importDetails.style.display = 'none';
-    errorListContainer.style.display = 'none';
+    if (progressBarContainer) progressBarContainer.style.display = 'none';
+    if (importDetails) importDetails.style.display = 'none';
+    if (errorListContainer) errorListContainer.style.display = 'none';
 });

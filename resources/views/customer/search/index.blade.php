@@ -3,11 +3,14 @@
 @section('content')
     @php
         $currentResultIds = $products->isNotEmpty() ? $products->getCollection()->pluck('id')->implode(',') : '';
+        $storefrontCartUrl = config('app.frontend_cart_url');
     @endphp
     <section class="admin-search"
              data-current-result-ids="{{ $currentResultIds }}"
              data-current-query="{{ $query }}"
-             data-upload-list-url="{{ route('customer.search.upload-list') }}">
+             data-upload-list-url="{{ route('customer.search.upload-list') }}"
+             data-create-order-url="{{ route('customer.search.create-order') }}"
+             data-storefront-cart="{{ $storefrontCartUrl }}">
         <div class="admin-search__container">
             <header class="admin-search__header">
                 <div class="admin-search__header-left">
@@ -156,7 +159,8 @@
 
         {{-- 4. Панель действий с выбранными товарами --}}
         <div class="admin-search__actions-bar"
-             data-cart-add-url="{{ route('admin.cart.add') }}">
+             data-cart-add-url="{{ route('customer.cart.add') }}"
+             data-storefront-cart="{{ $storefrontCartUrl }}">
              <div class="admin-search__actions-bar-container">
             <div class="admin-search__actions-left">
                 <button type="button"

@@ -69,16 +69,28 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | URL корзины на витрине (редирект из ЛК после «В корзину»)
+    |--------------------------------------------------------------------------
+    |
+    | Полный URL (с протоколом). Если не задан — FRONTEND_URL + /cart
+    |
+    */
+
+    'frontend_cart_url' => env('FRONTEND_CART_URL')
+        ?: (rtrim(env('FRONTEND_URL', env('APP_URL', 'http://localhost')), '/') . '/cart'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |
     | Here you may specify the default timezone for your application, which
-    | will be used by the PHP date and date-time functions. The timezone
-    | is set to "UTC" by default as it is suitable for most use cases.
+    | will be used by the PHP date and date-time functions. Для ЛК в РФ
+    | обычно задают Europe/Moscow через APP_TIMEZONE в .env.
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'Europe/Moscow'),
 
     /*
     |--------------------------------------------------------------------------

@@ -5,9 +5,11 @@ namespace App\Services;
 use App\Enums\OrderStatus;
 use App\Enums\UserRole;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class OrderService
 {
@@ -131,6 +133,71 @@ class OrderService
 
             return $order->load('items.product');
         });
+    }
+
+    /**
+     * Заказ по выбранным строкам поиска (product_id + quantity).
+     *
+     * @param  list<array{product_id: int, quantity: int}>  $rows
+     *
+     * @throws ValidationException
+     */
+    public function createOrderFromSearchSelection(User $creator, array $rows, string $notesPrefix = 'Заявка со страницы поиска'): Order
+    {
+        if ($rows === []) {
+            throw ValidationException::withMessages([
+                'items' => ['Выберите хотя бы одну позицию.'],
+            ]);
+        }
+
+        $byProductId = [];
+        foreach ($rows as $row) {
+            $pid = (int) ($row['product_id'] ?? 0);
+            $qty = (int) ($row['quantity'] ?? 0);
+            if ($pid < 1 || $qty < 1) {
+                throw ValidationException::withMessages([
+                    'items' => ['Некорректные данные позиции.'],
+                ]);
+            }
+            $byProductId[$pid] = ($byProductId[$pid] ?? 0) + $qty;
+        }
+
+        $productIds = array_keys($byProductId);
+        $products = Product::query()->whereIn('id', $productIds)->get()->keyBy('id');
+
+        foreach ($productIds as $pid) {
+            if ($products->get($pid) === null) {
+                throw ValidationException::withMessages([
+                    'items' => ["Товар #{$pid} не найден в каталоге."],
+                ]);
+            }
+        }
+
+        foreach ($byProductId as $pid => $qty) {
+            $product = $products->get($pid);
+            if ($product->quantity !== null && $qty > $product->quantity) {
+                throw ValidationException::withMessages([
+                    'items' => ["Недостаточно остатка для «{$product->sku}»: доступно {$product->quantity}, запрошено {$qty}."],
+                ]);
+            }
+        }
+
+        $items = [];
+        foreach ($byProductId as $pid => $qty) {
+            $product = $products->get($pid);
+            $items[] = [
+                'product_id' => $product->id,
+                'quantity' => $qty,
+                'price' => (float) $product->price,
+            ];
+        }
+
+        $notes = $notesPrefix . ', ' . now()->format('d.m.Y H:i');
+
+        return $this->createOrder($creator, [
+            'notes' => $notes,
+            'items' => $items,
+        ]);
     }
 
     /**

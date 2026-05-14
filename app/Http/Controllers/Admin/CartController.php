@@ -8,6 +8,7 @@ use App\Models\CartItem;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
 
 class CartController extends Controller
@@ -31,12 +32,13 @@ class CartController extends Controller
         );
 
         $errors = [];
+        $capped = [];
 
         foreach ($validated['items'] as $item) {
             try {
-                $this->addItemToCart($cart, (int) $item['product_id'], (int) $item['quantity']);
+                $this->addItemToCart($cart, (int) $item['product_id'], (int) $item['quantity'], $capped);
             } catch (ValidationException $e) {
-                $errors[] = $e->errors()->first();
+                $errors[] = Arr::first(Arr::flatten($e->errors())) ?? 'Ошибка валидации.';
             }
         }
 
@@ -47,16 +49,26 @@ class CartController extends Controller
             ], 422);
         }
 
-        return response()->json([
-            'message' => 'Товары добавлены в корзину.',
+        $payload = [
+            'message' => count($capped) > 0
+                ? 'Товары в корзине; часть количества ограничена остатком на складе.'
+                : 'Товары добавлены в корзину.',
             'success' => true,
-        ]);
+        ];
+
+        if (count($capped) > 0) {
+            $payload['capped'] = $capped;
+        }
+
+        return response()->json($payload);
     }
 
     /**
+     * @param  array<int, array{product_id: int, requested: int, applied: int, available: int|null}>  $cappedOut
+     *
      * @throws ValidationException
      */
-    private function addItemToCart(Cart $cart, int $productId, int $quantity): void
+    private function addItemToCart(Cart $cart, int $productId, int $quantity, array &$cappedOut = []): void
     {
         $product = Product::findOrFail($productId);
 
@@ -65,26 +77,55 @@ class CartController extends Controller
             ->first();
 
         if ($cartItem) {
-            $newQuantity = $cartItem->quantity + $quantity;
+            $desired = $cartItem->quantity + $quantity;
+            $applied = $desired;
 
-            if ($product->quantity !== null && $newQuantity > $product->quantity) {
-                throw ValidationException::withMessages([
-                    'quantity' => 'Недостаточно товара на складе. Доступно: ' . $product->quantity . ', в корзине уже: ' . $cartItem->quantity,
-                ]);
+            if ($product->quantity !== null) {
+                $available = (int) $product->quantity;
+                if ($available < 1) {
+                    throw ValidationException::withMessages([
+                        'quantity' => 'Товар отсутствует на складе.',
+                    ]);
+                }
+                if ($desired > $available) {
+                    $applied = $available;
+                    if ($applied !== $desired) {
+                        $cappedOut[] = [
+                            'product_id' => $product->id,
+                            'requested' => $desired,
+                            'applied' => $applied,
+                            'available' => $available,
+                        ];
+                    }
+                }
             }
 
-            $cartItem->update(['quantity' => $newQuantity]);
+            $cartItem->update(['quantity' => $applied]);
         } else {
-            if ($product->quantity !== null && $quantity > $product->quantity) {
-                throw ValidationException::withMessages([
-                    'quantity' => 'Недостаточно товара на складе. Доступно: ' . $product->quantity,
-                ]);
+            $applied = $quantity;
+
+            if ($product->quantity !== null) {
+                $available = (int) $product->quantity;
+                if ($available < 1) {
+                    throw ValidationException::withMessages([
+                        'quantity' => 'Товар отсутствует на складе.',
+                    ]);
+                }
+                if ($quantity > $available) {
+                    $applied = $available;
+                    $cappedOut[] = [
+                        'product_id' => $product->id,
+                        'requested' => $quantity,
+                        'applied' => $applied,
+                        'available' => $available,
+                    ];
+                }
             }
 
             CartItem::create([
                 'cart_id' => $cart->id,
                 'product_id' => $product->id,
-                'quantity' => $quantity,
+                'quantity' => $applied,
             ]);
         }
     }

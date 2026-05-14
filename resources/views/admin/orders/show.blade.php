@@ -241,12 +241,17 @@
                 </button>
             </div>
             <div class="orders-page__detail-actions-right">
-                <button type="button"
-                        class="orders-page__btn orders-page__btn--reissue"
-                        data-order-action="cancel-order"
-                        disabled>
-                    Отменить заказ
-                </button>
+                <form method="POST"
+                      action="{{ route('admin.orders.status', $order) }}"
+                      class="orders-page__detail-cancel-form"
+                      onsubmit="return confirm('Отменить заказ {{ $order->order_number }}?');">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="status" value="{{ \App\Enums\OrderStatus::Cancelled->value }}">
+                    <button type="submit" class="orders-page__btn orders-page__btn--reissue">
+                        Отменить заказ
+                    </button>
+                </form>
             </div>
         </div>
     </div>

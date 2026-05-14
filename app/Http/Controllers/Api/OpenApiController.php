@@ -23,6 +23,7 @@ use OpenApi\Attributes as OA;
 #[OA\Tag(name: 'Products', description: 'Каталог запчастей')]
 #[OA\Tag(name: 'TruckModels', description: 'Модели грузовиков')]
 #[OA\Tag(name: 'Cart', description: 'Корзина (требует авторизации)')]
+#[OA\Tag(name: 'Orders', description: 'Заказы с витрины (требует авторизации)')]
 #[OA\Tag(name: 'Feedback', description: 'Обратная связь')]
 class OpenApiController
 {

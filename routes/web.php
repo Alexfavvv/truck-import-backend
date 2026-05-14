@@ -31,6 +31,7 @@ Route::middleware([CustomAuthenticateMiddleware::class, IsAdminMiddleware::class
     // ── Поиск деталей (отдельная страница) ───────────────────────────
     Route::get('/admin/search', [PartSearchController::class, 'index'])->name('admin.search.index');
     Route::post('/admin/search/upload-list', [PartSearchController::class, 'uploadList'])->name('admin.search.upload-list');
+    Route::post('/admin/search/create-order', [PartSearchController::class, 'storeOrderFromSearch'])->name('admin.search.create-order');
 
     // ── Корзина (добавление из админки в корзину текущего пользователя) ─
     Route::post('/admin/cart/add', [CartController::class, 'add'])->name('admin.cart.add');
@@ -121,6 +122,8 @@ Route::middleware([IsCustomerMiddleware::class])->prefix('cabinet')->name('custo
     // Поиск деталей
     Route::get('/search', [CustomerSearchController::class, 'index'])->name('search.index');
     Route::post('/search/upload-list', [CustomerSearchController::class, 'uploadList'])->name('search.upload-list');
+    Route::post('/search/create-order', [CustomerSearchController::class, 'storeOrderFromSearch'])->name('search.create-order');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
 
     // Заказы
     Route::get('/orders', [CustomerOrderController::class, 'index'])->name('orders.index');

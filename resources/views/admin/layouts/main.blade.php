@@ -610,6 +610,10 @@
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed admin-layout admin-no-sidebar">
+    @php
+        $front = rtrim(config('app.frontend_url', 'https://truck-import.ru'), '/');
+        $lk = rtrim(config('app.url', 'http://localhost'), '/');
+    @endphp
 <ul class="top-nav__right">
             <li class="top-nav__item top-nav__item--dropdown dropdown">
                 <a class="top-nav__link" data-toggle="dropdown" href="#">
@@ -717,7 +721,7 @@
         </ul>
     <header class="header _desktop">
         <div class="header__top">
-            <a class="logo" href="https://truck-import.ru">
+            <a class="logo" href="{{ $front }}">
                 <img src="/logo.svg"
                     alt="logo"
                     width="500"
@@ -750,19 +754,19 @@
                             </svg>
                         </button>
                         <ul class="menu menu_submenu" id="catalog-submenu" hidden>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/brands/mercedes">Mercedes</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/brands/man">Man</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/brands/scania">Scania</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/brands/volvo">Volvo</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/brands/hengst">Hengst</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/brands/kolbenschmidt">Kolbenschmidt</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/brands/daf">Daf</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/brands/iveco">Iveco</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/brands/renault">Renault</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/brands/valeo">Valeo</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/brands/john-deere">John Deere</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/brands/komatsu">Komatsu</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/brands/iveco-daily">Iveco Daily</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/brands/mercedes">Mercedes</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/brands/man">Man</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/brands/scania">Scania</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/brands/volvo">Volvo</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/brands/hengst">Hengst</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/brands/kolbenschmidt">Kolbenschmidt</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/brands/daf">Daf</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/brands/iveco">Iveco</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/brands/renault">Renault</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/brands/valeo">Valeo</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/brands/john-deere">John Deere</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/brands/komatsu">Komatsu</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/brands/iveco-daily">Iveco Daily</a></li>
                         </ul>
                     </li>
                     <li class="menu__item" data-has-children>
@@ -773,9 +777,9 @@
                             </svg>
                         </button>
                         <ul class="menu menu_submenu" id="buyers-submenu" hidden>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/oplata-i-dostavka">Оплата и доставка</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/garantii-i-vozvrat">Гарантия и возврат</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/contacts">Контакты</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/oplata-i-dostavka">Оплата и доставка</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/garantii-i-vozvrat">Гарантия и возврат</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/contacts">Контакты</a></li>
                         </ul>
                     </li>
                     <li class="menu__item" data-has-children>
@@ -786,21 +790,21 @@
                             </svg>
                         </button>
                         <ul class="menu menu_submenu" id="about-submenu" hidden>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/vakansii">Вакансии</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/vakansii">Вакансии</a></li>
                         </ul>
                     </li>
                 </ul>
             </nav>
 
             <div class="header__buttons">
-                <a class="header__account" aria-label="Аккаунт" href="https://lk.truck-import.ru">
+                <a class="header__account" aria-label="Аккаунт" href="{{ $lk }}">
                     <svg width="25" height="26" viewBox="0 0 25 26" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M5.85938 10.2855C5.85938 13.9379 8.84766 16.9261 12.5 16.9261C16.1523 16.9261 19.1406 13.9379 19.1406 10.2855C19.1406 6.63318 16.1523 3.6449 12.5 3.6449C8.84766 3.6449 5.85938 6.63318 5.85938 10.2855ZM17.5781 10.2855C17.5781 13.0785 15.293 15.3636 12.5 15.3636C9.70703 15.3636 7.42188 13.0785 7.42188 10.2855C7.42188 7.49255 9.70703 5.2074 12.5 5.2074C15.293 5.2074 17.5781 7.49255 17.5781 10.2855Z" fill="#C9AC37" />
                         <path d="M4.76562 22.5251C6.83594 20.4548 9.57031 19.322 12.5 19.322C15.4297 19.322 18.1641 20.4548 20.2344 22.5251L21.3477 21.4118C18.9844 19.0681 15.8398 17.7595 12.5 17.7595C9.16016 17.7595 6.01563 19.0681 3.65234 21.4118L4.76562 22.5251Z" fill="#C9AC37" />
                     </svg>
                 </a>
 
-                <a class="header__button" aria-label="Корзина" href="/cart">
+                <a class="header__button" aria-label="Корзина" href="{{ $front }}/cart">
                     <svg width="25" height="26" viewBox="0 0 25 26" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <g clip-path="url(#clip0_199_680)">
                             <path d="M24.7961 7.29121C24.6508 7.08496 24.414 6.96152 24.1617 6.96152H7.58124L6.32577 2.6334C5.83358 0.928711 4.66405 0.745117 4.18436 0.745117H0.837488C0.408582 0.745117 0.0617065 1.09277 0.0617065 1.5209C0.0617065 1.94902 0.409363 2.29668 0.837488 2.29668H4.18358C4.28983 2.29668 4.61249 2.29668 4.8328 3.05762L9.15077 18.9256C9.24452 19.26 9.54999 19.4912 9.89764 19.4912H20.4437C20.7711 19.4912 21.0633 19.2865 21.1734 18.9779L24.8906 7.99902C24.9766 7.76152 24.9406 7.49668 24.7953 7.29043L24.7961 7.29121ZM19.8984 17.9404H10.4875L8.01796 8.51387H23.0594L19.8984 17.9404ZM18.3594 21.0639C17.2805 21.0639 16.4062 21.9381 16.4062 23.017C16.4062 24.0959 17.2805 24.9701 18.3594 24.9701C19.4383 24.9701 20.3125 24.0959 20.3125 23.017C20.3125 21.9381 19.4383 21.0639 18.3594 21.0639ZM11.3281 21.0639C10.2492 21.0639 9.37499 21.9381 9.37499 23.017C9.37499 24.0959 10.2492 24.9701 11.3281 24.9701C12.407 24.9701 13.2812 24.0959 13.2812 23.017C13.2812 21.9381 12.407 21.0639 11.3281 21.0639Z" fill="black" />
@@ -827,7 +831,7 @@
             </button>
         </div>
 
-        <a class="logo" href="https://truck-import.ru">
+        <a class="logo" href="{{ $front }}">
             <img src="/logo.svg"
                 alt="logo"
                 width="500"
@@ -835,14 +839,14 @@
         </a>
 
         <div class="header__buttons">
-            <a class="header__account" aria-label="Аккаунт" href="https://lk.truck-import.ru">
+            <a class="header__account" aria-label="Аккаунт" href="{{ $lk }}">
                 <svg width="25" height="26" viewBox="0 0 25 26" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M5.85938 10.2855C5.85938 13.9379 8.84766 16.9261 12.5 16.9261C16.1523 16.9261 19.1406 13.9379 19.1406 10.2855C19.1406 6.63318 16.1523 3.6449 12.5 3.6449C8.84766 3.6449 5.85938 6.63318 5.85938 10.2855ZM17.5781 10.2855C17.5781 13.0785 15.293 15.3636 12.5 15.3636C9.70703 15.3636 7.42188 13.0785 7.42188 10.2855C7.42188 7.49255 9.70703 5.2074 12.5 5.2074C15.293 5.2074 17.5781 7.49255 17.5781 10.2855Z" fill="#C9AC37" />
                     <path d="M4.76562 22.5251C6.83594 20.4548 9.57031 19.322 12.5 19.322C15.4297 19.322 18.1641 20.4548 20.2344 22.5251L21.3477 21.4118C18.9844 19.0681 15.8398 17.7595 12.5 17.7595C9.16016 17.7595 6.01563 19.0681 3.65234 21.4118L4.76562 22.5251Z" fill="#C9AC37" />
                 </svg>
             </a>
 
-            <a class="header__button" aria-label="Корзина" href="/cart">
+            <a class="header__button" aria-label="Корзина" href="{{ $front }}/cart">
                 <svg width="25" height="26" viewBox="0 0 25 26" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <g clip-path="url(#clip0_199_680)">
                         <path d="M24.7961 7.29121C24.6508 7.08496 24.414 6.96152 24.1617 6.96152H7.58124L6.32577 2.6334C5.83358 0.928711 4.66405 0.745117 4.18436 0.745117H0.837488C0.408582 0.745117 0.0617065 1.09277 0.0617065 1.5209C0.0617065 1.94902 0.409363 2.29668 0.837488 2.29668H4.18358C4.28983 2.29668 4.61249 2.29668 4.8328 3.05762L9.15077 18.9256C9.24452 19.26 9.54999 19.4912 9.89764 19.4912H20.4437C20.7711 19.4912 21.0633 19.2865 21.1734 18.9779L24.8906 7.99902C24.9766 7.76152 24.9406 7.49668 24.7953 7.29043L24.7961 7.29121ZM19.8984 17.9404H10.4875L8.01796 8.51387H23.0594L19.8984 17.9404ZM18.3594 21.0639C17.2805 21.0639 16.4062 21.9381 16.4062 23.017C16.4062 24.0959 17.2805 24.9701 18.3594 24.9701C19.4383 24.9701 20.3125 24.0959 20.3125 23.017C20.3125 21.9381 19.4383 21.0639 18.3594 21.0639ZM11.3281 21.0639C10.2492 21.0639 9.37499 21.9381 9.37499 23.017C9.37499 24.0959 10.2492 24.9701 11.3281 24.9701C12.407 24.9701 13.2812 24.0959 13.2812 23.017C13.2812 21.9381 12.407 21.0639 11.3281 21.0639Z" fill="black" />
@@ -867,9 +871,9 @@
                             </svg>
                         </button>
                         <ul class="menu menu_submenu" id="mobile-catalog-submenu" hidden>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/brands/mercedes">Mercedes</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/brands/man">Man</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/brands/scania">Scania</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/brands/mercedes">Mercedes</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/brands/man">Man</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/brands/scania">Scania</a></li>
                         </ul>
                     </li>
                     <li class="menu__item" data-has-children>
@@ -880,9 +884,9 @@
                             </svg>
                         </button>
                         <ul class="menu menu_submenu" id="mobile-buyers-submenu" hidden>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/oplata-i-dostavka">Оплата и доставка</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/garantii-i-vozvrat">Гарантия и возврат</a></li>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/contacts">Контакты</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/oplata-i-dostavka">Оплата и доставка</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/garantii-i-vozvrat">Гарантия и возврат</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/contacts">Контакты</a></li>
                         </ul>
                     </li>
                     <li class="menu__item" data-has-children>
@@ -893,7 +897,7 @@
                             </svg>
                         </button>
                         <ul class="menu menu_submenu" id="mobile-about-submenu" hidden>
-                            <li class="menu__item"><a class="menu__link" href="https://truck-import.ru/vakansii">Вакансии</a></li>
+                            <li class="menu__item"><a class="menu__link" href="{{ $front }}/vakansii">Вакансии</a></li>
                         </ul>
                     </li>
                 </ul>
