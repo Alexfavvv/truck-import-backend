@@ -191,9 +191,9 @@
         <tr>
             <td class="party-cell">
                 <div class="party-title">Поставщик</div>
-                <div class="party-name">ООО «Трак Импорт»</div>
-                <div class="party-line">ИНН: 0000000000 / КПП: 000000000</div>
-                <div class="party-line">г. Москва, ул. Примерная, д. 1</div>
+                <div class="party-name">ШЕВЦОВ АНТОН АЛЕКСАНДРОВИЧ (ИП)</div>
+                <div class="party-line">ИНН: 772071947050</div>
+                <div class="party-line">111625, Москва, Каскадная улица, 20к2, пом.1</div>
                 <div class="party-line">Тел.: +7 (000) 000-00-00</div>
                 <div class="party-line">info@truck-import.ru</div>
             </td>
@@ -306,23 +306,35 @@
         <table class="payment-table">
             <tr>
                 <td class="label">Получатель:</td>
-                <td><strong>ООО «Трак Импорт»</strong></td>
+                <td><strong>ШЕВЦОВ АНТОН АЛЕКСАНДРОВИЧ (ИП)</strong></td>
+            </tr>
+            <tr>
+                <td class="label">ИНН:</td>
+                <td>772071947050</td>
+            </tr>
+            <tr>
+                <td class="label">Адрес получателя:</td>
+                <td>г. Москва, ул. Каскадная, д. 20, корп./ст. 2, кв./оф. 69</td>
             </tr>
             <tr>
                 <td class="label">Банк получателя:</td>
-                <td>ПАО «Сбербанк России»</td>
+                <td>АО «АЛЬФА-БАНК»</td>
             </tr>
             <tr>
                 <td class="label">БИК:</td>
-                <td>044525225</td>
+                <td>044525593</td>
             </tr>
             <tr>
                 <td class="label">Корр. счёт:</td>
-                <td>30101810400000000225</td>
+                <td>30101810200000000593</td>
             </tr>
             <tr>
                 <td class="label">Расч. счёт:</td>
-                <td>40702810000000000000</td>
+                <td>40802810301380002924</td>
+            </tr>
+            <tr>
+                <td class="label">Валюта:</td>
+                <td>RUR</td>
             </tr>
             <tr>
                 <td class="label">Назначение платежа:</td>
