@@ -730,7 +730,7 @@
 
             <div class="header__inner">
                 <div class="header__item">
-                    <a class="header__phone" href="tel:+79006044614">+7 (900) 604-46-14</a>
+                    <a class="header__phone" href="tel:+74957403306">+7 (495) 740-33-06</a>
                     <button class="header__feedback" onclick="document.getElementById('header__modal').showModal()">
                         Заказать звонок
                     </button>
@@ -1131,6 +1131,27 @@
                                 class="nav-link {{ request()->routeIs('admin.products*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-boxes"></i>
                                 <p>Товары</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ Route::has('admin.posts.index') ? route('admin.posts.index') : url('/admin/posts') }}"
+                                class="nav-link {{ request()->routeIs('admin.posts*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-newspaper"></i>
+                                <p>Блог / Статьи</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.pages.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.pages*') && !request()->routeIs('admin.pages.edit', 'site_settings') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-file-alt"></i>
+                                <p>Страницы</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.pages.edit', 'site_settings') }}"
+                                class="nav-link {{ request()->routeIs('admin.pages.edit') && request()->route('page')->slug === 'site_settings' ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-cog"></i>
+                                <p>Настройки сайта</p>
                             </a>
                         </li>
                         <li class="nav-item">

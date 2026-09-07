@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PartSearchController;
 use App\Http\Controllers\Admin\PartTypeController;
+use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\TruckManufacturerController;
@@ -65,6 +67,13 @@ Route::middleware([CustomAuthenticateMiddleware::class, IsAdminMiddleware::class
         ->name('admin.invoices.customer-status');
     Route::get('/admin/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])
         ->name('admin.invoices.pdf');
+
+    // ── Блог (статьи) ─────────────────────────────────────────────────
+    Route::resource('/admin/posts', PostController::class)->names('admin.posts');
+    Route::patch('/admin/posts/{post}/toggle-publish', [PostController::class, 'togglePublish'])->name('admin.posts.toggle-publish');
+
+    // ── Страницы ──────────────────────────────────────────────────────
+    Route::resource('/admin/pages', PageController::class)->names('admin.pages')->only(['index', 'edit', 'update']);
 
     // ── Мой профиль ─────────────────────────────────────────────────
     Route::get('/admin/profile', [ProfileController::class, 'show'])->name('admin.profile');

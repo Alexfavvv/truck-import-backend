@@ -9,7 +9,7 @@
         </a>
         <div class="header__inner">
             <div class="header__item">
-                <a class="header__phone" href="tel:+79006044614">+7 (900) 604-46-14</a>
+                <a class="header__phone" href="tel:+74957403306">+7 (495) 740-33-06</a>
                 <button class="header__feedback" onclick="document.getElementById('header__modal').showModal()">
                     Заказать звонок
                 </button>

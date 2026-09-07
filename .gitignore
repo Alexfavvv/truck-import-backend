@@ -21,3 +21,10 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Production-only / local artifacts
+*.zip
+import_ready_csv/
+adminer.php
+public/adminer.php
+tatus

@@ -27,6 +27,18 @@
             <span class="dashboard-page__tile-text">Профили компаний</span>
         </a>
         @endif
+        <a href="{{ Route::has('admin.posts.index') ? route('admin.posts.index') : url('/admin/posts') }}" class="dashboard-page__tile">
+            <span class="dashboard-page__tile-icon"><i class="fas fa-newspaper" aria-hidden="true"></i></span>
+            <span class="dashboard-page__tile-text">Блог / Статьи</span>
+        </a>
+        <a href="{{ route('admin.pages.index') }}" class="dashboard-page__tile">
+            <span class="dashboard-page__tile-icon"><i class="fas fa-file-alt" aria-hidden="true"></i></span>
+            <span class="dashboard-page__tile-text">Страницы</span>
+        </a>
+        <a href="{{ route('admin.pages.edit', 'site_settings') }}" class="dashboard-page__tile">
+            <span class="dashboard-page__tile-icon"><i class="fas fa-cog" aria-hidden="true"></i></span>
+            <span class="dashboard-page__tile-text">Настройки сайта</span>
+        </a>
     </div>
 </div>
 @endsection

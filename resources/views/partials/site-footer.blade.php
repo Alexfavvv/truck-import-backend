@@ -20,7 +20,7 @@
     <div class="footer__item footer__item_top">
       <div class="phones">
         <a class="phones__item" href="tel:+79099131186">+7 (909) 913-11-86</a>
-        <a class="phones__item" href="tel:+79006044614">+7 (900) 604-46-14</a>
+        <a class="phones__item" href="tel:+74957403306">+7 (495) 740-33-06</a>
       </div>
       <div class="footer__nav">
         <ul class="footer__menu">

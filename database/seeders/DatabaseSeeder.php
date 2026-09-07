@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
 
         // Очищаем таблицы перед заполнением (опционально, но полезно для тестирования)
         $this->truncateTables([
+            'posts',
             'characteristics',
             'metatags',
             'product_truck_manufacturer',
@@ -35,6 +36,7 @@ class DatabaseSeeder extends Seeder
             'brands',
             'part_types',
             'truck_manufacturers',
+            'pages',
         ]);
 
         $this->call([
@@ -46,6 +48,8 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             CharacteristicSeeder::class,
             TruckModelSeeder::class,
+            PostSeeder::class,
+            PageSeeder::class,
         ]);
 
         // Включаем проверку внешних ключей обратно
