@@ -3,7 +3,9 @@
 namespace App\Jobs\Product;
 
 use App\Imports\ProductsImport;
+use App\Models\ProductImport;
 use App\Services\ImportService;
+use App\Services\ProductImportService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
@@ -24,16 +26,18 @@ class ProcessProductImport implements ShouldQueue
 
     private string $filePath;
     private int $userId;
+    private ?int $importId;
     public int $timeout = 3600;
     public int $tries = 1;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $filePath, int $userId)
+    public function __construct(string $filePath, int $userId, ?int $importId = null)
     {
         $this->filePath = $filePath;
         $this->userId = $userId;
+        $this->importId = $importId;
     }
 
     /**
@@ -50,8 +54,13 @@ class ProcessProductImport implements ShouldQueue
         $status = 'processing';
         $message = 'Импорт файла начат.';
         $failures = [];
+        $runs = app(ProductImportService::class);
+        $import = null;
 
         try {
+            $import = $this->importId
+                ? $runs->start('admin_upload', $this->filePath, $this->userId, id: $this->importId)
+                : $runs->start('admin_upload', $this->filePath, $this->userId);
             ImportService::updateImportJob($this->filePath, [
                 'status' => 'processing',
                 'job_id' => $jobId,
@@ -69,7 +78,7 @@ class ProcessProductImport implements ShouldQueue
 
             $fullPath = Storage::path($this->filePath);
 
-            $productsImport = new ProductsImport();
+            $productsImport = new ProductsImport($import->id, $this->userId);
             Excel::import($productsImport, $fullPath);
 
             $failures = $productsImport->getFailures();
@@ -80,10 +89,11 @@ class ProcessProductImport implements ShouldQueue
                 $status = 'warning';
                 $message = 'Импорт завершен с предупреждениями.';
             }
+            $runs->finish($import);
 
             Log::info("Завершен Job импорта продуктов: {$this->filePath} для пользователя ID: {$this->userId}, Job ID: {$jobId}. Статус: {$status}");
 
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             $status = 'error';
             $message = 'Произошла критическая ошибка при импорте: ' . $e->getMessage();
             Log::error($message, [
@@ -98,6 +108,8 @@ class ProcessProductImport implements ShouldQueue
                 'errors' => [$e->getMessage()],
                 'values' => [],
             ];
+            if ($import) $runs->finish($import, $e);
+            throw $e;
         } finally {
             ImportService::updateImportJob($this->filePath, [
                 'status' => $status,
@@ -124,6 +136,11 @@ class ProcessProductImport implements ShouldQueue
     {
         $cacheKey = "import_status:user_{$this->userId}";
         $jobId = $this->job?->getJobId();
+
+        if ($this->importId) {
+            $import = ProductImport::find($this->importId);
+            if ($import) app(ProductImportService::class)->finish($import, $exception);
+        }
 
         ImportService::updateImportJob($this->filePath, [
             'status' => 'error',

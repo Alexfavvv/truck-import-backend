@@ -4,6 +4,9 @@ namespace App\Console\Commands;
 
 use App\Models\Brand;
 use App\Models\PartType;
+use App\Services\ProductImportService;
+use App\Services\ProductPriceService;
+use App\Models\ProductImport;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -17,7 +20,24 @@ class ImportProductsFast extends Command
 
     protected $description = 'High-volume products import from CSV using batched upsert';
 
+    private ?ProductImport $importRun = null;
+
     public function handle(): int
+    {
+        $runs = app(ProductImportService::class);
+        $this->importRun = $runs->start('fast_import', (string) $this->argument('file'));
+        try {
+            $result = $this->executeImport();
+            $runs->finish($this->importRun, $result === self::FAILURE && !$this->importRun->refresh()->rows_failed
+                ? new \RuntimeException('CSV import failed; see command output.') : null);
+            return $result;
+        } catch (\Throwable $error) {
+            $runs->finish($this->importRun, $error);
+            throw $error;
+        }
+    }
+
+    private function executeImport(): int
     {
         set_time_limit(0);
         DB::disableQueryLog();
@@ -86,6 +106,7 @@ class ImportProductsFast extends Command
             $payload = $this->rowToPayload($row, $headerMap, $brands, $partTypes);
             if ($payload === null) {
                 $skipped++;
+                app(ProductImportService::class)->count($this->importRun->id, failed: 1);
                 continue;
             }
 
@@ -109,7 +130,7 @@ class ImportProductsFast extends Command
         $this->newLine(2);
 
         $this->info("Done. Upserted: {$processed}. Skipped: {$skipped}.");
-        return self::SUCCESS;
+        return $skipped ? self::FAILURE : self::SUCCESS;
     }
 
     private function resolvePath(string $path): string
@@ -147,7 +168,7 @@ class ImportProductsFast extends Command
     {
         $map = [];
         foreach ($header as $idx => $column) {
-            $key = trim(Str::lower((string) $column));
+            $key = trim(Str::lower(ltrim((string) $column, "\xEF\xBB\xBF")));
             if ($key !== '') {
                 $map[$key] = $idx;
             }
@@ -192,8 +213,11 @@ class ImportProductsFast extends Command
         $description = $this->cell($row, $headerMap, 'opisanie');
         $delivery = $this->cell($row, $headerMap, 'vremia_dostavki');
 
-        $price = (float) str_replace(',', '.', $priceRaw);
-        $quantity = (int) preg_replace('/[^\d\-]/', '', $qtyRaw);
+        $price = app(ProductPriceService::class)->decimal($priceRaw);
+        if (!preg_match('/^\d+$/D', $qtyRaw) || (int) $qtyRaw > 2147483647) {
+            throw new \InvalidArgumentException('Invalid quantity in CSV.');
+        }
+        $quantity = (int) $qtyRaw;
         $now = now();
 
         return [
@@ -203,7 +227,7 @@ class ImportProductsFast extends Command
             'part_type_id' => $partTypeId,
             'description' => $description !== '' ? $description : null,
             'delivery' => $delivery !== '' ? $delivery : null,
-            'price' => max(0, $price),
+            'sale_price' => $price,
             'quantity' => max(0, $quantity),
             'updated_at' => $now,
             'created_at' => $now,
@@ -212,11 +236,7 @@ class ImportProductsFast extends Command
 
     private function flushBatch(array $rows): void
     {
-        DB::table('products')->upsert(
-            $rows,
-            ['sku'],
-            ['title', 'brand_id', 'part_type_id', 'description', 'delivery', 'price', 'quantity', 'updated_at']
-        );
+        app(ProductImportService::class)->writeBatch($rows, 'fast_import', [], $this->importRun->id);
     }
 
     private function cell(array $row, array $headerMap, string $key): string
@@ -240,4 +260,3 @@ class ImportProductsFast extends Command
         return true;
     }
 }
-

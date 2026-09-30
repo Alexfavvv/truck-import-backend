@@ -21,7 +21,6 @@ class ProductShortResource extends JsonResource
             'brand_slug' => $this->brand?->slug,
             'brand_name' => $this->brand?->title,
             'price' => $this->price,
-            'quantity' => $this->quantity,
             'image_url' => $this->image_url,
         ];
     }

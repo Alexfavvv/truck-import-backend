@@ -157,13 +157,39 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label for="product-price">Цена <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('product.price') is-invalid @enderror"
-                                       id="product-price" name="product[price]"
-                                       value="{{ old('product.price', $product->price) }}" required>
+                                <label>Цены товара</label>
+                                <div class="border rounded p-2 mb-2 bg-light">
+                                    <div>Цена поставщика: {{ $product->supplier_price ?? '—' }}</div>
+                                    <div>Автоматическая цена: {{ $automaticPrice ?? '—' }}</div>
+                                    <div>Ручная цена: {{ $product->manual_price ?? '—' }}</div>
+                                    <div>Цена на сайте: {{ $product->price ?? '—' }}</div>
+                                    <div class="mt-1">
+                                        @if($product->manual_price !== null)
+                                            <span class="badge badge-warning">Используется ручная цена</span>
+                                        @else
+                                            <span class="badge badge-info">Используется автоматическая цена</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                {{-- Keep the legacy required field in the request for compatibility. --}}
+                                <input type="hidden" name="product[price]" value="{{ old('product.price', $product->price) }}">
                                 @error('product.price')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="text-danger">{{ $message }}</div>
                                 @enderror
+                                <label for="product-manual_price">Ручная цена</label>
+                                <input type="number" step="0.01" min="0" max="9999999999999.99"
+                                       class="form-control @error('product.manual_price') is-invalid @enderror"
+                                       id="product-manual_price" name="product[manual_price]"
+                                       value="{{ old('product.manual_price', $product->manual_price) }}">
+                                @error('product.manual_price')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                @if($product->manual_price !== null && $automaticPrice !== null)
+                                    <button type="submit" name="reset_manual_price" value="1"
+                                            class="btn btn-outline-secondary btn-sm mt-2">
+                                        Вернуть автоматическую цену
+                                    </button>
+                                @endif
                             </div>
                         </div>
 

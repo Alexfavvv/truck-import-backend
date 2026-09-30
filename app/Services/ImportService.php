@@ -17,7 +17,7 @@ class ImportService
     /**
      * @throws Exception
      */
-    public static function handleFileAndDispatchJob(UploadedFile $file, string $jobClass): void
+    public static function handleFileAndDispatchJob(UploadedFile $file, string $jobClass, ?int $importId = null): void
     {
         $userId = auth()->id();
         $fileName = uniqid('import_') . '.' . $file->getClientOriginalExtension();
@@ -47,7 +47,11 @@ class ImportService
             'updated_at' => now()->toDateTimeString(),
         ]);
 
-        $jobClass::dispatch($filePath, $userId);
+        if ($importId === null) {
+            $jobClass::dispatch($filePath, $userId);
+        } else {
+            $jobClass::dispatch($filePath, $userId, $importId);
+        }
         Log::info("Файл '{$filePath}' успешно сохранен и Job '{$jobClass}' отправлен в очередь.");
     }
 

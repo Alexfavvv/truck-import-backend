@@ -24,7 +24,8 @@ class UpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        $productId = $this->route('product')->id;
+        $product = $this->route('product');
+        $productId = $product->id;
 
         return [
             // Основные поля продукта
@@ -33,7 +34,21 @@ class UpdateRequest extends FormRequest
             'product.sku' => 'required|string|unique:products,sku,' . $productId . '|max:255',
             'product.title' => 'required|string|max:255',
             'product.description' => 'nullable|string',
-            'product.price' => 'required|numeric|min:0',
+            'product.price' => 'required|numeric|min:0|max:9999999999999.99',
+            'product.manual_price' => [
+                'nullable', 'numeric', 'min:0', 'max:9999999999999.99',
+                function (string $attribute, mixed $value, \Closure $fail) use ($product): void {
+                    $hasAutomaticPrice = $product->supplier_price !== null
+                        && $product->exchange_rate !== null
+                        && $product->price_multiplier !== null
+                        && $product->markup_percent !== null;
+                    if (($value === null || $this->boolean('reset_manual_price'))
+                        && $product->manual_price !== null && !$hasAutomaticPrice) {
+                        $fail('Нельзя сбросить ручную цену: автоматическая цена пока не рассчитана.');
+                    }
+                },
+            ],
+            'reset_manual_price' => 'sometimes|accepted',
             'product.quantity' => 'required|integer|min:0',
             'product.delivery' => 'nullable|string|max:255',
             'product.image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',

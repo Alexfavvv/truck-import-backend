@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Models\TruckManufacturer;
 use App\Services\Admin\ProductService;
 use App\Services\ImportService;
+use App\Services\ProductPriceService;
 use Illuminate\Database\QueryException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -61,12 +62,23 @@ class ProductController extends Controller
         $brands = Brand::orderBy('title')->get();
         $partTypes = PartType::orderBy('title')->get();
         $truckManufacturers = TruckManufacturer::orderBy('title')->get();
+        $automaticPrice = null;
+        if ($product->supplier_price !== null && $product->exchange_rate !== null
+            && $product->price_multiplier !== null && $product->markup_percent !== null) {
+            $automaticPrice = app(ProductPriceService::class)->calculateSellingPrice(
+                $product->supplier_price,
+                $product->exchange_rate,
+                $product->price_multiplier,
+                $product->markup_percent,
+            );
+        }
 
         return view('admin.product.edit', compact(
             'product',
             'brands',
             'partTypes',
             'truckManufacturers',
+            'automaticPrice',
         ));
     }
 

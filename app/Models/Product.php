@@ -14,6 +14,19 @@ class Product extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'supplier_price' => 'decimal:2', 'automatic_price' => 'decimal:2', 'selling_price' => 'decimal:2', 'manual_price' => 'decimal:2',
+        'exchange_rate' => 'decimal:8', 'price_multiplier' => 'decimal:8', 'markup_percent' => 'decimal:8',
+        'weight' => 'decimal:6', 'width' => 'decimal:6', 'height' => 'decimal:6', 'length' => 'decimal:6',
+        'price_updated_at' => 'datetime',
+    ];
+
+    // Old callers (orders, cart, admin) receive the authoritative decimal sale price.
+    public function getPriceAttribute($legacyPrice)
+    {
+        return $this->selling_price ?? $legacyPrice;
+    }
+
     public function getRouteKeyName()
     {
         return 'sku';
