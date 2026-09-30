@@ -1,6 +1,44 @@
+@font-face {
+    font-family: 'Gilroy-Regular';
+    src: url('/fonts/gilroy/Gilroy-Regular.woff') format('woff');
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Gilroy-Medium';
+    src: url('/fonts/gilroy/Gilroy-Medium.woff') format('woff');
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Gilroy-Bold';
+    src: url('/fonts/gilroy/Gilroy-Bold.woff') format('woff');
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Gilroy-Heavy';
+    src: url('/fonts/gilroy/Gilroy-Heavy.woff') format('woff');
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Gilroy-Light';
+    src: url('/fonts/gilroy/Gilroy-Light.woff') format('woff');
+    font-style: normal;
+    font-weight: 300;
+    font-display: swap;
+}
 // Fonts
 // @import url('https://fonts.bunny.net/css?family=Nunito');
-@import url('https://fonts.cdnfonts.com/css/gilroy-bold?styles=20876,20877,20878,20879,20880');
 // Variables
 @import 'variables';
 
