@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CartController;
+use App\Http\Controllers\Admin\EngineImportController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PartSearchController;
@@ -52,6 +53,10 @@ Route::middleware([CustomAuthenticateMiddleware::class, IsAdminMiddleware::class
     Route::post('admin/products/import/ready/confirm', [ProductController::class, 'confirmReadyImport'])->name('admin.products.import.ready.confirm');
     Route::get('admin/products/import/ready/result/{import}', [ProductController::class, 'readyImportResult'])->name('admin.products.import.ready.result');
     Route::get('admin/products/import-status', [ProductController::class, 'getImportStatus'])->name('admin.products.import.status');
+
+    Route::get('admin/engines/import', [EngineImportController::class, 'index'])->name('admin.engines.import.form');
+    Route::post('admin/engines/import', [EngineImportController::class, 'import'])->name('admin.engines.import');
+    Route::get('admin/engines/import/template', [EngineImportController::class, 'template'])->name('admin.engines.import.template');
 
     // ── Заказы (все роли с разными правами) ─────────────────────────
     Route::resource('/admin/orders', OrderController::class)

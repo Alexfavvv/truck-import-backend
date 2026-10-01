@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\Client\BrandController;
 use App\Http\Controllers\Api\V1\Client\CartController;
 use App\Http\Controllers\Api\V1\Client\FeedbackController;
+use App\Http\Controllers\Api\V1\Client\EngineController;
 use App\Http\Controllers\Api\V1\Client\PostController;
 use App\Http\Controllers\Api\V1\Client\PageController;
 use App\Http\Controllers\Api\V1\Client\ProductController;
@@ -35,6 +36,8 @@ Route::prefix('v1/client')->group(function () {
     Route::get('/products/count', [ProductController::class, 'count']);
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{product}', [ProductController::class, 'show']);
+    Route::get('/engines', [EngineController::class, 'index']);
+    Route::get('/engines/{engine}', [EngineController::class, 'show']);
 
     // Блог
     Route::get('/posts', [PostController::class, 'index']);

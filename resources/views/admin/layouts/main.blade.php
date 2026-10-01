@@ -1134,6 +1134,13 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="{{ route('admin.engines.import.form') }}"
+                                class="nav-link {{ request()->routeIs('admin.engines*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-cogs"></i>
+                                <p>Двигатели и блоки</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="{{ Route::has('admin.posts.index') ? route('admin.posts.index') : url('/admin/posts') }}"
                                 class="nav-link {{ request()->routeIs('admin.posts*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-newspaper"></i>
