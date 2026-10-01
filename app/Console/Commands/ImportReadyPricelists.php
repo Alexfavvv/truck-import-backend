@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Brand;
 use App\Models\PartType;
+use App\Models\Product;
 use App\Models\ProductImport;
 use App\Services\ProductImportService;
 use App\Services\ProductPriceService;
@@ -55,12 +56,6 @@ class ImportReadyPricelists extends Command
         app(ProductPriceService::class)->supplierAttributes(new \App\Models\Product(), '0', $this->pricing);
         $batchSize = max(500, (int) $this->option('batch'));
 
-        $partTypeTitle = (string) $this->option('part-type');
-        $partType = PartType::query()->firstOrCreate(
-            ['title' => $partTypeTitle],
-            ['title' => $partTypeTitle, 'slug' => Str::slug($partTypeTitle)]
-        );
-
         $files = glob($dir . '/*.xlsx') ?: [];
         $files = array_values(array_filter($files, static fn(string $p) => !str_contains(basename($p), '~$')));
         if (empty($files)) {
@@ -77,7 +72,9 @@ class ImportReadyPricelists extends Command
             $runs = app(ProductImportService::class);
             $this->importRun = $runs->start('ready_import', $fileName, metadata: $this->pricing);
             try {
-                [$upserted, $skipped] = $this->importOneFile($file, $batchSize, $partType->id);
+                [$upserted, $skipped] = $this->importFile(
+                    $file, $fileName, $this->pricing, $this->importRun, $batchSize, (string) $this->option('part-type')
+                );
                 $runs->finish($this->importRun);
             } catch (\Throwable $error) {
                 $runs->finish($this->importRun, $error);
@@ -93,10 +90,95 @@ class ImportReadyPricelists extends Command
         return $totalSkipped ? self::FAILURE : self::SUCCESS;
     }
 
-    private function importOneFile(
+    /** Preview uses the same row parser and price service without changing products or import history. */
+    public function previewFile(string $filePath, array $pricing, int $limit = 50): array
+    {
+        app(ProductPriceService::class)->supplierAttributes(new Product(), '0', $pricing);
+        $rows = [];
+        $errors = [];
+        $summary = $this->scanFile(
+            $filePath,
+            function (array $row) use (&$rows): void { $rows[] = $row; },
+            function (int $rowNumber, string $reason) use (&$errors): void {
+                if (count($errors) < 10) $errors[] = ['row' => $rowNumber, 'reason' => $reason];
+            },
+            $limit,
+            500,
+        );
+
+        $existing = Product::query()->whereIn('sku', array_column($rows, 'sku'))->get()->keyBy('sku');
+        $prices = app(ProductPriceService::class);
+        $previewRows = [];
+        foreach ($rows as $row) {
+            $product = $existing->get($row['sku']) ?? new Product();
+            $attributes = $prices->supplierAttributes($product, $row['supplier_price'], $pricing);
+            $summary[$product->exists ? 'existing_sku' : 'new_sku']++;
+            $previewRows[] = $row + [
+                'currency' => $attributes['supplier_currency'],
+                'exchange_rate' => $attributes['exchange_rate'],
+                'price_multiplier' => $attributes['price_multiplier'],
+                'markup_percent' => $attributes['markup_percent'],
+                'automatic_price' => $attributes['automatic_price'],
+                'final_price' => $attributes['selling_price'],
+            ];
+        }
+
+        return ['rows' => $previewRows, 'summary' => $summary, 'errors' => $errors];
+    }
+
+    /** Called by both artisan and the admin queue job. */
+    public function importFile(
         string $filePath,
-        int $batchSize,
-        int $partTypeId
+        string $originalFilename,
+        array $pricing,
+        ProductImport $run,
+        int $batchSize = 5000,
+        string $partTypeTitle = 'Запчасть',
+    ): array {
+        app(ProductPriceService::class)->supplierAttributes(new Product(), '0', $pricing);
+        $this->pricing = $pricing;
+        $this->importRun = $run;
+
+        $partType = PartType::query()->firstOrCreate(
+            ['title' => $partTypeTitle],
+            ['title' => $partTypeTitle, 'slug' => Str::slug($partTypeTitle)]
+        );
+        $brandTitle = $this->extractBrandFromFilename($originalFilename);
+        $brand = Brand::query()->firstOrCreate(
+            ['title' => $brandTitle],
+            ['title' => $brandTitle, 'slug' => Str::slug($brandTitle)]
+        );
+
+        $buffer = [];
+        $summary = $this->scanFile(
+            $filePath,
+            function (array $row) use (&$buffer, $brand, $partType, $batchSize): void {
+                $now = now();
+                $buffer[] = $row + [
+                    'brand_id' => $brand->id,
+                    'part_type_id' => $partType->id,
+                    'updated_at' => $now,
+                    'created_at' => $now,
+                ];
+                if (count($buffer) >= $batchSize) {
+                    $this->flushProducts($buffer);
+                    $buffer = [];
+                }
+            },
+            fn (int $rowNumber, string $reason) => $this->recordInvalidRow($rowNumber, $reason),
+        );
+
+        if ($buffer !== []) $this->flushProducts($buffer);
+        return [$summary['valid_rows'], $summary['invalid_rows']];
+    }
+
+    /** Stops after 50 valid rows or 500 scanned data rows in preview mode. */
+    private function scanFile(
+        string $filePath,
+        callable $onValid,
+        callable $onInvalid,
+        ?int $maxValid = null,
+        ?int $maxScanned = null,
     ): array {
         $zip = new ZipArchive();
         if ($zip->open($filePath) !== true) {
@@ -105,29 +187,25 @@ class ImportReadyPricelists extends Command
 
         $sharedStrings = $this->readSharedStrings($zip);
         $zeroPaddingMasks = $this->readZeroPaddingMasks($zip);
-        $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $hasSheet = $zip->locateName('xl/worksheets/sheet1.xml') !== false;
         $zip->close();
 
-        if ($sheetXml === false) {
+        if (!$hasSheet) {
             throw new RuntimeException("sheet1.xml not found in {$filePath}");
         }
-
-        $brandTitle = $this->extractBrandFromFilename(basename($filePath));
-        $brand = Brand::query()->firstOrCreate(
-            ['title' => $brandTitle],
-            ['title' => $brandTitle, 'slug' => Str::slug($brandTitle)]
-        );
 
         $headerMap = null;
         $headerRowNumber = null;
         $deliveryMsc = null;
-        $buffer = [];
-        $upserted = 0;
-        $skipped = 0;
+        $summary = ['rows_scanned' => 0, 'valid_rows' => 0, 'invalid_rows' => 0, 'existing_sku' => 0, 'new_sku' => 0];
 
         $reader = new XMLReader();
-        $reader->XML($sheetXml);
+        $realPath = realpath($filePath);
+        if ($realPath === false || !$reader->open('zip://'.$realPath.'#xl/worksheets/sheet1.xml', null, LIBXML_NONET)) {
+            throw new RuntimeException("Cannot read sheet1.xml in {$filePath}");
+        }
 
+        try {
         while ($reader->read()) {
             if ($reader->nodeType !== XMLReader::ELEMENT || $reader->name !== 'row') {
                 continue;
@@ -137,6 +215,11 @@ class ImportReadyPricelists extends Command
             $rowXml = $reader->readOuterXML();
             $parsedRow = $this->parseRowCells($rowXml, $sharedStrings);
             $cells = $parsedRow['cells'];
+            if ($headerMap !== null && $rowNumber > (int) $headerRowNumber && empty($cells)) {
+                $summary['rows_scanned']++;
+                if ($maxScanned !== null && $summary['rows_scanned'] >= $maxScanned) break;
+                continue;
+            }
             if (empty($cells)) {
                 continue;
             }
@@ -159,6 +242,8 @@ class ImportReadyPricelists extends Command
                 continue;
             }
 
+            $summary['rows_scanned']++;
+
             $name = $this->cellByHeader($cells, $headerMap, ['name']);
             $skuColumn = $headerMap['mpn formatted'];
             $sku = (string) trim((string) ($cells[$skuColumn] ?? ''));
@@ -174,8 +259,9 @@ class ImportReadyPricelists extends Command
             $replacement = $this->cellByHeader($cells, $headerMap, ['replacement']);
 
             if ($name === '' || $sku === '' || $priceMscRaw === '') {
-                $skipped++;
-                $this->recordInvalidRow($rowNumber, 'missing Name, Mpn formatted, or Price MSC');
+                $summary['invalid_rows']++;
+                $onInvalid($rowNumber, 'missing Name, Mpn formatted, or Price MSC');
+                if ($maxScanned !== null && $summary['rows_scanned'] >= $maxScanned) break;
                 continue;
             }
 
@@ -183,8 +269,9 @@ class ImportReadyPricelists extends Command
             try {
                 $supplierPrice = $prices->decimal($priceMscRaw);
             } catch (\InvalidArgumentException) {
-                $skipped++;
-                $this->recordInvalidRow($rowNumber, 'invalid Price MSC');
+                $summary['invalid_rows']++;
+                $onInvalid($rowNumber, 'invalid Price MSC');
+                if ($maxScanned !== null && $summary['rows_scanned'] >= $maxScanned) break;
                 continue;
             }
 
@@ -200,44 +287,33 @@ class ImportReadyPricelists extends Command
                 }
             }
             if ($invalidDimension !== null) {
-                $skipped++;
-                $this->recordInvalidRow($rowNumber, 'invalid '.$invalidDimension);
+                $summary['invalid_rows']++;
+                $onInvalid($rowNumber, 'invalid '.$invalidDimension);
+                if ($maxScanned !== null && $summary['rows_scanned'] >= $maxScanned) break;
                 continue;
             }
 
-            $now = now();
-            $buffer[] = [
+            $onValid([
                 'sku' => $sku,
                 'title' => Str::limit($name, 255, ''),
-                'brand_id' => $brand->id,
-                'part_type_id' => $partTypeId,
                 'replacement' => $replacement !== '' ? $replacement : null,
                 'delivery' => $deliveryMsc !== '' ? $deliveryMsc : null,
                 'supplier_price' => $supplierPrice,
                 ...$dimensions,
-                'updated_at' => $now,
-                'created_at' => $now,
-            ];
-
-            if (count($buffer) >= $batchSize) {
-                $this->flushProducts($buffer);
-                $upserted += count($buffer);
-                $buffer = [];
-            }
+            ]);
+            $summary['valid_rows']++;
+            if (($maxValid !== null && $summary['valid_rows'] >= $maxValid)
+                || ($maxScanned !== null && $summary['rows_scanned'] >= $maxScanned)) break;
         }
-
-        $reader->close();
+        } finally {
+            $reader->close();
+        }
 
         if ($headerMap === null) {
             throw new RuntimeException('Required ready pricelist headers Mpn formatted, Name, and Price MSC were not found.');
         }
 
-        if (!empty($buffer)) {
-            $this->flushProducts($buffer);
-            $upserted += count($buffer);
-        }
-
-        return [$upserted, $skipped];
+        return $summary;
     }
 
     private function flushProducts(array $rows): void
@@ -248,7 +324,13 @@ class ImportReadyPricelists extends Command
     private function recordInvalidRow(int $rowNumber, string $reason): void
     {
         app(ProductImportService::class)->count($this->importRun->id, failed: 1);
-        $this->warn("Skipping row {$rowNumber}: {$reason}.");
+        $metadata = $this->importRun->metadata ?? [];
+        $metadata['errors'] ??= [];
+        if (count($metadata['errors']) < 10) {
+            $metadata['errors'][] = ['row' => $rowNumber, 'reason' => $reason];
+            $this->importRun->update(['metadata' => $metadata]);
+        }
+        if ($this->output) $this->warn("Skipping row {$rowNumber}: {$reason}.");
     }
 
     private function buildHeaderCandidate(array $cells): array

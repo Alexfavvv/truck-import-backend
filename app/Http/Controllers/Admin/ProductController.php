@@ -3,21 +3,28 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Console\Commands\ImportReadyPricelists;
 use App\Http\Requests\Admin\Product\StoreRequest;
 use App\Http\Requests\Admin\Product\UpdateRequest;
 use App\Http\Requests\ImportRequest;
 use App\Models\Brand;
 use App\Models\PartType;
 use App\Models\Product;
+use App\Models\ProductImport;
 use App\Models\TruckManufacturer;
+use App\Jobs\Product\ProcessReadyProductImport;
 use App\Services\Admin\ProductService;
 use App\Services\ImportService;
+use App\Services\ProductImportService;
 use App\Services\ProductPriceService;
 use Illuminate\Database\QueryException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -146,6 +153,77 @@ class ProductController extends Controller
     public function showImportForm()
     {
         return view('admin.product.import');
+    }
+
+    public function previewReadyImport(Request $request, ImportReadyPricelists $ready): View
+    {
+        $data = $request->validate([
+            'file' => 'required|file|mimes:xlsx|max:61440',
+            'currency' => ['required', 'regex:/^[A-Za-z]{3}$/D'],
+            'exchange_rate' => 'required|numeric|gt:0',
+            'price_multiplier' => 'required|numeric|gt:0',
+            'markup_percent' => 'required|numeric|min:0',
+        ]);
+        $pricing = [
+            'supplier_currency' => strtoupper($data['currency']),
+            'exchange_rate' => (string) $data['exchange_rate'],
+            'price_multiplier' => (string) $data['price_multiplier'],
+            'markup_percent' => (string) $data['markup_percent'],
+        ];
+
+        try {
+            $preview = $ready->previewFile($data['file']->getRealPath(), $pricing);
+        } catch (\InvalidArgumentException|\RuntimeException $error) {
+            throw ValidationException::withMessages(['file' => $error->getMessage()]);
+        }
+
+        $old = session('ready_import_preview');
+        if (is_array($old) && isset($old['path'])) Storage::disk('local')->delete($old['path']);
+        session()->forget('ready_import_preview');
+        $filename = $data['file']->getClientOriginalName();
+        if ($preview['summary']['valid_rows'] === 0) {
+            return view('admin.product.import', compact('preview', 'pricing', 'filename'));
+        }
+
+        $path = Storage::disk('local')->putFileAs('imports/ready-preview', $data['file'], Str::random(40).'.xlsx');
+        if ($path === false) throw new \RuntimeException('Не удалось сохранить XLSX для запуска импорта.');
+        $token = Str::random(64);
+        session(['ready_import_preview' => [
+            'token' => $token,
+            'path' => $path,
+            'filename' => $data['file']->getClientOriginalName(),
+            'pricing' => $pricing,
+        ]]);
+
+        return view('admin.product.import', compact('preview', 'token', 'pricing', 'filename'));
+    }
+
+    public function confirmReadyImport(Request $request, ProductImportService $runs): RedirectResponse
+    {
+        $data = $request->validate(['preview_token' => 'required|string']);
+        $pending = session('ready_import_preview');
+        if (!is_array($pending) || !hash_equals($pending['token'] ?? '', $data['preview_token'])
+            || !Storage::disk('local')->exists($pending['path'] ?? '')) abort(419);
+
+        session()->forget('ready_import_preview');
+        try {
+            $run = $runs->start('ready_import', $pending['filename'], auth()->id(), $pending['pricing']);
+            ProcessReadyProductImport::dispatch(
+                $pending['path'], $pending['filename'], $pending['pricing'], $run->id, auth()->id()
+            );
+        } catch (\Throwable $error) {
+            $currentRun = isset($run) ? $run->fresh() : null;
+            if ($currentRun && $currentRun->finished_at === null) $runs->finish($currentRun, $error);
+            Storage::disk('local')->delete($pending['path']);
+            throw $error;
+        }
+        return redirect()->route('admin.products.import.ready.result', $run);
+    }
+
+    public function readyImportResult(ProductImport $import): View
+    {
+        abort_unless($import->source === 'ready_import' && (string) $import->created_by === (string) auth()->id(), 404);
+        return view('admin.product.import-result', compact('import'));
     }
 
     public function import(ImportRequest $request): JsonResponse

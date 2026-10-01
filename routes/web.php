@@ -48,6 +48,9 @@ Route::middleware([CustomAuthenticateMiddleware::class, IsAdminMiddleware::class
 
     Route::get('admin/products/import', [ProductController::class, 'showImportForm'])->name('admin.products.import.form');
     Route::post('admin/products/import', [ProductController::class, 'import'])->name('admin.products.import');
+    Route::post('admin/products/import/ready/preview', [ProductController::class, 'previewReadyImport'])->name('admin.products.import.ready.preview');
+    Route::post('admin/products/import/ready/confirm', [ProductController::class, 'confirmReadyImport'])->name('admin.products.import.ready.confirm');
+    Route::get('admin/products/import/ready/result/{import}', [ProductController::class, 'readyImportResult'])->name('admin.products.import.ready.result');
     Route::get('admin/products/import-status', [ProductController::class, 'getImportStatus'])->name('admin.products.import.status');
 
     // ── Заказы (все роли с разными правами) ─────────────────────────
