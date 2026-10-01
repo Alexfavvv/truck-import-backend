@@ -10,7 +10,6 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use OpenApi\Attributes as OA;
 
 class CartController extends Controller
@@ -96,41 +95,12 @@ class CartController extends Controller
             ->first();
 
         if ($cartItem) {
-            $desired = $cartItem->quantity + $data['quantity'];
-            $applied = $desired;
-
-            if ($product->quantity !== null) {
-                $available = (int) $product->quantity;
-                if ($available < 1) {
-                    throw ValidationException::withMessages([
-                        'quantity' => 'Товар отсутствует на складе.',
-                    ]);
-                }
-                if ($desired > $available) {
-                    $applied = $available;
-                }
-            }
-
-            $cartItem->update(['quantity' => $applied]);
+            $cartItem->update(['quantity' => min(999, $cartItem->quantity + $data['quantity'])]);
         } else {
-            $applied = $data['quantity'];
-
-            if ($product->quantity !== null) {
-                $available = (int) $product->quantity;
-                if ($available < 1) {
-                    throw ValidationException::withMessages([
-                        'quantity' => 'Товар отсутствует на складе.',
-                    ]);
-                }
-                if ($data['quantity'] > $available) {
-                    $applied = $available;
-                }
-            }
-
             CartItem::create([
                 'cart_id' => $cart->id,
                 'product_id' => $product->id,
-                'quantity' => $applied,
+                'quantity' => $data['quantity'],
             ]);
         }
 
@@ -182,15 +152,6 @@ class CartController extends Controller
         $cartItem->load('cart');
         if ($cartItem->cart->user_id !== $user->id) {
             abort(403, 'Доступ запрещен');
-        }
-
-        $cartItem->load('product.brand');
-        $product = $cartItem->product;
-
-        if ($product->quantity !== null && $data['quantity'] > $product->quantity) {
-            throw ValidationException::withMessages([
-                'quantity' => 'Недостаточно товара на складе. Доступно: ' . $product->quantity,
-            ]);
         }
 
         $cartItem->update(['quantity' => $data['quantity']]);

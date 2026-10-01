@@ -79,17 +79,6 @@ class SiteOrderController extends Controller
             ], 404);
         }
 
-        foreach ($quantitiesBySku as $sku => $qty) {
-            $product = $products->get($sku);
-            if ($product->quantity !== null && $qty > $product->quantity) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Недостаточно товара на складе для SKU ' . $sku . '. Доступно: ' . $product->quantity . ', запрошено: ' . $qty . '.',
-                    'code' => 'INSUFFICIENT_STOCK',
-                ], 409);
-            }
-        }
-
         $items = [];
         foreach ($quantitiesBySku as $sku => $qty) {
             $product = $products->get($sku);

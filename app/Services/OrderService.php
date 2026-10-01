@@ -173,15 +173,6 @@ class OrderService
             }
         }
 
-        foreach ($byProductId as $pid => $qty) {
-            $product = $products->get($pid);
-            if ($product->quantity !== null && $qty > $product->quantity) {
-                throw ValidationException::withMessages([
-                    'items' => ["Недостаточно остатка для «{$product->sku}»: доступно {$product->quantity}, запрошено {$qty}."],
-                ]);
-            }
-        }
-
         $items = [];
         foreach ($byProductId as $pid => $qty) {
             $product = $products->get($pid);
