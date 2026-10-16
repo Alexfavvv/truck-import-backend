@@ -3611,9 +3611,13 @@ body.customer-no-sidebar {
 
 // Дашборд (главная после входа в ЛК) — плитки-карточки по содержимому разделов
 .dashboard-page {
-  padding: 1rem 0 2rem;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 18rem);
+  padding: 1.5rem 1rem 3rem;
   max-width: 1140px;
   margin: 0 auto;
+  width: 100%;
 
   &__title {
     margin: 0 0 1.5rem;
@@ -3624,8 +3628,10 @@ body.customer-no-sidebar {
 
   &__tiles {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-    gap: 1rem;
+    flex: 1;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    grid-auto-rows: minmax(10rem, 1fr);
+    gap: 1.25rem;
   }
 
   &__tile {
@@ -3633,7 +3639,8 @@ body.customer-no-sidebar {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.75rem;
-    padding: 1.25rem;
+    min-height: 10rem;
+    padding: 1.5rem;
     border-radius: 0.625rem;
     background-color: #fff;
     border: 0.0625rem solid #e1e4ed;
@@ -3653,11 +3660,11 @@ body.customer-no-sidebar {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 3rem;
+    height: 3rem;
     border-radius: 0.5rem;
-    background-color: #f4f4f3;
-    color: #272626;
+    background-color: #141313;
+    color: #C9AC37;
     font-size: 1.25rem;
   }
 
@@ -3665,6 +3672,16 @@ body.customer-no-sidebar {
     font-size: 1.0625rem;
     font-weight: 500;
     line-height: 1.3;
+  }
+
+  @media (max-width: 36rem) {
+    min-height: auto;
+    padding: 1rem 0.75rem 2rem;
+
+    &__tiles {
+      grid-template-columns: 1fr;
+      grid-auto-rows: minmax(8rem, auto);
+    }
   }
 }
 

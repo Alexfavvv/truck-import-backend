@@ -1,7 +1,7 @@
 @extends('admin.layouts.main')
 
 @section('content')
-<div class="dashboard-page" style="min-height: 12rem;">
+<div class="dashboard-page">
     <h1 class="dashboard-page__title">Дашборд</h1>
 
     <div class="dashboard-page__tiles">

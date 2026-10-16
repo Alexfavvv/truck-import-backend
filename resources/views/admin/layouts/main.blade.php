@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ auth()->user()?->isManagerTruck() ? 'ru' : 'en' }}">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Admin Truck-Import</title>
+    <title>@yield('title', 'Admin Truck-Import')</title>
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet"
@@ -609,11 +609,13 @@
 
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed admin-layout admin-no-sidebar">
+<body class="hold-transition sidebar-mini layout-fixed admin-layout {{ auth()->user()?->isManagerTruck() ? '' : 'admin-no-sidebar' }}">
     @php
         $front = rtrim(config('app.frontend_url', 'https://truck-import.ru'), '/');
         $lk = rtrim(config('app.url', 'http://localhost'), '/');
+        $isTruckManager = auth()->user()?->isManagerTruck() ?? false;
     @endphp
+@unless($isTruckManager)
 <ul class="top-nav__right">
             <li class="top-nav__item top-nav__item--dropdown dropdown">
                 <a class="top-nav__link" data-toggle="dropdown" href="#">
@@ -719,7 +721,27 @@
                 </a>
             </li>
         </ul>
-    @include('partials.site-header', ['accountUrl' => $lk])
+@endunless
+    @include('partials.site-header', ['accountUrl' => $isTruckManager ? route('manager.profile') : $lk])
+
+    @if($isTruckManager)
+    <nav class="d-lg-none border-bottom bg-white px-2 py-2" aria-label="Разделы кабинета менеджера">
+        <ul class="nav nav-pills flex-nowrap" style="overflow-x:auto">
+            <li class="nav-item flex-shrink-0"><a class="nav-link {{ request()->routeIs('manager.dashboard') ? 'active' : '' }}" href="{{ route('manager.dashboard') }}">Дашборд</a></li>
+            <li class="nav-item flex-shrink-0"><a class="nav-link {{ request()->routeIs('manager.search') ? 'active' : '' }}" href="{{ route('manager.search') }}">Поиск</a></li>
+            <li class="nav-item flex-shrink-0"><a class="nav-link {{ request()->routeIs('manager.orders.*') ? 'active' : '' }}" href="{{ route('manager.orders.index') }}">Заказы</a></li>
+            <li class="nav-item flex-shrink-0"><a class="nav-link {{ request()->routeIs('manager.invoices.*') ? 'active' : '' }}" href="{{ route('manager.invoices.index') }}">Счета</a></li>
+            <li class="nav-item flex-shrink-0"><a class="nav-link {{ request()->routeIs('manager.companies.*') ? 'active' : '' }}" href="{{ route('manager.companies.index') }}">Компании</a></li>
+            <li class="nav-item flex-shrink-0"><a class="nav-link {{ request()->routeIs('manager.profile*') ? 'active' : '' }}" href="{{ route('manager.profile') }}">Профиль</a></li>
+            <li class="nav-item flex-shrink-0">
+                <form method="POST" action="{{ route('admin.logout') }}">
+                    @csrf
+                    <button type="submit" class="nav-link">Выйти</button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+    @endif
 
     <div class="wrapper">
 
@@ -729,6 +751,57 @@
 
 
         <!-- Main Sidebar Container -->
+        @if($isTruckManager)
+        <aside class="main-sidebar sidebar-dark-primary elevation-4">
+            <a href="{{ route('manager.dashboard') }}" class="brand-link">
+                <span class="brand-text font-weight-light">Truck Import</span>
+            </a>
+            <div class="sidebar">
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" role="menu">
+                        <li class="nav-item">
+                            <a href="{{ route('manager.dashboard') }}" class="nav-link {{ request()->routeIs('manager.dashboard') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-tachometer-alt"></i><p>Дашборд</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('manager.search') }}" class="nav-link {{ request()->routeIs('manager.search') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-search"></i><p>Поиск деталей</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('manager.orders.index') }}" class="nav-link {{ request()->routeIs('manager.orders.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-clipboard-list"></i><p>Заказы</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('manager.invoices.index') }}" class="nav-link {{ request()->routeIs('manager.invoices.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-file-invoice"></i><p>Счета на оплату</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('manager.companies.index') }}" class="nav-link {{ request()->routeIs('manager.companies.*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-building"></i><p>Компании</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('manager.profile') }}" class="nav-link {{ request()->routeIs('manager.profile*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-user"></i><p>Мой профиль</p>
+                            </a>
+                        </li>
+                        <li class="nav-item mt-3">
+                            <form method="POST" action="{{ route('admin.logout') }}">
+                                @csrf
+                                <button type="submit" class="nav-link border-0 bg-transparent text-left w-100">
+                                    <i class="nav-icon fas fa-sign-out-alt"></i><p>Выйти</p>
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+        @else
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
             <a href="{{ route('admin.index') }}" class="brand-link">
@@ -859,9 +932,11 @@
             </div>
             <!-- /.sidebar -->
         </aside>
+        @endif
 
         <!-- Content Wrapper. Contains page content -->
         <div class="content-wrapper">
+            @yield('manager-alerts')
             @yield('content')
         </div>
         <!-- /.content-wrapper -->
