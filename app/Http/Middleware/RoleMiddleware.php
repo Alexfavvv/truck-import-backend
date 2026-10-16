@@ -24,6 +24,11 @@ class RoleMiddleware
             return redirect('/admin/login');
         }
 
+        if (!$user->is_active) {
+            Auth::logout();
+            abort(403, 'Аккаунт деактивирован');
+        }
+
         if (empty($roles)) {
             return $next($request);
         }

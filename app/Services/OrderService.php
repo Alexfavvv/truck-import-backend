@@ -28,7 +28,12 @@ class OrderService
 
         // ─── Базовая выборка по роли и вкладке ────────────────────────────────
 
-        if ($user->isTruckSide()) {
+        if ($user->isManagerTruck()) {
+            $query->whereIn('company_admin_id', $user->assignedCompanies()->select('users.id'));
+            if ($scope === 'archive') {
+                $query->whereIn('status', [OrderStatus::Completed, OrderStatus::Cancelled]);
+            }
+        } elseif ($user->isTruckSide()) {
             // Для Трак Импорт:
             // - my: только свои заказы
             // - company: все заказы
@@ -87,7 +92,7 @@ class OrderService
             // Если выбрана компания Трак Импорт (главный админ), показываем заказы без company_admin_id
             $adminTruckId = User::where('role', UserRole::AdminTruck->value)->value('id');
 
-            if ($adminTruckId && $companyId === (int) $adminTruckId) {
+            if ($user->isAdminTruck() && $adminTruckId && $companyId === (int) $adminTruckId) {
                 $query->whereNull('company_admin_id');
             } else {
                 $query->where('company_admin_id', $companyId);
@@ -112,8 +117,13 @@ class OrderService
             $companyAdminId = match($creator->role) {
                 UserRole::AdminCustomer   => $creator->id,
                 UserRole::ManagerCustomer => $creator->parent_id,
+                UserRole::ManagerTruck => (int) ($data['company_admin_id'] ?? 0),
                 default                   => null,
             };
+
+            if ($creator->isManagerTruck() && !$creator->managesCompany($companyAdminId)) {
+                throw ValidationException::withMessages(['company_admin_id' => 'Выберите закреплённую за вами компанию.']);
+            }
 
             $order = Order::create([
                 'order_number'    => Order::generateNumber(),
@@ -142,7 +152,7 @@ class OrderService
      *
      * @throws ValidationException
      */
-    public function createOrderFromSearchSelection(User $creator, array $rows, string $notesPrefix = 'Заявка со страницы поиска'): Order
+    public function createOrderFromSearchSelection(User $creator, array $rows, string $notesPrefix = 'Заявка со страницы поиска', ?int $companyAdminId = null): Order
     {
         if ($rows === []) {
             throw ValidationException::withMessages([
@@ -197,6 +207,7 @@ class OrderService
         return $this->createOrder($creator, [
             'notes' => $notes,
             'items' => $items,
+            'company_admin_id' => $companyAdminId,
         ]);
     }
 

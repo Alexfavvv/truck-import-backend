@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -136,6 +137,18 @@ class User extends Authenticatable
     public function companyOrders(): HasMany
     {
         return $this->hasMany(Order::class, 'company_admin_id');
+    }
+
+    /** Компании заказчиков, закреплённые за менеджером Трак Импорт. */
+    public function assignedCompanies(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'truck_manager_company', 'manager_id', 'company_admin_id')->withTimestamps();
+    }
+
+    public function managesCompany(int $companyAdminId): bool
+    {
+        return $this->isManagerTruck()
+            && $this->assignedCompanies()->whereKey($companyAdminId)->exists();
     }
 
     /** Счета, созданные этим пользователем */

@@ -61,6 +61,12 @@ class SiteOrderController extends Controller
     {
         $validated = $request->validated();
 
+        if ($request->user()->isManagerTruck()) {
+            if (! $request->user()->managesCompany((int) ($validated['company_admin_id'] ?? 0))) {
+                return response()->json(['message' => 'Компания не закреплена за менеджером.'], 403);
+            }
+        }
+
         $quantitiesBySku = [];
         foreach ($validated['items'] as $row) {
             $sku = $row['sku'];
@@ -105,6 +111,7 @@ class SiteOrderController extends Controller
         $order = $orderService->createOrder($request->user(), [
             'notes' => $notes,
             'items' => $items,
+            'company_admin_id' => $validated['company_admin_id'] ?? null,
         ]);
 
         return response()->json([

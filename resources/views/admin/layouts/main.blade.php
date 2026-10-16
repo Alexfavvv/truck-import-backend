@@ -1095,8 +1095,15 @@
                         </li>
                         @endif
 
-                        {{-- Каталог --}}
                         @if(auth()->user()->canManageUsers())
+                        <li class="nav-item">
+                            <a href="{{ route('admin.truck-managers.index') }}"
+                               class="nav-link {{ request()->routeIs('admin.truck-managers*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-user-tie"></i>
+                                <p>Менеджеры</p>
+                            </a>
+                        </li>
+                        {{-- Каталог --}}
                         <li class="nav-header">Управление магазином</li>
                         <li class="nav-item">
                             <a href="{{ route('admin.brands.index') }}"

@@ -24,6 +24,8 @@ class StoreSiteOrderRequest extends FormRequest
     {
         return [
             'comment' => 'nullable|string|max:2000',
+            'company_admin_id' => $this->user()?->isManagerTruck()
+                ? 'required|integer|exists:users,id' : 'prohibited',
             'items' => 'required|array|min:1',
             'items.*.sku' => 'required|string|max:255',
             'items.*.quantity' => 'required|integer|min:1|max:999',

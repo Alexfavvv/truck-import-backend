@@ -15,7 +15,10 @@ class RedirectIfAuthenticatedMiddleware
         }
 
         $user = Auth::user();
-        if ($user->isTruckSide()) {
+        if ($user->isManagerTruck()) {
+            return redirect()->route('manager.dashboard');
+        }
+        if ($user->isAdminTruck()) {
             return redirect()->route('admin.index');
         }
         return redirect()->route('customer.dashboard');

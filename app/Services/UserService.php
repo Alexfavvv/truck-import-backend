@@ -23,7 +23,7 @@ class UserService
             'login'     => $data['login'],
             'password'  => $data['password'],
             'role'      => UserRole::ManagerTruck,
-            'is_admin'  => true,
+            'is_admin'  => false,
             'is_active' => true,
         ]);
     }

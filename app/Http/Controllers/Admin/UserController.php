@@ -74,9 +74,13 @@ class UserController extends Controller
     }
 
     /** Карточка пользователя: для админ/менеджер заказчика — новая страница с табами, для остальных — старая */
-    public function show(User $user): View
+    public function show(User $user): View|RedirectResponse
     {
         $this->authorize('view', $user);
+
+        if ($user->isManagerTruck()) {
+            return redirect()->route('admin.truck-managers.edit', $user);
+        }
 
         $roleValue = $user->role?->value;
         $isCustomerSide = in_array($roleValue, [UserRole::AdminCustomer->value, UserRole::ManagerCustomer->value], true);
@@ -186,6 +190,10 @@ class UserController extends Controller
         $role = UserRole::from($validated['role']);
         $authUser = Auth::user();
 
+        if ($role === UserRole::ManagerTruck) {
+            return redirect()->route('admin.truck-managers.create');
+        }
+
         // admin_customer может создавать только manager_customer
         if ($authUser->isAdminCustomer() && $role !== UserRole::ManagerCustomer) {
             abort(403);
@@ -197,7 +205,6 @@ class UserController extends Controller
         }
 
         $result = match($role) {
-            UserRole::ManagerTruck    => ['user' => $this->userService->createManagerTruck($validated)],
             UserRole::AdminCustomer   => ['user' => $this->userService->createAdminCustomer($validated)],
             UserRole::ManagerCustomer => $this->createManagerCustomer($validated, $authUser),
             default                   => abort(403),
@@ -218,9 +225,12 @@ class UserController extends Controller
     }
 
     /** Форма редактирования (только admin_truck или admin_customer для своих) */
-    public function edit(User $user): View
+    public function edit(User $user): View|RedirectResponse
     {
         $this->authorize('update', $user);
+        if ($user->isManagerTruck()) {
+            return redirect()->route('admin.truck-managers.edit', $user);
+        }
         return view('admin.users.edit', compact('user'));
     }
 
@@ -228,6 +238,10 @@ class UserController extends Controller
     public function update(Request $request, User $user): RedirectResponse
     {
         $this->authorize('update', $user);
+
+        if ($user->isManagerTruck()) {
+            return redirect()->route('admin.truck-managers.edit', $user);
+        }
 
         $validated = $request->validate([
             'full_name'  => 'nullable|string|max:255',
@@ -261,10 +275,13 @@ class UserController extends Controller
     {
         $this->authorize('delete', $user);
 
+        if ($user->isManagerTruck()) {
+            abort(403, 'Отключите учётную запись менеджера вместо удаления.');
+        }
+
         match($user->role) {
             UserRole::AdminCustomer   => $this->userService->deleteAdminCustomer($user),
             UserRole::ManagerCustomer => $this->userService->deleteManagerCustomer($user),
-            UserRole::ManagerTruck    => $this->userService->deleteManagerTruck($user),
             default                   => $user->delete(),
         };
 
@@ -289,7 +306,7 @@ class UserController extends Controller
             // admin_truck создать нельзя — только один в системе
             return array_filter(
                 UserRole::cases(),
-                fn($r) => $r !== UserRole::AdminTruck
+                fn($r) => !in_array($r, [UserRole::AdminTruck, UserRole::ManagerTruck], true)
             );
         }
         if ($user->isAdminCustomer()) {
