@@ -29,41 +29,5 @@
         </a>
     </div>
 
-    <section class="card mt-4" aria-labelledby="manager-statistics-title">
-        <div class="card-header">
-            <h2 id="manager-statistics-title" class="card-title">Статистика</h2>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4 mb-3 mb-md-0">
-                    <div class="info-box mb-0">
-                        <span class="info-box-icon bg-dark"><i class="fas fa-building" aria-hidden="true"></i></span>
-                        <div class="info-box-content">
-                            <span class="info-box-text">Компании</span>
-                            <span class="info-box-number">{{ $companiesCount }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 mb-3 mb-md-0">
-                    <div class="info-box mb-0">
-                        <span class="info-box-icon bg-dark"><i class="fas fa-shopping-cart" aria-hidden="true"></i></span>
-                        <div class="info-box-content">
-                            <span class="info-box-text">Заказы</span>
-                            <span class="info-box-number">{{ $ordersCount }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="info-box mb-0">
-                        <span class="info-box-icon bg-dark"><i class="fas fa-file-invoice" aria-hidden="true"></i></span>
-                        <div class="info-box-content">
-                            <span class="info-box-text">Счета</span>
-                            <span class="info-box-number">{{ $invoicesCount }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 </div>
 @endsection

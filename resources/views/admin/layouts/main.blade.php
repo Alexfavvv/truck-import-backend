@@ -609,7 +609,7 @@
 
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed admin-layout {{ auth()->user()?->isManagerTruck() ? '' : 'admin-no-sidebar' }}">
+<body class="hold-transition sidebar-mini layout-fixed admin-layout {{ auth()->user()?->isManagerTruck() ? 'admin-no-sidebar' : '' }}">
     @php
         $front = rtrim(config('app.frontend_url', 'https://truck-import.ru'), '/');
         $lk = rtrim(config('app.url', 'http://localhost'), '/');
