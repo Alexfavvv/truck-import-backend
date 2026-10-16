@@ -10,8 +10,14 @@ class InvoicePolicy
     /** Видит ли пользователь счёт */
     public function view(User $user, Invoice $invoice): bool
     {
-        if ($user->isTruckSide()) {
+        if ($user->isAdminTruck()) {
             return true;
+        }
+
+        if ($user->isManagerTruck()) {
+            return $invoice->order !== null
+                && $invoice->order->company_admin_id !== null
+                && $user->managesCompany($invoice->order->company_admin_id);
         }
 
         // Заказчики видят счета своей компании через заказ
@@ -45,7 +51,7 @@ class InvoicePolicy
     /** Смена статуса со стороны Трак Импорт */
     public function changeTruckStatus(User $user, Invoice $invoice): bool
     {
-        return $user->canChangeTruckInvoiceStatus();
+        return $user->canChangeTruckInvoiceStatus() && $this->view($user, $invoice);
     }
 
     /** Смена статуса со стороны Заказчика */

@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\TruckManufacturerController;
 use App\Http\Controllers\Admin\TruckModelController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\TruckManagerController;
+use App\Http\Controllers\Manager\ManagerCabinetController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\SsoController;
 use App\Http\Controllers\UnifiedAuthController;
@@ -87,11 +89,35 @@ Route::middleware([CustomAuthenticateMiddleware::class, IsAdminMiddleware::class
     Route::post('/admin/users/{user}/approve', [UserController::class, 'approve'])
         ->name('admin.users.approve');
 
+    Route::get('/admin/truck-managers', [TruckManagerController::class, 'index'])->name('admin.truck-managers.index');
+    Route::get('/admin/truck-managers/create', [TruckManagerController::class, 'create'])->name('admin.truck-managers.create');
+    Route::post('/admin/truck-managers', [TruckManagerController::class, 'store'])->name('admin.truck-managers.store');
+    Route::get('/admin/truck-managers/{manager}/edit', [TruckManagerController::class, 'edit'])->name('admin.truck-managers.edit');
+    Route::put('/admin/truck-managers/{manager}', [TruckManagerController::class, 'update'])->name('admin.truck-managers.update');
+
     // ── Профиль компании (карточка компании, не админа) ─────────────
     Route::get('/admin/companies/{user}', [UserController::class, 'showCompany'])
         ->name('admin.companies.show');
     Route::put('/admin/companies/{user}', [UserController::class, 'updateCompany'])
         ->name('admin.companies.update');
+});
+
+Route::middleware([CustomAuthenticateMiddleware::class, 'role:manager_truck'])->prefix('manager')->name('manager.')->group(function () {
+    Route::get('/', [ManagerCabinetController::class, 'dashboard'])->name('dashboard');
+    Route::get('/search', [ManagerCabinetController::class, 'search'])->name('search');
+    Route::get('/companies', [ManagerCabinetController::class, 'companies'])->name('companies.index');
+    Route::get('/companies/{company}', [ManagerCabinetController::class, 'company'])->name('companies.show');
+    Route::get('/orders', [ManagerCabinetController::class, 'orders'])->name('orders.index');
+    Route::get('/orders/create', [ManagerCabinetController::class, 'createOrder'])->name('orders.create');
+    Route::post('/orders', [ManagerCabinetController::class, 'storeOrder'])->name('orders.store');
+    Route::get('/orders/{order}', [ManagerCabinetController::class, 'order'])->name('orders.show');
+    Route::patch('/orders/{order}/status', [ManagerCabinetController::class, 'updateOrderStatus'])->name('orders.status');
+    Route::get('/invoices', [ManagerCabinetController::class, 'invoices'])->name('invoices.index');
+    Route::get('/invoices/{invoice}', [ManagerCabinetController::class, 'invoice'])->name('invoices.show');
+    Route::get('/invoices/{invoice}/pdf', [ManagerCabinetController::class, 'invoicePdf'])->name('invoices.pdf');
+    Route::get('/profile', [ManagerCabinetController::class, 'profile'])->name('profile');
+    Route::put('/profile', [ManagerCabinetController::class, 'updateProfile'])->name('profile.update');
+    Route::put('/profile/password', [ManagerCabinetController::class, 'updatePassword'])->name('profile.password');
 });
 
 // Единая страница входа (трак импорт и заказчики). Редирект по роли после входа.

@@ -10,8 +10,13 @@ class OrderPolicy
     /** Видит ли пользователь этот заказ */
     public function view(User $user, Order $order): bool
     {
-        if ($user->isTruckSide()) {
+        if ($user->isAdminTruck()) {
             return true;
+        }
+
+        if ($user->isManagerTruck()) {
+            return $order->company_admin_id !== null
+                && $user->managesCompany($order->company_admin_id);
         }
 
         if ($user->isAdminCustomer()) {
@@ -27,16 +32,20 @@ class OrderPolicy
         return false;
     }
 
-    /** Создание заказа — все 4 роли */
+    /** Менеджеру Трак Импорт нужна хотя бы одна закреплённая компания. */
     public function create(User $user): bool
     {
+        if ($user->isManagerTruck()) {
+            return $user->assignedCompanies()->exists();
+        }
+
         return $user->role !== null;
     }
 
     /** Смена статуса — только Трак Импорт */
     public function updateStatus(User $user, Order $order): bool
     {
-        return $user->canChangeOrderStatus();
+        return $user->canChangeOrderStatus() && $this->view($user, $order);
     }
 
     /** Удаление — только admin_truck */

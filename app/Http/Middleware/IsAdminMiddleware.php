@@ -11,7 +11,10 @@ class IsAdminMiddleware
     {
         $user = Auth::user();
 
-        if (!$user || !$user->isAdmin()) {
+        if (!$user || !$user->isAdminTruck()) {
+            if ($user?->isManagerTruck()) {
+                abort(403, 'Раздел доступен только администратору.');
+            }
             return redirect()->route('login')->withErrors(['error' => 'Доступ запрещён']);
         }
 

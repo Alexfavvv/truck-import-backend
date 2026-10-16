@@ -55,16 +55,27 @@ class UnifiedAuthController extends Controller
 
         Auth::login($user, $request->boolean('remember'));
 
-        $fallback = $user->isTruckSide()
-            ? route('admin.index')
-            : route('customer.dashboard');
+        if ($user->isManagerTruck()) {
+            $intended = (string) $request->session()->get('url.intended', '');
+            $path = parse_url($intended, PHP_URL_PATH);
+            if ($path === '/manager' || str_starts_with((string) $path, '/manager/') || $path === '/sso/authorize') {
+                return redirect()->intended(route('manager.dashboard'));
+            }
+            $request->session()->forget('url.intended');
+            return redirect()->route('manager.dashboard');
+        }
 
+        $fallback = $user->isAdminTruck() ? route('admin.index') : route('customer.dashboard');
         return redirect()->intended($fallback);
     }
 
     private function redirectByRole(User $user): RedirectResponse
     {
-        if ($user->isTruckSide()) {
+        if ($user->isManagerTruck()) {
+            return redirect()->route('manager.dashboard');
+        }
+
+        if ($user->isAdminTruck()) {
             return redirect()->route('admin.index');
         }
 

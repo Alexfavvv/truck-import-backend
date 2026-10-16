@@ -38,7 +38,7 @@ class InvoiceService
                 $query->where('created_by', $user->id);
             }
         } elseif ($user->isManagerTruck()) {
-            $query->whereHas('order', fn ($q) => $q->where('user_id', $user->id));
+            $query->whereHas('order', fn ($q) => $q->whereIn('company_admin_id', $user->assignedCompanies()->select('users.id')));
             if ($tab === 'company') {
                 // Для менеджера "company" не меняет выборку — те же счета
             }
@@ -67,7 +67,7 @@ class InvoiceService
         if ($user->isTruckSide() && !empty($filters['company_id'])) {
             $companyId = (int) $filters['company_id'];
             $adminTruckId = User::where('role', UserRole::AdminTruck->value)->value('id');
-            if ($adminTruckId && $companyId === (int) $adminTruckId) {
+            if ($user->isAdminTruck() && $adminTruckId && $companyId === (int) $adminTruckId) {
                 $query->whereHas('order', fn ($q) => $q->whereNull('company_admin_id'));
             } else {
                 $query->whereHas('order', fn ($q) => $q->where('company_admin_id', $companyId));
@@ -95,7 +95,7 @@ class InvoiceService
             ->latest();
 
         if ($user->isManagerTruck()) {
-            $query->where('user_id', $user->id);
+            $query->whereIn('company_admin_id', $user->assignedCompanies()->select('users.id'));
         } elseif ($user->isAdminCustomer()) {
             $query->where(function ($q) use ($user) {
                 $q->where('company_admin_id', $user->id)->orWhere('user_id', $user->id);
@@ -113,7 +113,7 @@ class InvoiceService
         if ($user->isTruckSide() && !empty($filters['company_id'])) {
             $companyId = (int) $filters['company_id'];
             $adminTruckId = User::where('role', UserRole::AdminTruck->value)->value('id');
-            if ($adminTruckId && $companyId === (int) $adminTruckId) {
+            if ($user->isAdminTruck() && $adminTruckId && $companyId === (int) $adminTruckId) {
                 $query->whereNull('company_admin_id');
             } else {
                 $query->where('company_admin_id', $companyId);
