@@ -132,13 +132,16 @@
 }
 
 // Admin search page (BEM)
+$cabinet-layout-max-width: 1380px;
+$cabinet-layout-inline-padding: 40px;
+
 .admin-search {
   padding: 1.5rem 0 4.5rem;
-  max-width: 1140px;
+  max-width: $cabinet-layout-max-width;
   margin: 0 auto;
 
   &__container {
-    max-width: 80rem;
+    max-width: none;
     margin: 0 auto;
   }
 
@@ -593,7 +596,10 @@
     justify-content: space-between;
 
     &-container {
-      max-width: 1140px;
+      max-width: $cabinet-layout-max-width;
+      box-sizing: border-box;
+      padding-right: $cabinet-layout-inline-padding;
+      padding-left: $cabinet-layout-inline-padding;
       margin: 0 auto;
       // padding: 0 1.25rem;
       width: 100%;
@@ -964,16 +970,16 @@ body.customer-no-sidebar {
   }
 }
 
-// Keep cabinet content inside the same 1140px desktop container as the site header.
+// Keep cabinet content inside the measured desktop header container.
 body.admin-layout.admin-no-sidebar .content-wrapper,
 body.customer-no-sidebar .content-wrapper {
   box-sizing: border-box;
   width: 100%;
-  max-width: 1140px;
+  max-width: $cabinet-layout-max-width;
   margin-right: auto !important;
   margin-left: auto !important;
-  padding-right: 1.25rem;
-  padding-left: 1.25rem;
+  padding-right: $cabinet-layout-inline-padding;
+  padding-left: $cabinet-layout-inline-padding;
 }
 
 body.admin-layout.admin-no-sidebar .content-wrapper > .container-fluid,
@@ -988,7 +994,7 @@ body.customer-no-sidebar .content-wrapper > .content > .container-fluid {
 
 body.admin-layout.admin-no-sidebar .content-wrapper > .dashboard-page,
 body.customer-no-sidebar .content-wrapper > .dashboard-page {
-  max-width: none;
+  max-width: $cabinet-layout-max-width;
   padding-right: 0;
   padding-left: 0;
 }
@@ -998,10 +1004,10 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 1140px;
+  max-width: $cabinet-layout-max-width;
   min-width: 0;
   margin: 0 auto !important;
-  padding: 0 1.25rem;
+  padding: 0 $cabinet-layout-inline-padding;
   box-sizing: border-box;
   overflow: hidden;
   background: #fff;
@@ -1019,12 +1025,12 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
 
 .cabinet-navigation {
   display: block;
-  flex: 0 1 1140px;
+  flex: 0 1 $cabinet-layout-max-width;
   width: 100%;
   min-width: 0;
-  max-width: 1140px;
+  max-width: $cabinet-layout-max-width;
   margin: 0 auto;
-  padding: .75rem 1.25rem;
+  padding: .75rem $cabinet-layout-inline-padding;
   box-sizing: border-box;
   background: #fff;
 }
@@ -1122,6 +1128,31 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
   .cabinet-navigation__link {
     min-height: 2.5rem;
     padding: .45rem .9rem;
+  }
+}
+
+@media (max-width: 1100px) {
+  body.admin-layout.admin-no-sidebar .content-wrapper,
+  body.customer-no-sidebar .content-wrapper,
+  .cabinet-navigation,
+  .cabinet-navigation-row {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  body.admin-layout.admin-no-sidebar .content-wrapper,
+  body.customer-no-sidebar .content-wrapper,
+  .cabinet-navigation,
+  .cabinet-navigation-row {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .cabinet-navigation-row .cabinet-navigation {
+    padding-right: 0;
+    padding-left: 0;
   }
 }
 
@@ -1427,7 +1458,7 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
 // Orders page (BEM) — админка и кабинет клиента
 .orders-page {
   padding: 1rem 0 2rem;
-  max-width: 1140px;
+  max-width: $cabinet-layout-max-width;
   margin: 0 auto;
 
   &__section-header {
@@ -2513,7 +2544,10 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
   }
 
   &__detail-actions-container {
-    max-width: 1140px;
+    max-width: $cabinet-layout-max-width;
+    box-sizing: border-box;
+    padding-right: $cabinet-layout-inline-padding;
+    padding-left: $cabinet-layout-inline-padding;
     margin: 0 auto;
     width: 100%;
     display: flex;
@@ -2888,7 +2922,7 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
 // Страница «Профиль компании»
 .company-profile-page {
   padding: 1rem 0 2rem;
-  max-width: 1140px;
+  max-width: $cabinet-layout-max-width;
   margin: 0 auto;
 
   &__alert {
@@ -3255,7 +3289,7 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
 // Страница «Мой профиль» (админка)
 .profile-page {
   padding: 1rem 0 2rem;
-  max-width: 1140px;
+  max-width: $cabinet-layout-max-width;
   margin: 0 auto;
 
   &__main-title {
@@ -3776,7 +3810,7 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
   flex-direction: column;
   min-height: calc(100vh - 18rem);
   padding: 1.5rem 1rem 3rem;
-  max-width: 1140px;
+  max-width: $cabinet-layout-max-width;
   margin: 0 auto;
   width: 100%;
 
