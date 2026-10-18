@@ -17,16 +17,9 @@
             ['label' => 'Мой профиль', 'route' => 'admin.profile', 'active' => 'admin.profile*'],
             ['label' => 'Профили компаний', 'route' => 'admin.users.index', 'active' => ['admin.users*', 'admin.companies*']],
             ['label' => 'Менеджеры', 'route' => 'admin.truck-managers.index', 'active' => 'admin.truck-managers*'],
-            ['label' => 'Блог', 'route' => 'admin.posts.index', 'active' => 'admin.posts*'],
+            ['label' => 'Блог / Статьи', 'route' => 'admin.posts.index', 'active' => 'admin.posts*'],
             ['label' => 'Страницы', 'route' => 'admin.pages.index', 'active' => 'admin.pages.index'],
             ['label' => 'Настройки сайта', 'route' => 'admin.pages.edit', 'parameters' => 'site_settings', 'active_site_settings' => true],
-            ['label' => 'Бренды', 'route' => 'admin.brands.index', 'active' => 'admin.brands*'],
-            ['label' => 'Производители траков', 'route' => 'admin.truck-manufacturers.index', 'active' => 'admin.truck-manufacturers*'],
-            ['label' => 'Модели траков', 'route' => 'admin.truck-models.index', 'active' => 'admin.truck-models*'],
-            ['label' => 'Типы запчастей', 'route' => 'admin.part-types.index', 'active' => 'admin.part-types*'],
-            ['label' => 'Товары', 'route' => 'admin.products.index', 'active' => ['admin.products.index', 'admin.products.create', 'admin.products.edit']],
-            ['label' => 'Импорт товаров', 'route' => 'admin.products.import.form', 'active' => 'admin.products.import*'],
-            ['label' => 'Мониторинг очередей', 'url' => url('/horizon'), 'active' => 'horizon*'],
         ];
     } elseif ($user?->isAdminCustomer()) {
         $items = [
@@ -35,7 +28,6 @@
             ['label' => 'Счета на оплату', 'route' => 'customer.invoices.index', 'active' => 'customer.invoices*'],
             ['label' => 'Мой профиль', 'route' => 'customer.profile', 'active' => 'customer.profile*'],
             ['label' => 'Профиль компании', 'route' => 'customer.company.show', 'active' => 'customer.company*'],
-            ['label' => 'Менеджеры', 'route' => 'customer.managers.index', 'active' => 'customer.managers*'],
         ];
     } else {
         $items = [
