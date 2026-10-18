@@ -66,6 +66,21 @@ class User extends Authenticatable
         return $this->role?->isCustomerSide() ?? false;
     }
 
+    /** URL кабинета, используемый общей и клиентской шапками. */
+    public function cabinetUrl(): string
+    {
+        if ($this->isAdminTruck()) {
+            return route('admin.index');
+        }
+
+        if ($this->isManagerTruck()) {
+            return route('manager.dashboard');
+        }
+
+        // Сохраняет текущий маршрут admin_customer, manager_customer и других клиентских ролей.
+        return route('customer.dashboard');
+    }
+
     /** Ожидает одобрения (самостоятельная регистрация, ещё не одобрен) */
     public function isPendingApproval(): bool
     {

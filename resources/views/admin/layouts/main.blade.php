@@ -612,7 +612,6 @@
 <body class="hold-transition sidebar-mini layout-fixed admin-layout {{ auth()->user()?->isManagerTruck() ? 'admin-no-sidebar' : '' }}">
     @php
         $front = rtrim(config('app.frontend_url', 'https://truck-import.ru'), '/');
-        $lk = rtrim(config('app.url', 'http://localhost'), '/');
         $isTruckManager = auth()->user()?->isManagerTruck() ?? false;
     @endphp
 @unless($isTruckManager)
@@ -722,7 +721,7 @@
             </li>
         </ul>
 @endunless
-    @include('partials.site-header', ['accountUrl' => $isTruckManager ? route('manager.profile') : $lk])
+    @include('partials.site-header', ['accountUrl' => auth()->user()?->cabinetUrl() ?? route('login')])
 
     @if($isTruckManager)
     <nav class="d-lg-none border-bottom bg-white px-2 py-2" aria-label="Разделы кабинета менеджера">

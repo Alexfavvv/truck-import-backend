@@ -1,7 +1,7 @@
 {{-- Шапка сайта (как в ЛК) — desktop + mobile + модалка «Заказать звонок» --}}
 @php
     $front = rtrim(config('app.frontend_url', 'https://truck-import.ru'), '/');
-    $accountUrl = $accountUrl ?? route('login');
+    $accountUrl = $accountUrl ?? (auth()->user()?->cabinetUrl() ?? route('login'));
 @endphp
 <header class="header _desktop">
     <div class="header__top">
