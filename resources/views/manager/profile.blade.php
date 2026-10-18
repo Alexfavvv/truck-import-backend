@@ -54,5 +54,18 @@
             </form>
         </div>
     </div>
+
+    <div class="card border-danger">
+        <div class="card-body d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+            <div class="mb-3 mb-md-0">
+                <h2 class="h5 mb-1">Завершить работу</h2>
+                <p class="text-muted mb-0">Выйти из личного кабинета на этом устройстве.</p>
+            </div>
+            <form method="POST" action="{{ route('admin.logout') }}">
+                @csrf
+                <button class="btn btn-danger" type="submit">Выйти</button>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection

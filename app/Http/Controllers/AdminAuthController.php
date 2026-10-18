@@ -46,9 +46,22 @@ class AdminAuthController extends Controller
         return redirect()->route('admin.index');
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
+        $isTruckManager = Auth::user()?->isManagerTruck() ?? false;
+
         Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        if ($isTruckManager) {
+            $frontendUrl = rtrim(config('app.frontend_url', config('app.url')), '/');
+            $logoutUrl = $frontendUrl . '/auth/logout?' . http_build_query(['next' => '/catalog']);
+
+            return redirect()->away($logoutUrl);
+        }
+
         return redirect()->route('login');
     }
 }
