@@ -964,18 +964,57 @@ body.customer-no-sidebar {
   }
 }
 
+// Keep cabinet content inside the same 1140px desktop container as the site header.
+body.admin-layout.admin-no-sidebar .content-wrapper,
+body.customer-no-sidebar .content-wrapper {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1140px;
+  margin-right: auto !important;
+  margin-left: auto !important;
+  padding-right: 1.25rem;
+  padding-left: 1.25rem;
+}
+
+body.admin-layout.admin-no-sidebar .content-wrapper > .container-fluid,
+body.customer-no-sidebar .content-wrapper > .container-fluid,
+body.admin-layout.admin-no-sidebar .content-wrapper > .content-header > .container-fluid,
+body.customer-no-sidebar .content-wrapper > .content-header > .container-fluid,
+body.admin-layout.admin-no-sidebar .content-wrapper > .content > .container-fluid,
+body.customer-no-sidebar .content-wrapper > .content > .container-fluid {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+}
+
+body.admin-layout.admin-no-sidebar .content-wrapper > .dashboard-page,
+body.customer-no-sidebar .content-wrapper > .dashboard-page {
+  max-width: none;
+  padding-right: 0;
+  padding-left: 0;
+}
+
 // Compact, shared navigation for every authenticated cabinet.
 .cabinet-navigation-row {
   display: flex;
   align-items: center;
   width: 100%;
+  max-width: 1140px;
   min-width: 0;
-  margin: 0 !important;
-  padding: 0;
+  margin: 0 auto !important;
+  padding: 0 1.25rem;
+  box-sizing: border-box;
   overflow: hidden;
   background: #fff;
   border: 0;
   box-shadow: none;
+}
+
+.cabinet-navigation-row .cabinet-navigation {
+  flex: 1 1 auto;
+  width: auto;
+  max-width: none;
+  padding-right: 0;
+  padding-left: 0;
 }
 
 .cabinet-navigation {
