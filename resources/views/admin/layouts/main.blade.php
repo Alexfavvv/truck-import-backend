@@ -722,25 +722,9 @@
         </ul>
 @endunless
     @include('partials.site-header', ['accountUrl' => auth()->user()?->cabinetUrl() ?? route('login')])
-
-    @if($isTruckManager)
-    <nav class="d-lg-none border-bottom bg-white px-2 py-2" aria-label="Разделы кабинета менеджера">
-        <ul class="nav nav-pills flex-nowrap" style="overflow-x:auto">
-            <li class="nav-item flex-shrink-0"><a class="nav-link {{ request()->routeIs('manager.dashboard') ? 'active' : '' }}" href="{{ route('manager.dashboard') }}">Дашборд</a></li>
-            <li class="nav-item flex-shrink-0"><a class="nav-link {{ request()->routeIs('manager.search') ? 'active' : '' }}" href="{{ route('manager.search') }}">Поиск</a></li>
-            <li class="nav-item flex-shrink-0"><a class="nav-link {{ request()->routeIs('manager.orders.*') ? 'active' : '' }}" href="{{ route('manager.orders.index') }}">Заказы</a></li>
-            <li class="nav-item flex-shrink-0"><a class="nav-link {{ request()->routeIs('manager.invoices.*') ? 'active' : '' }}" href="{{ route('manager.invoices.index') }}">Счета</a></li>
-            <li class="nav-item flex-shrink-0"><a class="nav-link {{ request()->routeIs('manager.companies.*') ? 'active' : '' }}" href="{{ route('manager.companies.index') }}">Компании</a></li>
-            <li class="nav-item flex-shrink-0"><a class="nav-link {{ request()->routeIs('manager.profile*') ? 'active' : '' }}" href="{{ route('manager.profile') }}">Профиль</a></li>
-            <li class="nav-item flex-shrink-0">
-                <form method="POST" action="{{ route('admin.logout') }}">
-                    @csrf
-                    <button type="submit" class="nav-link">Выйти</button>
-                </form>
-            </li>
-        </ul>
+    <nav class="cabinet-navigation" aria-label="Разделы личного кабинета">
+        @include('partials.cabinet-navigation')
     </nav>
-    @endif
 
     <div class="wrapper">
 

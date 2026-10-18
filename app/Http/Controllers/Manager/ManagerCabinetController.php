@@ -21,15 +21,9 @@ class ManagerCabinetController extends Controller
 {
     public function __construct(private readonly OrderService $orders, private readonly InvoiceService $invoices) {}
 
-    public function dashboard(Request $request): View
+    public function dashboard(): RedirectResponse
     {
-        $user = $request->user();
-        $companyIds = $user->assignedCompanies()->select('users.id');
-        return view('manager.dashboard', [
-            'companiesCount' => $user->assignedCompanies()->count(),
-            'ordersCount' => Order::whereIn('company_admin_id', $companyIds)->count(),
-            'invoicesCount' => Invoice::whereHas('order', fn ($q) => $q->whereIn('company_admin_id', $user->assignedCompanies()->select('users.id')))->count(),
-        ]);
+        return redirect()->route('manager.search');
     }
 
     public function search(Request $request): View

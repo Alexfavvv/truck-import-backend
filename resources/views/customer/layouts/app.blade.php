@@ -883,43 +883,11 @@
     
 <div class="wrapper">
 
-    {{-- Navbar (BEM: top-nav) --}}
-    <nav class="main-header top-nav">
-        <ul class="top-nav__tabs">
-            <li class="top-nav__item">
-                <a href="{{ route('customer.search.index') }}"
-                   class="top-nav__link {{ request()->routeIs('customer.search*') ? 'top-nav__link--active' : '' }}">
-                    <i class="top-nav__icon fas fa-search"></i><span class="top-nav__text">Поиск деталей</span>
-                </a>
-            </li>
-            <li class="top-nav__item">
-                <a href="{{ route('customer.orders.index') }}"
-                   class="top-nav__link {{ request()->routeIs('customer.orders*') ? 'top-nav__link--active' : '' }}">
-                    <i class="top-nav__icon fas fa-clipboard-list"></i><span class="top-nav__text">Заказы</span>
-                </a>
-            </li>
-            <li class="top-nav__item">
-                <a href="{{ route('customer.invoices.index') }}"
-                   class="top-nav__link {{ request()->routeIs('customer.invoices*') ? 'top-nav__link--active' : '' }}">
-                    <i class="top-nav__icon fas fa-file-invoice-dollar"></i><span class="top-nav__text">Счета на оплату</span>
-                </a>
-            </li>
-            <li class="top-nav__item">
-                <a href="{{ route('customer.profile') }}"
-                   class="top-nav__link {{ request()->routeIs('customer.profile') ? 'top-nav__link--active' : '' }}">
-                    <i class="top-nav__icon fas fa-user"></i><span class="top-nav__text">Мой профиль</span>
-                </a>
-            </li>
-            @if(auth()->user()->isAdminCustomer())
-            <li class="top-nav__item">
-                <a href="{{ route('customer.company.show') }}"
-                   class="top-nav__link {{ request()->routeIs('customer.company*') || request()->routeIs('customer.managers*') ? 'top-nav__link--active' : '' }}">
-                    <i class="top-nav__icon fas fa-building"></i><span class="top-nav__text">Профиль компании</span>
-                </a>
-            </li>
-            @endif
-        </ul>
-
+    {{-- Единая навигация кабинета; справа остаются существующие данные пользователя и выход. --}}
+    <div class="main-header cabinet-navigation-row">
+        <nav class="cabinet-navigation" aria-label="Разделы личного кабинета">
+            @include('partials.cabinet-navigation')
+        </nav>
         <ul class="top-nav__right">
             <li class="top-nav__item">
                 <span class="top-nav__user">
@@ -937,7 +905,7 @@
                 </form>
             </li>
         </ul>
-    </nav>
+    </div>
 
     {{-- Sidebar (оставляем в разметке, но скрываем стилями через .customer-no-sidebar) --}}
     <aside class="main-sidebar sidebar-dark-primary elevation-4">

@@ -29,7 +29,7 @@ Route::get('/', fn () => redirect()->route('login'))->name('home');
 // Доступ в админку — только для авторизованного пользователя с ролью
 Route::middleware([CustomAuthenticateMiddleware::class, IsAdminMiddleware::class])->group(function () {
     Route::get('/admin', function () {
-        return view('admin.main.index');
+        return redirect()->route('admin.search.index');
     })->name('admin.index');
 
     // ── Поиск деталей (отдельная страница) ───────────────────────────
