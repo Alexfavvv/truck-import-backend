@@ -5,7 +5,7 @@
         $currentResultIds = $products->isNotEmpty() ? $products->getCollection()->pluck('id')->implode(',') : '';
         $storefrontCartUrl = config('app.frontend_cart_url');
     @endphp
-    <section class="admin-search"
+    <section class="admin-search admin-compact-page admin-compact-page--search"
              data-current-result-ids="{{ $currentResultIds }}"
              data-current-query="{{ $query }}"
              data-upload-list-url="{{ route('admin.search.upload-list') }}"

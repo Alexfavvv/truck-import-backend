@@ -1,7 +1,7 @@
 @extends('admin.layouts.main')
 
 @section('content')
-<div class="orders-page admin-orders-page">
+<div class="orders-page admin-orders-page admin-compact-page admin-compact-page--orders">
     @if(session('success'))
         <div class="orders-page__alert orders-page__alert--success" role="alert">
             {{ session('success') }}
