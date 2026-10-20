@@ -609,12 +609,13 @@
 
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed admin-layout {{ (auth()->user()?->isAdminTruck() || auth()->user()?->isManagerTruck()) ? 'admin-no-sidebar' : '' }}">
+<body class="hold-transition sidebar-mini layout-fixed admin-layout {{ (auth()->user()?->isAdminTruck() || auth()->user()?->isManagerTruck()) ? 'admin-no-sidebar' : '' }} {{ auth()->user()?->isAdminTruck() ? 'admin-truck' : '' }} {{ auth()->user()?->isAdminTruck() && request()->routeIs('admin.orders.index') ? 'admin-orders-view' : '' }}">
     @php
         $front = rtrim(config('app.frontend_url', 'https://truck-import.ru'), '/');
         $isTruckManager = auth()->user()?->isManagerTruck() ?? false;
+        $isTruckAdmin = auth()->user()?->isAdminTruck() ?? false;
     @endphp
-@unless($isTruckManager)
+@if(!$isTruckManager && !$isTruckAdmin)
 <ul class="top-nav__right">
             <li class="top-nav__item top-nav__item--dropdown dropdown">
                 <a class="top-nav__link" data-toggle="dropdown" href="#">
@@ -720,8 +721,12 @@
                 </a>
             </li>
         </ul>
-@endunless
-    @include('partials.site-header', ['accountUrl' => auth()->user()?->cabinetUrl() ?? route('login')])
+@endif
+    @if($isTruckAdmin)
+        @include('partials.admin-compact-header')
+    @else
+        @include('partials.site-header', ['accountUrl' => auth()->user()?->cabinetUrl() ?? route('login')])
+    @endif
     <nav class="cabinet-navigation" aria-label="Разделы личного кабинета">
         @include('partials.cabinet-navigation')
     </nav>

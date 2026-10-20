@@ -1,7 +1,7 @@
 @extends('admin.layouts.main')
 
 @section('content')
-<div class="orders-page">
+<div class="orders-page admin-orders-page">
     @if(session('success'))
         <div class="orders-page__alert orders-page__alert--success" role="alert">
             {{ session('success') }}
@@ -46,20 +46,23 @@
         </div>
 
         <header class="orders-page__section-header">
-            <h1 class="orders-page__title">
-                @if($tab === 'my')
-                    Мои заказы
-                @elseif($tab === 'company')
-                    Заказы компаний
-                @else
-                    Архив заказов
-                @endif
-            </h1>
+            <h1 class="orders-page__title">Заказы клиентов</h1>
         </header>
 
         <div class="orders-page__filters-wrap">
             <form method="GET" class="orders-page__filters">
                 <input type="hidden" name="tab" value="{{ $tab }}">
+
+                <div class="orders-page__search-group">
+                    <input type="text"
+                           name="number"
+                           value="{{ request('number') }}"
+                           class="orders-page__search-input"
+                           placeholder="Введите номер заказа">
+                    <button type="submit" class="orders-page__search-submit" aria-label="Искать">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
 
                 @if($tab === 'my' || $tab === 'company')
                     <select name="status" class="orders-page__select" data-orders-filter-auto-submit>
@@ -103,16 +106,6 @@
                         <i class="fas fa-times"></i><span class="orders-page__btn-text">Сбросить</span>
                     </a>
                 @endif
-                <div class="orders-page__search-group">
-                    <input type="text"
-                           name="number"
-                           value="{{ request('number') }}"
-                           class="orders-page__search-input"
-                           placeholder="Введите номер заказа">
-                    <button type="submit" class="orders-page__search-submit" aria-label="Искать">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
             </form>
         </div>
 
