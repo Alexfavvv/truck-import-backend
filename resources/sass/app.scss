@@ -1039,7 +1039,7 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
-  gap: .625rem;
+  gap: .375rem;
   width: 100%;
   min-width: 0;
   margin: 0;
@@ -1061,12 +1061,12 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
   align-items: center;
   justify-content: center;
   min-height: 2.625rem;
-  padding: .5rem .875rem;
+  padding: .5rem .625rem;
   border: 1px solid #d8dadd;
   border-radius: .5625rem;
   background: #fff;
   color: #252525;
-  font-size: .9375rem;
+  font-size: .875rem;
   line-height: 1.25;
   text-decoration: none;
   white-space: nowrap;
@@ -1117,7 +1117,7 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
   }
 
   .cabinet-navigation__list {
-    gap: .5rem;
+    gap: .375rem;
     scrollbar-width: none;
 
     &::-webkit-scrollbar {
@@ -1127,7 +1127,7 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
 
   .cabinet-navigation__link {
     min-height: 2.5rem;
-    padding: .45rem .9rem;
+    padding: .45rem .625rem;
   }
 }
 

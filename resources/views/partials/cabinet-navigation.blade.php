@@ -20,6 +20,7 @@
             ['label' => 'Блог / Статьи', 'route' => 'admin.posts.index', 'active' => 'admin.posts*'],
             ['label' => 'Страницы', 'route' => 'admin.pages.index', 'active' => 'admin.pages.index'],
             ['label' => 'Настройки сайта', 'route' => 'admin.pages.edit', 'parameters' => 'site_settings', 'active_site_settings' => true],
+            ['label' => 'Товары', 'route' => 'admin.products.index', 'active' => ['admin.products.index', 'admin.products.create', 'admin.products.edit']],
         ];
     } elseif ($user?->isAdminCustomer()) {
         $items = [
