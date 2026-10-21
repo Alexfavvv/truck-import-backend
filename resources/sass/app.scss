@@ -5059,3 +5059,339 @@ body.admin-truck .dashboard-page {
     max-width: none;
   }
 }
+
+// Customer and manager cabinets share the compact shell used by admin_truck.
+.cabinet-compact-header {
+  width: 100%;
+  background: #171717;
+  color: #fff;
+}
+
+.cabinet-compact-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: $cabinet-layout-max-width;
+  min-height: 76px;
+  margin: 0 auto;
+  padding: .75rem $cabinet-layout-inline-padding;
+  box-sizing: border-box;
+}
+
+.cabinet-compact-header__logo {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.cabinet-compact-header__logo img {
+  display: block;
+  width: 150px;
+  max-height: 48px;
+  object-fit: contain;
+}
+
+.cabinet-compact-header__actions,
+.cabinet-compact-header__user {
+  display: flex;
+  align-items: center;
+}
+
+.cabinet-compact-header__actions {
+  gap: 1.25rem;
+}
+
+.cabinet-compact-header__actions form {
+  margin: 0;
+}
+
+.cabinet-compact-header__user {
+  gap: .5rem;
+  color: #f5f5f5;
+  font-size: .9375rem;
+}
+
+.cabinet-compact-header__user > i {
+  color: #c9ac37;
+  font-size: 1.25rem;
+}
+
+.cabinet-compact-header__user small {
+  color: #aaa;
+  font-size: .8125rem;
+}
+
+.cabinet-compact-header__logout,
+.cabinet-compact-header__cart {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  min-height: 36px;
+  padding: .375rem .75rem;
+  border: 1px solid rgba(255, 255, 255, .25);
+  border-radius: .375rem;
+  background: transparent;
+  color: #fff;
+  font-size: .875rem;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cabinet-compact-header__logout:hover,
+.cabinet-compact-header__logout:focus-visible {
+  border-color: #c9ac37;
+  color: #c9ac37;
+}
+
+.cabinet-compact-header__cart {
+  border-color: #c9ac37;
+  background: #c9ac37;
+  color: #171717;
+  font-weight: 500;
+}
+
+.cabinet-compact-header__cart:hover,
+.cabinet-compact-header__cart:focus-visible {
+  border-color: #ddd099;
+  background: #ddd099;
+  color: #171717;
+  text-decoration: none;
+}
+
+body.cabinet-compact-view .content-wrapper {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: $cabinet-layout-max-width;
+  margin-right: auto !important;
+  margin-left: auto !important;
+  padding: 1rem $cabinet-layout-inline-padding 3rem;
+  overflow-x: clip;
+}
+
+body.cabinet-compact-view .content-wrapper > .container-fluid,
+body.cabinet-compact-view .content-wrapper > .content-header > .container-fluid,
+body.cabinet-compact-view .content-wrapper > .content > .container-fluid {
+  width: 100%;
+  max-width: none;
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+}
+
+body.cabinet-compact-view .content-wrapper > .orders-page,
+body.cabinet-compact-view .content-wrapper > .profile-page,
+body.cabinet-compact-view .content-wrapper > .company-profile-page,
+body.cabinet-compact-view .content-wrapper > .admin-search,
+body.cabinet-compact-view .content-wrapper > .dashboard-page {
+  width: 100%;
+  max-width: none;
+  margin-right: 0;
+  margin-left: 0;
+}
+
+body.cabinet-compact-view .content-wrapper > .dashboard-page {
+  min-height: 0;
+  padding: .5rem 0 1.5rem;
+}
+
+body.cabinet-compact-view .content-wrapper .card {
+  margin-bottom: .75rem;
+  border: 1px solid #e1e4e8;
+  border-radius: .5rem;
+  box-shadow: 0 1px 3px rgba(20, 19, 19, .07);
+}
+
+body.cabinet-compact-view .content-wrapper .card-header,
+body.cabinet-compact-view .content-wrapper .card-body {
+  padding: .75rem 1rem;
+}
+
+body.cabinet-compact-view .content-wrapper .card-title,
+body.cabinet-compact-view .content-wrapper h1 {
+  margin-bottom: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+body.cabinet-compact-view .content-wrapper .form-control,
+body.cabinet-compact-view .content-wrapper .custom-select {
+  min-height: 38px;
+  padding: .375rem .625rem;
+  border-color: #d8dadd;
+  border-radius: .375rem;
+  font-size: .875rem;
+}
+
+body.cabinet-compact-view .content-wrapper .btn {
+  min-height: 36px;
+  padding: .375rem .75rem;
+  border-radius: .375rem;
+  font-size: .875rem;
+  line-height: 1.25;
+}
+
+body.cabinet-compact-view .content-wrapper .table {
+  margin-bottom: 0;
+  font-size: .875rem;
+}
+
+body.cabinet-compact-view .content-wrapper .table th,
+body.cabinet-compact-view .content-wrapper .table td {
+  padding: .5rem .625rem;
+  vertical-align: middle;
+}
+
+body.cabinet-compact-view .content-wrapper .badge {
+  padding: .35em .55em;
+  border-radius: .375rem;
+  font-size: .75rem;
+  font-weight: 500;
+}
+
+body.cabinet-compact-view .orders-page,
+body.cabinet-compact-view .profile-page,
+body.cabinet-compact-view .company-profile-page {
+  padding-top: .5rem;
+  padding-bottom: 1.5rem;
+}
+
+body.cabinet-compact-view .orders-page__section-header {
+  padding-bottom: .75rem;
+}
+
+body.cabinet-compact-view .orders-page__title,
+body.cabinet-compact-view .profile-page__main-title,
+body.cabinet-compact-view .company-profile-page__title {
+  font-size: 1.25rem;
+}
+
+body.cabinet-compact-view .orders-page__filters-wrap {
+  padding-bottom: .75rem;
+}
+
+body.cabinet-compact-view .orders-page__search-input,
+body.cabinet-compact-view .orders-page__select,
+body.cabinet-compact-view .orders-page__tabs-select,
+body.cabinet-compact-view .admin-search__input {
+  min-height: 38px;
+  padding: .375rem .625rem;
+  border-radius: .375rem;
+  font-size: .875rem;
+}
+
+body.cabinet-compact-view .orders-page__search-submit,
+body.cabinet-compact-view .orders-page__btn,
+body.cabinet-compact-view .profile-page__btn,
+body.cabinet-compact-view .company-profile-page__btn {
+  min-height: 36px;
+  padding: .375rem .75rem;
+  border-radius: .375rem;
+  font-size: .875rem;
+}
+
+body.cabinet-compact-view .orders-page__badge {
+  padding: .3rem .5rem;
+  border-radius: .375rem;
+  font-size: .75rem;
+}
+
+body.cabinet-compact-view .orders-page__table-wrap,
+body.cabinet-compact-view .admin-search__table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.cabinet-compact-view .orders-page__table,
+body.cabinet-compact-view .admin-search__table {
+  font-size: .875rem;
+}
+
+body.cabinet-compact-view .orders-page__table th,
+body.cabinet-compact-view .orders-page__table td,
+body.cabinet-compact-view .admin-search__table th,
+body.cabinet-compact-view .admin-search__table td {
+  padding: .5rem .625rem;
+}
+
+body.cabinet-compact-view .admin-search__header {
+  margin-bottom: .75rem;
+}
+
+body.cabinet-compact-view .admin-search__title {
+  font-size: 1.25rem;
+}
+
+@media (max-width: 1100px) {
+  .cabinet-compact-header__inner,
+  body.cabinet-compact-view .content-wrapper {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .cabinet-compact-header__inner,
+  body.cabinet-compact-view .content-wrapper {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .cabinet-compact-header__inner {
+    min-height: 64px;
+    gap: .75rem;
+  }
+
+  .cabinet-compact-header__logo img {
+    width: 110px;
+  }
+
+  .cabinet-compact-header__actions {
+    gap: .5rem;
+  }
+
+  .cabinet-compact-header__user {
+    max-width: 9rem;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .cabinet-compact-header__user span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .cabinet-compact-header__user small {
+    display: none;
+  }
+
+  body.cabinet-compact-view .content-wrapper .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 480px) {
+  .cabinet-compact-header__logo img {
+    width: 88px;
+  }
+
+  .cabinet-compact-header__logout span,
+  .cabinet-compact-header__cart span {
+    display: none;
+  }
+
+  .cabinet-compact-header__user span {
+    max-width: 5rem;
+    font-size: .75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cabinet-compact-header__actions {
+    gap: .375rem;
+  }
+}
