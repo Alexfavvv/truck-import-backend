@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\TruckManufacturerController;
 use App\Http\Controllers\Admin\TruckModelController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\TruckManagerController;
+use App\Http\Controllers\Api\V1\Client\CartController as ClientCartController;
 use App\Http\Controllers\Manager\ManagerCabinetController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\SsoController;
@@ -39,6 +40,9 @@ Route::middleware([CustomAuthenticateMiddleware::class, IsAdminMiddleware::class
 
     // ── Корзина (добавление из админки в корзину текущего пользователя) ─
     Route::post('/admin/cart/add', [CartController::class, 'add'])->name('admin.cart.add');
+    Route::get('/admin/cart', [CartController::class, 'index'])->name('admin.cart.index');
+    Route::put('/admin/cart/items/{cartItem}', [ClientCartController::class, 'update'])->name('admin.cart.items.update');
+    Route::delete('/admin/cart/items/{cartItem}', [ClientCartController::class, 'remove'])->name('admin.cart.items.destroy');
 
     // ── Каталог (существующие разделы) ──────────────────────────────
     Route::resource('/admin/brands', BrandController::class)->names('admin.brands')->except('show');

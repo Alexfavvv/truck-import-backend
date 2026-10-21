@@ -4336,7 +4336,13 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
 }
 
 .admin-compact-header__actions {
+  display: flex;
+  align-items: center;
   gap: 1.25rem;
+}
+
+.admin-compact-header__actions form {
+  margin: 0;
 }
 
 .admin-compact-header__user {
@@ -4373,6 +4379,74 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
 .admin-compact-header__logout:focus-visible {
   border-color: #c9ac37;
   color: #c9ac37;
+}
+
+.admin-compact-header__cart {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: 36px;
+  padding: .375rem .875rem;
+  border: 1px solid #c9ac37;
+  border-radius: .375rem;
+  background: #c9ac37;
+  color: #171717;
+  font-size: .875rem;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.admin-compact-header__cart:hover,
+.admin-compact-header__cart:focus-visible {
+  border-color: #ddd099;
+  background: #ddd099;
+  color: #171717;
+  text-decoration: none;
+}
+
+.admin-compact-header__cart-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.125rem;
+  height: 1.125rem;
+  padding: 0 .25rem;
+  border-radius: 999px;
+  background: #171717;
+  color: #fff;
+  font-size: .6875rem;
+  line-height: 1;
+}
+
+// Keep all admin_truck page roots on the same 1380px / 40px grid as the compact header.
+body.admin-truck .content-wrapper {
+  width: 100%;
+  max-width: $cabinet-layout-max-width;
+  margin-right: auto !important;
+  margin-left: auto !important;
+}
+
+body.admin-truck .content-wrapper > * {
+  width: 100%;
+  max-width: none;
+}
+
+body.admin-truck .content-wrapper .container,
+body.admin-truck .content-wrapper .container-fluid {
+  width: 100%;
+  max-width: none;
+}
+
+body.admin-truck .admin-search,
+body.admin-truck .orders-page,
+body.admin-truck .profile-page,
+body.admin-truck .dashboard-page {
+  width: 100%;
+  max-width: none;
+  margin-right: 0;
+  margin-left: 0;
 }
 
 .admin-compact-view .content-wrapper {
@@ -4689,6 +4763,8 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
 }
 
 .admin-compact-page--search .admin-search__table {
+  width: 100%;
+  table-layout: fixed;
   font-size: .875rem;
 }
 
@@ -4737,6 +4813,134 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
   font-size: .875rem;
 }
 
+.admin-cart__total {
+  color: #454545;
+  font-size: .9375rem;
+  font-weight: 600;
+}
+
+.admin-cart__table {
+  table-layout: auto;
+}
+
+.admin-cart__select-cell {
+  width: 42px;
+  min-width: 42px;
+  text-align: center !important;
+}
+
+.admin-cart__image-cell {
+  width: 58px;
+  min-width: 58px;
+}
+
+.admin-cart__image,
+.admin-cart__image-placeholder {
+  display: block;
+  width: 42px;
+  height: 42px;
+  border-radius: .25rem;
+  object-fit: contain;
+}
+
+.admin-cart__image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f2f3f4;
+  color: #8a8f95;
+}
+
+.admin-cart__sku-cell {
+  min-width: 8rem;
+}
+
+.admin-cart__sku-cell strong,
+.admin-cart__sku-cell small {
+  display: block;
+}
+
+.admin-cart__sku-cell strong {
+  font-weight: 600;
+}
+
+.admin-cart__sku-cell small {
+  margin-top: .125rem;
+  color: #6c757d;
+  font-size: .75rem;
+}
+
+.admin-cart__product-cell {
+  min-width: 14rem;
+}
+
+.admin-cart__price-cell,
+.admin-cart__sum-cell {
+  min-width: 8rem;
+  white-space: nowrap;
+}
+
+.admin-cart__quantity-cell {
+  width: 7rem;
+  min-width: 7rem;
+}
+
+.admin-cart__quantity {
+  width: 4.5rem;
+  min-height: 34px;
+  padding: .25rem .375rem;
+  border: 1px solid #d4d7db;
+  border-radius: .3rem;
+  font-size: .875rem;
+  text-align: center;
+}
+
+.admin-cart__remove-cell {
+  width: 48px;
+  min-width: 48px;
+  text-align: center !important;
+}
+
+.admin-cart__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #d8dadd;
+  border-radius: .3rem;
+  background: #fff;
+  color: #a33;
+  cursor: pointer;
+}
+
+.admin-cart__remove:hover,
+.admin-cart__remove:focus-visible {
+  border-color: #a33;
+  background: #fff5f5;
+}
+
+.admin-cart__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .875rem .75rem;
+  border-top: 1px solid #e5e7e9;
+}
+
+.admin-cart__selection-total {
+  color: #454545;
+  font-size: .875rem;
+}
+
+.admin-cart__empty {
+  padding: 1.5rem 1rem;
+  border: 1px solid #e5e7e9;
+  border-radius: .375rem;
+  background: #fff;
+}
+
 @media (max-width: 768px) {
   .admin-compact-page--search .admin-search__form-group {
     max-width: none;
@@ -4772,7 +4976,7 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
   }
 
   .admin-compact-header__actions {
-    gap: .625rem;
+    gap: .5rem;
   }
 
   .admin-compact-header__user {
@@ -4786,6 +4990,12 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
 
   .admin-compact-header__logout {
     min-height: 34px;
+    padding: .3rem .5rem;
+  }
+
+  .admin-compact-header__cart {
+    min-height: 34px;
+    gap: .35rem;
     padding: .3rem .5rem;
   }
 
@@ -4816,11 +5026,25 @@ body.customer-no-sidebar .content-wrapper > .dashboard-page {
   .admin-compact-page .orders-page__table-wrap {
     overflow-x: auto;
   }
+
+  .admin-cart__footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 480px) {
+  .admin-compact-header__logo img {
+    width: 90px;
+  }
+
+  .admin-compact-header__actions {
+    gap: .375rem;
+  }
+
   .admin-compact-header__user span {
-    max-width: 9rem;
+    max-width: 5rem;
+    font-size: .75rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

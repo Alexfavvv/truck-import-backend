@@ -3,7 +3,7 @@
 @section('content')
     @php
         $currentResultIds = $products->isNotEmpty() ? $products->getCollection()->pluck('id')->implode(',') : '';
-        $storefrontCartUrl = config('app.frontend_cart_url');
+        $storefrontCartUrl = route('admin.cart.index');
     @endphp
     <section class="admin-search admin-compact-page admin-compact-page--search"
              data-current-result-ids="{{ $currentResultIds }}"

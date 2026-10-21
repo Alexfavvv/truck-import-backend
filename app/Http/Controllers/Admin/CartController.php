@@ -8,11 +8,23 @@ use App\Models\CartItem;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
 
 class CartController extends Controller
 {
+    public function index(Request $request): View
+    {
+        $cart = Cart::firstOrCreate(
+            ['user_id' => $request->user()->id],
+            ['user_id' => $request->user()->id]
+        );
+        $cart->load(['items.product.brand']);
+
+        return view('admin.cart.index', compact('cart'));
+    }
+
     /**
      * Добавить выбранные товары в корзину текущего пользователя (админ).
      * Тело запроса: { "items": [ { "product_id": 1, "quantity": 2 }, ... ] }

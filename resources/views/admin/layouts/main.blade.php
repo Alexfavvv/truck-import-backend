@@ -609,7 +609,7 @@
 
 </head>
 
-<body class="hold-transition sidebar-mini layout-fixed admin-layout {{ (auth()->user()?->isAdminTruck() || auth()->user()?->isManagerTruck()) ? 'admin-no-sidebar' : '' }} {{ auth()->user()?->isAdminTruck() ? 'admin-truck' : '' }} {{ auth()->user()?->isAdminTruck() && request()->routeIs('admin.orders.index', 'admin.search.index', 'admin.invoices.index', 'admin.users.index', 'admin.truck-managers.index') ? 'admin-compact-view' : '' }}">
+<body class="hold-transition sidebar-mini layout-fixed admin-layout {{ (auth()->user()?->isAdminTruck() || auth()->user()?->isManagerTruck()) ? 'admin-no-sidebar' : '' }} {{ auth()->user()?->isAdminTruck() ? 'admin-truck' : '' }} {{ auth()->user()?->isAdminTruck() && request()->routeIs('admin.orders.index', 'admin.search.index', 'admin.invoices.index', 'admin.users.index', 'admin.truck-managers.index', 'admin.cart.index') ? 'admin-compact-view' : '' }}">
     @php
         $front = rtrim(config('app.frontend_url', 'https://truck-import.ru'), '/');
         $isTruckManager = auth()->user()?->isManagerTruck() ?? false;
