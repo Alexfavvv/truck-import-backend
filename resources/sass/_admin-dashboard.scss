@@ -1,5 +1,8 @@
 .admin-dashboard {
   width: 100%;
+  min-height: calc(100vh - 240px);
+  padding: 1.75rem 2.5rem 2.5rem;
+  background: #f2f3f5;
   color: #202226;
   font-family: 'Gilroy-Regular', sans-serif;
 }
@@ -84,10 +87,10 @@
 .admin-dashboard__kpi,
 .admin-dashboard__panel {
   min-width: 0;
-  border: 1px solid #e1e4e8;
-  border-radius: .625rem;
+  border: 1px solid #e6e8eb;
+  border-radius: .9rem;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(20, 19, 19, .045);
+  box-shadow: 0 2px 9px rgba(28, 32, 37, .045);
 }
 
 .admin-dashboard__kpi {
@@ -109,8 +112,23 @@
 }
 
 .admin-dashboard__kpi--primary {
-  border-top: 3px solid #c9ac37;
+  border-color: rgba(255, 255, 255, .22);
+  border-top: 3px solid rgba(255, 255, 255, .55);
+  border-radius: .9rem;
+  background: linear-gradient(135deg, #80630c 0%, #8c6c10 58%, #957414 100%);
   padding-top: calc(1rem - 2px);
+}
+
+.admin-dashboard__kpi--primary:hover {
+  border-color: rgba(255, 255, 255, .42);
+  box-shadow: 0 7px 20px rgba(94, 72, 9, .2);
+}
+
+.admin-dashboard__kpi--primary .admin-dashboard__kpi-title,
+.admin-dashboard__kpi--primary .admin-dashboard__kpi-value,
+.admin-dashboard__kpi--primary .admin-dashboard__kpi-difference,
+.admin-dashboard__kpi--primary .admin-dashboard__kpi-note {
+  color: #fff;
 }
 
 .admin-dashboard__kpi-title {
@@ -124,7 +142,7 @@
   margin: .55rem 0 .4rem;
   color: #1c2025;
   font-family: 'Gilroy-Medium', sans-serif;
-  font-size: clamp(1.375rem, 2vw, 2rem);
+  font-size: clamp(1.625rem, 2.15vw, 2.25rem);
   font-weight: 700;
   line-height: 1.1;
   overflow-wrap: anywhere;
@@ -155,6 +173,15 @@
   color: #6a7077;
 }
 
+.admin-dashboard__kpi--primary .admin-dashboard__change,
+.admin-dashboard__kpi--primary .admin-dashboard__change--up,
+.admin-dashboard__kpi--primary .admin-dashboard__change--down,
+.admin-dashboard__kpi--primary .admin-dashboard__change--neutral {
+  border: 1px solid rgba(255, 255, 255, .3);
+  background: rgba(255, 255, 255, .14);
+  color: #fff;
+}
+
 .admin-dashboard__kpi-difference,
 .admin-dashboard__kpi-note {
   margin-top: .35rem;
@@ -179,6 +206,10 @@
   display: block;
   width: 100%;
   height: 100%;
+}
+
+.admin-dashboard__kpi--primary .admin-dashboard__sparkline canvas {
+  filter: grayscale(1) brightness(0) invert(1);
 }
 
 .admin-dashboard__kpi-note + .admin-dashboard__kpi-note {
@@ -334,6 +365,7 @@
 
 .admin-dashboard__manager > strong {
   font-size: .8125rem;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -428,6 +460,7 @@
 }
 
 .admin-dashboard__amount {
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -452,6 +485,7 @@
 }
 
 @media (max-width: 640px) {
+  .admin-dashboard { padding: 1.1rem 1rem 1.5rem; }
   .admin-dashboard__top,
   .admin-dashboard__panel-heading { align-items: flex-start; flex-direction: column; }
   .admin-dashboard__period-form { width: 100%; justify-content: space-between; }
