@@ -20,9 +20,9 @@
         return `${number.format(value)}${series === 'revenue' ? ' ₽' : ' заказов'}`;
     }
 
-    function traceSmoothLine(target, linePoints) {
+    function traceSmoothLine(target, linePoints, continuePath = false) {
         if (linePoints.length === 0) return;
-        target.moveTo(linePoints[0].x, linePoints[0].y);
+        if (!continuePath) target.moveTo(linePoints[0].x, linePoints[0].y);
 
         for (let index = 1; index < linePoints.length; index += 1) {
             const previous = linePoints[index - 1];
@@ -110,7 +110,7 @@
         context.beginPath();
         context.moveTo(points[0].x, top + plotHeight);
         context.lineTo(points[0].x, points[0].y);
-        traceSmoothLine(context, points);
+        traceSmoothLine(context, points, true);
         context.lineTo(points[points.length - 1].x, top + plotHeight);
         context.closePath();
         context.fillStyle = gradient;
