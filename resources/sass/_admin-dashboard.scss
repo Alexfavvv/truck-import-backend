@@ -1,3 +1,11 @@
+body.admin-truck:has(.admin-dashboard) {
+  background-color: #f2f3f5;
+}
+
+body.admin-truck:has(.admin-dashboard) .content-wrapper {
+  background-color: #f2f3f5;
+}
+
 .admin-dashboard {
   width: 100%;
   min-height: calc(100vh - 240px);
@@ -87,10 +95,10 @@
 .admin-dashboard__kpi,
 .admin-dashboard__panel {
   min-width: 0;
-  border: 1px solid #e6e8eb;
-  border-radius: .9rem;
+  border: 0;
+  border-radius: 1rem;
   background: #fff;
-  box-shadow: 0 2px 9px rgba(28, 32, 37, .045);
+  box-shadow: 0 3px 14px rgba(28, 32, 37, .055);
 }
 
 .admin-dashboard__kpi {
@@ -112,16 +120,13 @@
 }
 
 .admin-dashboard__kpi--primary {
-  border-color: rgba(255, 255, 255, .22);
-  border-top: 3px solid rgba(255, 255, 255, .55);
-  border-radius: .9rem;
-  background: linear-gradient(135deg, #80630c 0%, #8c6c10 58%, #957414 100%);
-  padding-top: calc(1rem - 2px);
+  border: 0;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #c44e3e 0%, #c85040 56%, #cf5947 100%);
 }
 
 .admin-dashboard__kpi--primary:hover {
-  border-color: rgba(255, 255, 255, .42);
-  box-shadow: 0 7px 20px rgba(94, 72, 9, .2);
+  box-shadow: 0 8px 22px rgba(155, 61, 48, .2);
 }
 
 .admin-dashboard__kpi--primary .admin-dashboard__kpi-title,
