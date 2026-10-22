@@ -6,7 +6,6 @@
     const canvas = root.querySelector('canvas');
     const tooltip = root.querySelector('.admin-dashboard__chart-tooltip');
     const buttons = document.querySelectorAll('[data-dashboard-series]');
-    const sparklines = document.querySelectorAll('[data-dashboard-sparkline]');
     const chart = JSON.parse(dataNode.textContent);
     const context = canvas.getContext('2d');
     if (!context) return;
@@ -19,6 +18,35 @@
 
     function formatValue(value) {
         return `${number.format(value)}${series === 'revenue' ? ' ₽' : ' заказов'}`;
+    }
+
+    function traceSmoothLine(target, linePoints) {
+        if (linePoints.length === 0) return;
+        target.moveTo(linePoints[0].x, linePoints[0].y);
+
+        for (let index = 1; index < linePoints.length; index += 1) {
+            const previous = linePoints[index - 1];
+            const current = linePoints[index];
+            const beforePrevious = linePoints[Math.max(0, index - 2)];
+            const afterCurrent = linePoints[Math.min(linePoints.length - 1, index + 1)];
+            const firstControl = {
+                x: previous.x + (current.x - beforePrevious.x) / 6,
+                y: previous.y + (current.y - beforePrevious.y) / 6,
+            };
+            const secondControl = {
+                x: current.x - (afterCurrent.x - previous.x) / 6,
+                y: current.y - (afterCurrent.y - previous.y) / 6,
+            };
+
+            target.bezierCurveTo(
+                firstControl.x,
+                firstControl.y,
+                secondControl.x,
+                secondControl.y,
+                current.x,
+                current.y,
+            );
+        }
     }
 
     function draw() {
@@ -76,22 +104,20 @@
 
         const color = series === 'orders' ? '#c9ac37' : '#30343b';
         const gradient = context.createLinearGradient(0, top, 0, top + plotHeight);
-        gradient.addColorStop(0, series === 'orders' ? 'rgba(201,172,55,.22)' : 'rgba(48,52,59,.16)');
+        gradient.addColorStop(0, series === 'orders' ? 'rgba(201,172,55,.2)' : 'rgba(48,52,59,.14)');
         gradient.addColorStop(1, 'rgba(255,255,255,0)');
 
         context.beginPath();
         context.moveTo(points[0].x, top + plotHeight);
-        points.forEach((point) => context.lineTo(point.x, point.y));
+        context.lineTo(points[0].x, points[0].y);
+        traceSmoothLine(context, points);
         context.lineTo(points[points.length - 1].x, top + plotHeight);
         context.closePath();
         context.fillStyle = gradient;
         context.fill();
 
         context.beginPath();
-        points.forEach((point, index) => {
-            if (index === 0) context.moveTo(point.x, point.y);
-            else context.lineTo(point.x, point.y);
-        });
+        traceSmoothLine(context, points);
         context.strokeStyle = color;
         context.lineWidth = 2.5;
         context.lineJoin = 'round';
@@ -99,7 +125,7 @@
 
         points.forEach((point, index) => {
             context.beginPath();
-            context.arc(point.x, point.y, index === hovered ? 5.5 : 3, 0, Math.PI * 2);
+            context.arc(point.x, point.y, index === hovered ? 4.5 : 2, 0, Math.PI * 2);
             context.fillStyle = '#fff';
             context.fill();
             context.lineWidth = 2;
@@ -123,40 +149,6 @@
         tooltip.style.top = `${Math.max(8, point.y - 46)}px`;
     }
 
-    function drawSparklines() {
-        const colors = {
-            orders: '#c9ac37',
-            revenue: '#30343b',
-            clients: '#4b8270',
-            paid_invoices: '#74818c',
-        };
-        sparklines.forEach((sparkline) => {
-            const values = chart[sparkline.dataset.dashboardSparkline] || [];
-            const sparkContext = sparkline.getContext('2d');
-            if (!sparkContext || values.length === 0) return;
-            const width = Math.max(sparkline.parentElement.clientWidth, 1);
-            const height = 30;
-            const ratio = Math.min(window.devicePixelRatio || 1, 2);
-            sparkline.width = Math.round(width * ratio);
-            sparkline.height = Math.round(height * ratio);
-            sparkContext.setTransform(ratio, 0, 0, ratio, 0, 0);
-            sparkContext.clearRect(0, 0, width, height);
-            const maximum = Math.max(1, ...values);
-            sparkContext.beginPath();
-            values.forEach((value, index) => {
-                const x = 2 + (width - 4) * index / Math.max(1, values.length - 1);
-                const y = 26 - value / maximum * 21;
-                if (index === 0) sparkContext.moveTo(x, y);
-                else sparkContext.lineTo(x, y);
-            });
-            sparkContext.strokeStyle = colors[sparkline.dataset.dashboardSparkline] || '#30343b';
-            sparkContext.lineWidth = 2;
-            sparkContext.lineJoin = 'round';
-            sparkContext.lineCap = 'round';
-            sparkContext.stroke();
-        });
-    }
-
     buttons.forEach((button) => button.addEventListener('click', () => {
         series = button.dataset.dashboardSeries;
         hovered = -1;
@@ -176,18 +168,7 @@
         draw();
     });
 
-    if ('ResizeObserver' in window) {
-        const observer = new ResizeObserver(() => {
-            draw();
-            drawSparklines();
-        });
-        observer.observe(root);
-    } else {
-        window.addEventListener('resize', () => {
-            draw();
-            drawSparklines();
-        });
-    }
+    if ('ResizeObserver' in window) new ResizeObserver(draw).observe(root);
+    else window.addEventListener('resize', draw);
     draw();
-    drawSparklines();
 })();

@@ -5,48 +5,38 @@
 @section('content')
 @php
     $metrics = $dashboard['metrics'];
-    $average = $dashboard['monthly_average'];
-    $averageChange = $dashboard['monthly_average_change'];
     $cards = [
         [
             'title' => 'Заказы',
             'value' => number_format($metrics['orders']['value'], 0, ',', ' '),
             'metric' => $metrics['orders'],
             'difference' => number_format(abs($metrics['orders']['difference']), 0, ',', ' ').' заказов',
-            'note' => $average === null ? 'Среднее за месяц: нет истории' : 'Среднее за месяц: '.number_format($average, 1, ',', ' ').' заказов',
             'href' => route('admin.orders.index', ['tab' => 'company']),
             'primary' => true,
-            'sparkline' => 'orders',
         ],
         [
             'title' => 'Выручка',
             'value' => number_format($metrics['revenue']['value'], 2, ',', ' ').' ₽',
             'metric' => $metrics['revenue'],
             'difference' => number_format(abs($metrics['revenue']['difference']), 2, ',', ' ').' ₽',
-            'note' => 'Оплаченные счета по дате оплаты',
             'href' => route('admin.invoices.index', ['tab' => 'company', 'status' => 'paid']),
             'primary' => false,
-            'sparkline' => 'revenue',
         ],
         [
             'title' => 'Новые клиенты',
             'value' => number_format($metrics['clients']['value'], 0, ',', ' '),
             'metric' => $metrics['clients'],
             'difference' => number_format(abs($metrics['clients']['difference']), 0, ',', ' ').' компаний',
-            'note' => 'Новые компании заказчиков',
             'href' => route('admin.users.index'),
             'primary' => false,
-            'sparkline' => 'clients',
         ],
         [
             'title' => 'Оплаченные счета',
             'value' => number_format($metrics['paid_invoices']['value'], 0, ',', ' '),
             'metric' => $metrics['paid_invoices'],
             'difference' => number_format(abs($metrics['paid_invoices']['difference']), 0, ',', ' ').' счетов',
-            'note' => 'Статус Трак Импорт: оплачено',
             'href' => route('admin.invoices.index', ['tab' => 'company', 'status' => 'paid']),
             'primary' => false,
-            'sparkline' => 'paid_invoices',
         ],
     ];
 @endphp
@@ -55,10 +45,11 @@
     <div class="admin-dashboard__top">
         <div>
             <p class="admin-dashboard__eyebrow">Truck Import · аналитика</p>
-            <h1 class="admin-dashboard__title">Дашборд</h1>
+            <h1 class="admin-dashboard__title">Дашборд @if($demoMode)<span class="admin-dashboard__demo-badge">Демо-данные</span>@endif</h1>
             <p class="admin-dashboard__period-caption">{{ $dashboard['period']['range_label'] }} · время приложения: {{ config('app.timezone') }}</p>
         </div>
         <form method="GET" action="{{ route('admin.dashboard') }}" class="admin-dashboard__period-form">
+            @if($demoMode)<input type="hidden" name="demo" value="1">@endif
             <label for="dashboard-period">Период</label>
             <select id="dashboard-period" name="period" onchange="this.form.submit()">
                 @foreach($dashboard['periods'] as $key => $label)
@@ -88,11 +79,6 @@
                 <span class="admin-dashboard__kpi-difference">
                     {{ $difference > 0 ? '+' : ($difference < 0 ? '−' : '') }}{{ $card['difference'] }} {{ $dashboard['period']['comparison_label'] }}
                 </span>
-                <span class="admin-dashboard__sparkline" aria-hidden="true"><canvas data-dashboard-sparkline="{{ $card['sparkline'] }}"></canvas></span>
-                <span class="admin-dashboard__kpi-note">{{ $card['note'] }}</span>
-                @if($card['primary'] && $averageChange !== null)
-                    <span class="admin-dashboard__kpi-note">На {{ number_format(abs($averageChange), 1, ',', ' ') }}% {{ $averageChange >= 0 ? 'выше' : 'ниже' }} среднемесячного уровня</span>
-                @endif
             </a>
         @endforeach
     </section>
@@ -131,7 +117,7 @@
                 <div class="admin-dashboard__manager">
                     <span class="admin-dashboard__place">{{ $manager['place'] }}</span>
                     <div class="admin-dashboard__manager-main">
-                        <a href="{{ route('admin.truck-managers.edit', $manager['id']) }}">{{ $manager['name'] }}</a>
+                        @if($demoMode)<span>{{ $manager['name'] }}</span>@else<a href="{{ route('admin.truck-managers.edit', $manager['id']) }}">{{ $manager['name'] }}</a>@endif
                         <span>{{ $manager['orders'] }} заказов</span>
                     </div>
                     <strong>{{ number_format($manager['amount'], 2, ',', ' ') }} ₽</strong>
@@ -183,7 +169,7 @@
                     <tbody>
                         @foreach($dashboard['recent_orders'] as $order)
                             <tr>
-                                <td><a href="{{ route('admin.orders.show', $order['id']) }}">{{ $order['number'] }}</a></td>
+                                <td>@if($demoMode){{ $order['number'] }}@else<a href="{{ route('admin.orders.show', $order['id']) }}">{{ $order['number'] }}</a>@endif</td>
                                 <td>{{ $order['company'] }}</td>
                                 <td>{{ $order['manager'] }}</td>
                                 <td class="admin-dashboard__amount">{{ number_format($order['amount'], 2, ',', ' ') }} ₽</td>
