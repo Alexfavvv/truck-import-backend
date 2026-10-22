@@ -11,6 +11,7 @@
         ];
     } elseif ($user?->isAdminTruck()) {
         $items = [
+            ['label' => 'Дашборд', 'route' => 'admin.dashboard', 'active' => 'admin.dashboard*'],
             ['label' => 'Поиск деталей', 'route' => 'admin.search.index', 'active' => 'admin.search.*'],
             ['label' => 'Заказы', 'route' => 'admin.orders.index', 'active' => 'admin.orders*'],
             ['label' => 'Счета на оплату', 'route' => 'admin.invoices.index', 'active' => 'admin.invoices*'],

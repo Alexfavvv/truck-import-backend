@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CartController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PartSearchController;
@@ -32,6 +33,8 @@ Route::middleware([CustomAuthenticateMiddleware::class, IsAdminMiddleware::class
     Route::get('/admin', function () {
         return redirect()->route('admin.search.index');
     })->name('admin.index');
+
+    Route::get('/admin/dashboard', DashboardController::class)->name('admin.dashboard');
 
     // ── Поиск деталей (отдельная страница) ───────────────────────────
     Route::get('/admin/search', [PartSearchController::class, 'index'])->name('admin.search.index');
