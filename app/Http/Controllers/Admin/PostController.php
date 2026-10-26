@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Services\PostRelatedProductService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +14,13 @@ use Illuminate\View\View;
 
 class PostController extends Controller
 {
+    public function searchRelatedProducts(Request $request, PostRelatedProductService $relatedProducts): JsonResponse
+    {
+        $data = $request->validate(['q' => 'required|string|min:2|max:100']);
+
+        return response()->json(['data' => $relatedProducts->search($data['q'])]);
+    }
+
     public function index(Request $request): View
     {
         $query = Post::with('user')->orderBy('created_at', 'desc');
@@ -40,10 +49,10 @@ class PostController extends Controller
 
     public function create(): View
     {
-        return view('admin.posts.create');
+        return view('admin.posts.create', ['relatedProduct' => null]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, PostRelatedProductService $relatedProducts): RedirectResponse
     {
         $validated = $request->validate([
             'title'            => 'required|string|max:255',
@@ -56,7 +65,17 @@ class PostController extends Controller
             'meta_title'       => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:500',
             'meta_keywords'    => 'nullable|string|max:255',
+            'related_product_type' => 'nullable|in:engine,engine_block,gearbox|required_with:related_product_id',
+            'related_product_id' => 'nullable|integer|min:1|required_with:related_product_type',
         ]);
+
+        $relatedProduct = $relatedProducts->find(
+            $validated['related_product_type'] ?? null,
+            isset($validated['related_product_id']) ? (int) $validated['related_product_id'] : null,
+        );
+        if (($validated['related_product_type'] ?? null) && !$relatedProduct) {
+            return back()->withErrors(['related_product_id' => 'Выбранная запчасть не найдена.'])->withInput();
+        }
 
         $slug = $validated['slug'] ? Str::slug($validated['slug']) : Str::slug($validated['title']);
         
@@ -87,18 +106,22 @@ class PostController extends Controller
             'meta_description' => $validated['meta_description'] ?? ($validated['excerpt'] ?? null),
             'meta_keywords'    => $validated['meta_keywords'] ?? null,
             'user_id'          => auth()->id(),
+            'related_product_type' => $relatedProduct ? $validated['related_product_type'] : null,
+            'related_product_id' => $relatedProduct?->getKey(),
         ]);
 
         session()->flash('success', 'Статья успешно создана!');
         return redirect()->route('admin.posts.index');
     }
 
-    public function edit(Post $post): View
+    public function edit(Post $post, PostRelatedProductService $relatedProducts): View
     {
-        return view('admin.posts.edit', compact('post'));
+        $relatedProduct = $relatedProducts->find($post->related_product_type, $post->related_product_id);
+
+        return view('admin.posts.edit', compact('post', 'relatedProduct'));
     }
 
-    public function update(Request $request, Post $post): RedirectResponse
+    public function update(Request $request, Post $post, PostRelatedProductService $relatedProducts): RedirectResponse
     {
         $validated = $request->validate([
             'title'            => 'required|string|max:255',
@@ -112,7 +135,17 @@ class PostController extends Controller
             'meta_description' => 'nullable|string|max:500',
             'meta_keywords'    => 'nullable|string|max:255',
             'remove_image'     => 'nullable|boolean',
+            'related_product_type' => 'nullable|in:engine,engine_block,gearbox|required_with:related_product_id',
+            'related_product_id' => 'nullable|integer|min:1|required_with:related_product_type',
         ]);
+
+        $relatedProduct = $relatedProducts->find(
+            $validated['related_product_type'] ?? null,
+            isset($validated['related_product_id']) ? (int) $validated['related_product_id'] : null,
+        );
+        if (($validated['related_product_type'] ?? null) && !$relatedProduct) {
+            return back()->withErrors(['related_product_id' => 'Выбранная запчасть не найдена.'])->withInput();
+        }
 
         $slug = $validated['slug'] ? Str::slug($validated['slug']) : Str::slug($validated['title']);
 
@@ -159,6 +192,8 @@ class PostController extends Controller
             'meta_title'       => $validated['meta_title'] ?? $validated['title'],
             'meta_description' => $validated['meta_description'] ?? ($validated['excerpt'] ?? null),
             'meta_keywords'    => $validated['meta_keywords'] ?? null,
+            'related_product_type' => $relatedProduct ? $validated['related_product_type'] : null,
+            'related_product_id' => $relatedProduct?->getKey(),
         ]);
 
         session()->flash('success', 'Статья успешно обновлена!');

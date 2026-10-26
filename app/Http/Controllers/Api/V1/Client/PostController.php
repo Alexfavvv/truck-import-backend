@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Api\V1\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Services\PostRelatedProductService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Throwable;
 
 class PostController extends Controller
 {
@@ -53,14 +56,13 @@ class PostController extends Controller
         ]);
     }
 
-    public function show(string $slug): JsonResponse
+    public function show(Request $request, string $slug, PostRelatedProductService $relatedProducts): JsonResponse
     {
         $post = Post::where('slug', $slug)
             ->where('is_published', true)
             ->firstOrFail();
 
-        // Increment views count
-        $post->increment('views_count');
+        $this->recordUniqueView($request, $post);
 
         // Recent posts for sidebar / recommendations
         $recentPosts = Post::published()
@@ -83,8 +85,30 @@ class PostController extends Controller
                 'meta_description' => $post->meta_description ?: $post->excerpt,
                 'meta_keywords'    => $post->meta_keywords,
                 'author'           => $post->user ? $post->user->name : 'Администрация',
+                'related_product'  => $relatedProducts->payload($post->related_product_type, $post->related_product_id),
             ],
             'recent' => $recentPosts,
         ]);
+    }
+
+    private function recordUniqueView(Request $request, Post $post): void
+    {
+        $userAgent = $request->userAgent() ?? '';
+
+        if (preg_match('/bot|crawler|spider|slurp|bingpreview|facebookexternalhit|telegrambot|yandex|googlebot/i', $userAgent)) {
+            return;
+        }
+
+        $identity = ($request->ip() ?? '')."\n".$userAgent;
+        $key = 'post_view:'.$post->id.':'.hash('sha256', $identity);
+
+        try {
+            if (!Cache::has($key)) {
+                $post->increment('views_count');
+                Cache::put($key, true, now()->addHour());
+            }
+        } catch (Throwable $exception) {
+            report($exception);
+        }
     }
 }

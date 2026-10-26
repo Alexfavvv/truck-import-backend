@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CartController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PartSearchController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Admin\TruckManufacturerController;
 use App\Http\Controllers\Admin\TruckModelController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\TruckManagerController;
+use App\Http\Controllers\Api\V1\Client\CartController as ClientCartController;
 use App\Http\Controllers\Manager\ManagerCabinetController;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\SsoController;
@@ -29,8 +31,10 @@ Route::get('/', fn () => redirect()->route('login'))->name('home');
 // Доступ в админку — только для авторизованного пользователя с ролью
 Route::middleware([CustomAuthenticateMiddleware::class, IsAdminMiddleware::class])->group(function () {
     Route::get('/admin', function () {
-        return view('admin.main.index');
+        return redirect()->route('admin.search.index');
     })->name('admin.index');
+
+    Route::get('/admin/dashboard', DashboardController::class)->name('admin.dashboard');
 
     // ── Поиск деталей (отдельная страница) ───────────────────────────
     Route::get('/admin/search', [PartSearchController::class, 'index'])->name('admin.search.index');
@@ -39,6 +43,9 @@ Route::middleware([CustomAuthenticateMiddleware::class, IsAdminMiddleware::class
 
     // ── Корзина (добавление из админки в корзину текущего пользователя) ─
     Route::post('/admin/cart/add', [CartController::class, 'add'])->name('admin.cart.add');
+    Route::get('/admin/cart', [CartController::class, 'index'])->name('admin.cart.index');
+    Route::put('/admin/cart/items/{cartItem}', [ClientCartController::class, 'update'])->name('admin.cart.items.update');
+    Route::delete('/admin/cart/items/{cartItem}', [ClientCartController::class, 'remove'])->name('admin.cart.items.destroy');
 
     // ── Каталог (существующие разделы) ──────────────────────────────
     Route::resource('/admin/brands', BrandController::class)->names('admin.brands')->except('show');
@@ -71,6 +78,8 @@ Route::middleware([CustomAuthenticateMiddleware::class, IsAdminMiddleware::class
         ->name('admin.invoices.pdf');
 
     // ── Блог (статьи) ─────────────────────────────────────────────────
+    Route::get('/admin/posts/related-products', [PostController::class, 'searchRelatedProducts'])
+        ->name('admin.posts.related-products');
     Route::resource('/admin/posts', PostController::class)->names('admin.posts');
     Route::patch('/admin/posts/{post}/toggle-publish', [PostController::class, 'togglePublish'])->name('admin.posts.toggle-publish');
 

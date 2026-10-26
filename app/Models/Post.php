@@ -25,12 +25,15 @@ class Post extends Model
         'meta_description',
         'meta_keywords',
         'user_id',
+        'related_product_type',
+        'related_product_id',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
         'published_at' => 'datetime',
         'views_count'  => 'integer',
+        'related_product_id' => 'integer',
     ];
 
     protected $appends = ['image_url'];

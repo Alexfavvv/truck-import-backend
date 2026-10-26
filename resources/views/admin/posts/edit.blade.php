@@ -151,6 +151,8 @@
                                 <textarea name="excerpt" id="excerpt" rows="3" class="form-control @error('excerpt') is-invalid @enderror" placeholder="Краткое описание статьи для списка и карточек...">{{ old('excerpt', $post->excerpt) }}</textarea>
                             </div>
 
+                            @include('admin.posts.partials.related-product-field')
+
                             <div class="form-group mb-0">
                                 <label for="summernote" class="font-weight-bold text-dark">Полный текст статьи <span class="text-danger">*</span></label>
                                 <textarea name="content" id="summernote" class="form-control @error('content') is-invalid @enderror" required>{{ old('content', $post->content) }}</textarea>
